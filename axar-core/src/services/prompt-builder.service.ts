@@ -1,3 +1,12 @@
+import {
+	CoreAssistantMessage,
+	CoreMessage,
+	CoreSystemMessage,
+	CoreToolMessage,
+	CoreUserMessage,
+	ToolCallPart,
+	ToolResultPart,
+} from "ai";
 import { TranslatorService } from "./translator.service";
 import { ValidatorService } from "./validator.service";
 
@@ -16,11 +25,10 @@ export class PromptBuilderService {
 	/**
 	 * Generates a prompt by translating and validating the schema.
 	 * @param schema - The schema to translate and validate.
-	 * @param shorts - Optional parameter for additional configurations (e.g., examples).
 	 * @returns The generated prompt as a string.
 	 * @throws Error if the prompt generation fails.
 	 */
-	async generatePrompt(schema: any, shorts: any = null): Promise<string> {
+	async generatePrompt(schema: any): Promise<string> {
 		try {
 			// Translate schema to JSON
 			const translatedSchema = await this.translatorService.translate(schema);
@@ -28,25 +36,58 @@ export class PromptBuilderService {
 			// Validate the schema
 			this.validatorService.validate(schema);
 
-			// Combine translated schema and shorts (if any) into a prompt
-			return this.buildPrompt(translatedSchema, shorts);
+			return this.buildPrompt(translatedSchema);
+		} catch (error: any) {
+			throw new Error("Failed to generate prompt: " + error.message);
+		}
+	}
+
+	async generateShots(
+		schema: any,
+		shots: any[],
+		query: any
+	): Promise<Array<CoreMessage>> {
+		try {
+			const messages: Array<
+				| CoreSystemMessage
+				| CoreUserMessage
+				| CoreAssistantMessage
+				| CoreToolMessage
+			> = [];
+
+			messages.push({
+				role: "user",
+				content: JSON.stringify(query),
+			});
+
+			for (const example of shots) {
+				const toolCallPart: Array<ToolCallPart> = [];
+
+				toolCallPart.push({
+					type: "tool-call",
+					toolCallId: "tool-call-1",
+					toolName: schema.name,
+					args: JSON.stringify(example),
+				});
+
+				messages.push({
+					role: "assistant",
+					content: JSON.stringify(toolCallPart),
+				});
+			}
+
+			return messages;
 		} catch (error: any) {
 			throw new Error("Failed to generate prompt: " + error.message);
 		}
 	}
 
 	/**
-	 * Combines the translated schema and optional shorts into a final prompt.
 	 * @param translatedSchema - The translated schema as a string.
-	 * @param shorts - Optional parameter for additional configurations.
 	 * @returns The final prompt.
 	 */
-	private buildPrompt(translatedSchema: string, shorts: any): string {
-		// If shorts are provided, modify the prompt accordingly (example logic)
+	private buildPrompt(translatedSchema: string): string {
 		let prompt = translatedSchema;
-		if (shorts) {
-			prompt += `\n\nAdditional info: ${JSON.stringify(shorts)}`;
-		}
 		return prompt;
 	}
 }

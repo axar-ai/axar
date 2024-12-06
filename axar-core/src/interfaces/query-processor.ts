@@ -3,7 +3,8 @@ export interface QueryProcessor {
 		schema: any,
 		query: any,
 		schemaName: string,
-		schemaDescription: string
+		schemaDescription: string,
+		shots?: any
 	): Promise<any>;
 }
 

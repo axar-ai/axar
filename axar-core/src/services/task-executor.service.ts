@@ -37,9 +37,12 @@ export class TaskExecutorService {
 		shots: any = null,
 		taskHandler: QueryProcessor
 	): Promise<any> {
-		const promptSchema = await this.promptBuilderService.generatePrompt(
+		const promptSchema = await this.promptBuilderService.generatePrompt(schema);
+
+		const shotsSchema = await this.promptBuilderService.generateShots(
 			schema,
-			shots
+			shots,
+			query
 		);
 
 		const schemaName = schema.name;
@@ -48,7 +51,8 @@ export class TaskExecutorService {
 			promptSchema,
 			query,
 			schemaName,
-			schemaDescription
+			schemaDescription,
+			shotsSchema
 		);
 	}
 

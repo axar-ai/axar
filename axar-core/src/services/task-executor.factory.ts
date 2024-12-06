@@ -6,7 +6,12 @@ import { TaskExecutorService } from "./task-executor.service";
  * @param config - The configuration object containing the LLM type, credentials, and model name.
  * @returns An object with the executeTask method.
  */
-export function createTaskExecutor(config: TaskExecutorConfig) {
+
+export interface TaskExecutor {
+	executeTask: (schema: any, query: any, shots?: any) => Promise<any>;
+}
+
+export function createTaskExecutor(config: TaskExecutorConfig): TaskExecutor {
 	const taskExecutorService = new TaskExecutorService(config);
 
 	return {

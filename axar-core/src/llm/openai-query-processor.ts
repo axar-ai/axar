@@ -18,16 +18,21 @@ export class OpenAIllmHandler implements QueryProcessor {
 		schema: any,
 		query: any,
 		schemaName: string,
-		schemaDescription: string
+		schemaDescription: string,
+		shots: any
 	): Promise<any> {
 		try {
-			const { object } = await generateObject({
+			const requst = await generateObject({
 				model: this.llm(this.modelName),
 				schema: schema,
-				prompt: JSON.stringify(query),
+				// prompt: JSON.stringify(query),
 				schemaName: schemaName,
 				schemaDescription: schemaDescription,
+				messages: shots,
 			});
+			console.log("🚀 ~ OpenAIllmHandler ~ requst:", requst);
+
+			const { object } = requst;
 
 			console.log(JSON.stringify(object, null, 2));
 
