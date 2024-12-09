@@ -4,7 +4,7 @@ import { createTaskExecutor } from "../services/task-executor.factory";
 const dummySchema = {
 	name: "getTouristPlaces",
 	description: "Returns a list of tourist places for a given city name.",
-	parameters: {
+	request: {
 		type: "object",
 		properties: {
 			cityName: {
@@ -15,7 +15,7 @@ const dummySchema = {
 		},
 		required: ["cityName"],
 	},
-	returns: {
+	response: {
 		type: "object",
 		properties: {
 			places: {
