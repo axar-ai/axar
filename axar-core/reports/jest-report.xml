@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="10" failures="0" errors="0" time="1.646">
+  <testsuite name="createTaskExecutor" errors="0" failures="0" skipped="0" timestamp="2024-12-10T15:12:00" time="1.376" tests="2">
+    <testcase classname="createTaskExecutor should initialize with correct configuration" name="createTaskExecutor should initialize with correct configuration" time="0.007">
+    </testcase>
+    <testcase classname="createTaskExecutor should call executeTask and return the mocked result" name="createTaskExecutor should call executeTask and return the mocked result" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="TaskExecutor" errors="0" failures="0" skipped="0" timestamp="2024-12-10T15:12:00" time="1.406" tests="1">
+    <testcase classname="TaskExecutor executeTask should process the task using the provided handler" name="TaskExecutor executeTask should process the task using the provided handler" time="0.004">
+    </testcase>
+  </testsuite>
+  <testsuite name="Validator" errors="0" failures="0" skipped="0" timestamp="2024-12-10T15:12:00" time="1.414" tests="1">
+    <testcase classname="Validator Should validate the schema successfully" name="Validator Should validate the schema successfully" time="0.003">
+    </testcase>
+  </testsuite>
+  <testsuite name="Translator" errors="0" failures="0" skipped="0" timestamp="2024-12-10T15:12:00" time="1.44" tests="2">
+    <testcase classname="Translator should translate schema to JSON successfully" name="Translator should translate schema to JSON successfully" time="0.004">
+    </testcase>
+    <testcase classname="Translator should throw an error if schema translation fails" name="Translator should throw an error if schema translation fails" time="0.008">
+    </testcase>
+  </testsuite>
+  <testsuite name="PromptBuilder" errors="0" failures="0" skipped="0" timestamp="2024-12-10T15:12:00" time="1.465" tests="4">
+    <testcase classname="PromptBuilder generatePrompt should generate a prompt successfully" name="PromptBuilder generatePrompt should generate a prompt successfully" time="0.002">
+    </testcase>
+    <testcase classname="PromptBuilder generatePrompt should throw an error if translation fails" name="PromptBuilder generatePrompt should throw an error if translation fails" time="0.004">
+    </testcase>
+    <testcase classname="PromptBuilder generateShots should generate messages successfully" name="PromptBuilder generateShots should generate messages successfully" time="0">
+    </testcase>
+    <testcase classname="PromptBuilder generateShots should throw an error if generation fails" name="PromptBuilder generateShots should throw an error if generation fails" time="0.003">
+    </testcase>
+  </testsuite>
+</testsuites>
