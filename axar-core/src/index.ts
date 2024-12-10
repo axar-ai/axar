@@ -1,2 +1,2 @@
-export * from "./services/task-executor.factory";
-export * from "./interfaces/query-processor";
+export * from "./task-executor.factory";
+export * from "./llm/query-processor";
