@@ -49,7 +49,6 @@ export class TaskExecutor {
 		const schemaDescription = schema.description;
 		return taskHandler.processQuery(
 			promptSchema,
-			query,
 			schemaName,
 			schemaDescription,
 			shotsSchema

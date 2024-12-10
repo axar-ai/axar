@@ -1,7 +1,6 @@
 export interface QueryProcessor {
 	processQuery(
 		schema: any,
-		query: any,
 		schemaName: string,
 		schemaDescription: string,
 		shots?: any
