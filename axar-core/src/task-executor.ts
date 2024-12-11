@@ -3,21 +3,21 @@ import {
 	ModelName,
 	QueryProcessor,
 	TaskExecutorConfig,
-} from "../interfaces/query-processor";
-import { LLMHandlerFactory } from "./llm-handler.factory";
-import { PromptBuilderService } from "./prompt-builder.service";
+} from "./llm/query-processor";
+import { LLMHandlerFactory } from "./llm/llm-handler.factory";
+import { PromptBuilder } from "./prompt-builder";
 
 /**
  * Service for executing tasks using various LLM handlers.
  */
-export class TaskExecutorService {
-	private promptBuilderService: PromptBuilderService;
+export class TaskExecutor {
+	private promptBuilder: PromptBuilder;
 	private llmType: LLMType;
 	private credentials: { apiKey: string };
 	private modelName: ModelName;
 
 	constructor(config: TaskExecutorConfig) {
-		this.promptBuilderService = new PromptBuilderService();
+		this.promptBuilder = new PromptBuilder();
 		this.llmType = config.llmType;
 		this.credentials = config.credentials;
 		this.modelName = config.taskConfig.modelName;
@@ -37,18 +37,21 @@ export class TaskExecutorService {
 		shots: any = null,
 		taskHandler: QueryProcessor
 	): Promise<any> {
-		const promptSchema = await this.promptBuilderService.generatePrompt(
+		const promptSchema = await this.promptBuilder.generatePrompt(schema);
+
+		const shotsSchema = await this.promptBuilder.generateShots(
 			schema,
-			shots
+			shots,
+			query
 		);
 
 		const schemaName = schema.name;
 		const schemaDescription = schema.description;
 		return taskHandler.processQuery(
 			promptSchema,
-			query,
 			schemaName,
-			schemaDescription
+			schemaDescription,
+			shotsSchema
 		);
 	}
 

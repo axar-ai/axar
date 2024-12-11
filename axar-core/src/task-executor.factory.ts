@@ -1,13 +1,18 @@
-import { TaskExecutorConfig } from "interfaces/query-processor";
-import { TaskExecutorService } from "./task-executor.service";
+import { TaskExecutorConfig } from "llm/query-processor";
+import { TaskExecutor } from "./task-executor";
 
 /**
  * Factory function to create a task executor with the provided configuration.
  * @param config - The configuration object containing the LLM type, credentials, and model name.
  * @returns An object with the executeTask method.
  */
-export function createTaskExecutor(config: TaskExecutorConfig) {
-	const taskExecutorService = new TaskExecutorService(config);
+
+export interface ITaskExecutor {
+	executeTask: (schema: any, query: any, shots?: any) => Promise<any>;
+}
+
+export function createTaskExecutor(config: TaskExecutorConfig): ITaskExecutor {
+	const taskExecutor = new TaskExecutor(config);
 
 	return {
 		/**
@@ -18,8 +23,8 @@ export function createTaskExecutor(config: TaskExecutorConfig) {
 		 * @returns A Promise that resolves to the processed result.
 		 */
 		async executeTask(schema: any, query: any, shots: any = null) {
-			const taskHandler = await taskExecutorService.getTaskHandler();
-			return taskExecutorService.executeTask(schema, query, shots, taskHandler);
+			const taskHandler = await taskExecutor.getTaskHandler();
+			return taskExecutor.executeTask(schema, query, shots, taskHandler);
 		},
 	};
 }

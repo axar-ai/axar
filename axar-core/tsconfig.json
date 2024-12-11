@@ -3,8 +3,7 @@
 		"outDir": "dist",
 		"rootDir": "src",
 		"strict": true,
-		"module": "ESNext",
-		"moduleResolution": "Node",
+		"module": "commonjs",
 		"target": "es6",
 		"declaration": true,
 		"declarationDir": "dist",
@@ -12,5 +11,5 @@
 		"baseUrl": "./src"
 	},
 	"include": ["src/**/*"],
-	"exclude": ["node_modules"]
+	"exclude": ["node_modules", "test", "**/*.test.ts"]
 }

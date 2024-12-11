@@ -1,10 +1,7 @@
-import { LLMType, ModelName } from "interfaces/query-processor";
-import { createTaskExecutor } from "../services/task-executor.factory";
-
-const dummySchema = {
+export const dummySchema = {
 	name: "getTouristPlaces",
 	description: "Returns a list of tourist places for a given city name.",
-	parameters: {
+	request: {
 		type: "object",
 		properties: {
 			cityName: {
@@ -15,7 +12,7 @@ const dummySchema = {
 		},
 		required: ["cityName"],
 	},
-	returns: {
+	response: {
 		type: "object",
 		properties: {
 			places: {
@@ -55,40 +52,3 @@ const dummySchema = {
 		required: ["places", "status"],
 	},
 };
-
-jest.mock("../services/task-executor.service", () => {
-	return {
-		TaskExecutorService: jest.fn().mockImplementation(() => {
-			return {
-				getTaskHandler: jest.fn().mockResolvedValue({
-					processQuery: jest.fn().mockResolvedValue("Mocked result"),
-				}),
-				executeTask: jest.fn().mockResolvedValue("Mocked result"),
-			};
-		}),
-	};
-});
-
-describe("createTaskExecutor", () => {
-	let taskExecutor: ReturnType<typeof createTaskExecutor>;
-
-	beforeEach(() => {
-		taskExecutor = createTaskExecutor({
-			llmType: LLMType.OPENAI,
-			credentials: { apiKey: "test-api-key" },
-			taskConfig: { modelName: ModelName.GPT_4O },
-		});
-	});
-
-	it("should initialize with correct configuration", () => {
-		expect(taskExecutor).toBeDefined();
-	});
-
-	it("should call executeTask and return the mocked result", async () => {
-		const schema = dummySchema;
-		const query = { cityName: "Dhaka" };
-		const result = await taskExecutor.executeTask(schema, query);
-
-		expect(result).toBe("Mocked result");
-	});
-});

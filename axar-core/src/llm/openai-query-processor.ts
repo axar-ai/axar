@@ -1,6 +1,6 @@
 import { createOpenAI, OpenAIProvider } from "@ai-sdk/openai";
 import { generateObject } from "ai";
-import { ModelName, QueryProcessor } from "./../interfaces/query-processor";
+import { ModelName, QueryProcessor } from "./query-processor";
 
 export class OpenAIllmHandler implements QueryProcessor {
 	private llm: OpenAIProvider;
@@ -16,20 +16,20 @@ export class OpenAIllmHandler implements QueryProcessor {
 
 	async processQuery(
 		schema: any,
-		query: any,
 		schemaName: string,
-		schemaDescription: string
+		schemaDescription: string,
+		shots: any
 	): Promise<any> {
 		try {
-			const { object } = await generateObject({
+			const requst = await generateObject({
 				model: this.llm(this.modelName),
 				schema: schema,
-				prompt: JSON.stringify(query),
 				schemaName: schemaName,
 				schemaDescription: schemaDescription,
+				messages: shots,
 			});
 
-			console.log(JSON.stringify(object, null, 2));
+			const { object } = requst;
 
 			return object;
 		} catch (error) {

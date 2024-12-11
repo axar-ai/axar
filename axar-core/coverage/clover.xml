@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1733905617223" clover="3.2.0">
+  <project timestamp="1733905617223" name="All files">
+    <metrics statements="86" coveredstatements="81" conditionals="13" coveredconditionals="10" methods="18" coveredmethods="17" elements="117" coveredelements="108" complexity="0" loc="86" ncloc="86" packages="2" files="9" classes="9"/>
+    <package name="src">
+      <metrics statements="53" coveredstatements="50" conditionals="6" coveredconditionals="4" methods="13" coveredmethods="12"/>
+      <file name="index.ts" path="/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/src/index.ts">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+      </file>
+      <file name="prompt-builder.ts" path="/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/src/prompt-builder.ts">
+        <metrics statements="21" coveredstatements="20" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="4"/>
+        <line num="9" count="3" type="stmt"/>
+        <line num="10" count="3" type="stmt"/>
+        <line num="15" count="3" type="stmt"/>
+        <line num="20" count="4" type="stmt"/>
+        <line num="21" count="4" type="stmt"/>
+        <line num="31" count="2" type="stmt"/>
+        <line num="33" count="2" type="stmt"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="55" count="1" type="stmt"/>
+        <line num="57" count="1" type="stmt"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="63" count="1" type="stmt"/>
+        <line num="65" count="1" type="stmt"/>
+        <line num="72" count="1" type="stmt"/>
+        <line num="78" count="1" type="stmt"/>
+        <line num="80" count="0" type="stmt"/>
+        <line num="89" count="1" type="stmt"/>
+        <line num="90" count="1" type="stmt"/>
+      </file>
+      <file name="task-executor.factory.ts" path="/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/src/task-executor.factory.ts">
+        <metrics statements="7" coveredstatements="7" conditionals="1" coveredconditionals="1" methods="3" coveredmethods="3"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="14" count="2" type="stmt"/>
+        <line num="15" count="2" type="stmt"/>
+        <line num="17" count="2" type="stmt"/>
+        <line num="25" count="1" type="cond" truecount="1" falsecount="0"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+      </file>
+      <file name="task-executor.ts" path="/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/src/task-executor.ts">
+        <metrics statements="15" coveredstatements="13" conditionals="1" coveredconditionals="0" methods="4" coveredmethods="3"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="8" count="2" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="42" count="1" type="stmt"/>
+        <line num="48" count="1" type="stmt"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="50" count="1" type="stmt"/>
+        <line num="63" count="0" type="stmt"/>
+        <line num="68" count="0" type="stmt"/>
+      </file>
+      <file name="translator.ts" path="/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/src/translator.ts">
+        <metrics statements="6" coveredstatements="6" conditionals="4" coveredconditionals="3" methods="1" coveredmethods="1"/>
+        <line num="1" count="3" type="stmt"/>
+        <line num="3" count="3" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="7" count="2" type="cond" truecount="3" falsecount="1"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+      </file>
+      <file name="validator.ts" path="/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/src/validator.ts">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="1" count="3" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.llm">
+      <metrics statements="33" coveredstatements="31" conditionals="7" coveredconditionals="6" methods="5" coveredmethods="5"/>
+      <file name="llm-handler.factory.ts" path="/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/src/llm/llm-handler.factory.ts">
+        <metrics statements="6" coveredstatements="6" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="22" count="2" type="stmt"/>
+        <line num="25" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="30" count="1" type="stmt"/>
+      </file>
+      <file name="openai-query-processor.ts" path="/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/src/llm/openai-query-processor.ts">
+        <metrics statements="12" coveredstatements="10" conditionals="1" coveredconditionals="0" methods="2" coveredmethods="2"/>
+        <line num="1" count="3" type="stmt"/>
+        <line num="2" count="3" type="stmt"/>
+        <line num="3" count="3" type="stmt"/>
+        <line num="5" count="3" type="stmt"/>
+        <line num="10" count="3" type="stmt"/>
+        <line num="11" count="3" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="36" count="0" type="stmt"/>
+        <line num="37" count="0" type="stmt"/>
+      </file>
+      <file name="query-processor.ts" path="/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/src/llm/query-processor.ts">
+        <metrics statements="15" coveredstatements="15" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
+        <line num="10" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="11" count="4" type="stmt"/>
+        <line num="12" count="4" type="stmt"/>
+        <line num="13" count="4" type="stmt"/>
+        <line num="14" count="4" type="stmt"/>
+        <line num="17" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="18" count="4" type="stmt"/>
+        <line num="19" count="4" type="stmt"/>
+        <line num="20" count="4" type="stmt"/>
+        <line num="21" count="4" type="stmt"/>
+        <line num="22" count="4" type="stmt"/>
+        <line num="23" count="4" type="stmt"/>
+        <line num="24" count="4" type="stmt"/>
+        <line num="25" count="4" type="stmt"/>
+        <line num="26" count="4" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
