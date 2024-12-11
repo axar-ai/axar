@@ -1,53 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="17" failures="0" errors="0" time="2.901">
-  <testsuite name="Validator" errors="0" failures="0" skipped="0" timestamp="2024-12-10T16:38:45" time="2.244" tests="1">
-    <testcase classname="Validator Should validate the schema successfully" name="Validator Should validate the schema successfully" time="0.003">
+<testsuites name="jest tests" tests="17" failures="0" errors="0" time="2.397">
+  <testsuite name="Translator" errors="0" failures="0" skipped="0" timestamp="2024-12-11T08:26:54" time="2.039" tests="2">
+    <testcase classname="Translator should translate schema to JSON successfully" name="Translator should translate schema to JSON successfully" time="0.003">
+    </testcase>
+    <testcase classname="Translator should throw an error if schema translation fails" name="Translator should throw an error if schema translation fails" time="0.007">
     </testcase>
   </testsuite>
-  <testsuite name="OpenAIllmHandler" errors="0" failures="0" skipped="0" timestamp="2024-12-10T16:38:45" time="2.497" tests="2">
-    <testcase classname="OpenAIllmHandler should initialize with the correct apiKey and modelName" name="OpenAIllmHandler should initialize with the correct apiKey and modelName" time="0.004">
+  <testsuite name="PromptBuilder" errors="0" failures="0" skipped="0" timestamp="2024-12-11T08:26:54" time="2.063" tests="4">
+    <testcase classname="PromptBuilder generatePrompt should generate a prompt successfully" name="PromptBuilder generatePrompt should generate a prompt successfully" time="0.004">
     </testcase>
-    <testcase classname="OpenAIllmHandler should process queries correctly" name="OpenAIllmHandler should process queries correctly" time="0.001">
+    <testcase classname="PromptBuilder generatePrompt should throw an error if translation fails" name="PromptBuilder generatePrompt should throw an error if translation fails" time="0.005">
     </testcase>
-  </testsuite>
-  <testsuite name="Translator" errors="0" failures="0" skipped="0" timestamp="2024-12-10T16:38:45" time="2.545" tests="2">
-    <testcase classname="Translator should translate schema to JSON successfully" name="Translator should translate schema to JSON successfully" time="0.005">
+    <testcase classname="PromptBuilder generateShots should generate messages successfully" name="PromptBuilder generateShots should generate messages successfully" time="0.002">
     </testcase>
-    <testcase classname="Translator should throw an error if schema translation fails" name="Translator should throw an error if schema translation fails" time="0.005">
+    <testcase classname="PromptBuilder generateShots should throw an error if generation fails" name="PromptBuilder generateShots should throw an error if generation fails" time="0.003">
     </testcase>
   </testsuite>
-  <testsuite name="createTaskExecutor" errors="0" failures="0" skipped="0" timestamp="2024-12-10T16:38:45" time="2.569" tests="2">
-    <testcase classname="createTaskExecutor should initialize with correct configuration" name="createTaskExecutor should initialize with correct configuration" time="0.003">
+  <testsuite name="Module Exports" errors="0" failures="0" skipped="0" timestamp="2024-12-11T08:26:54" time="2.073" tests="3">
+    <testcase classname="Module Exports should export createTaskExecutor function" name="Module Exports should export createTaskExecutor function" time="0.004">
     </testcase>
-    <testcase classname="createTaskExecutor should call executeTask and return the mocked result" name="createTaskExecutor should call executeTask and return the mocked result" time="0.001">
-    </testcase>
-  </testsuite>
-  <testsuite name="PromptBuilder" errors="0" failures="0" skipped="0" timestamp="2024-12-10T16:38:45" time="2.605" tests="4">
-    <testcase classname="PromptBuilder generatePrompt should generate a prompt successfully" name="PromptBuilder generatePrompt should generate a prompt successfully" time="0.005">
-    </testcase>
-    <testcase classname="PromptBuilder generatePrompt should throw an error if translation fails" name="PromptBuilder generatePrompt should throw an error if translation fails" time="0.004">
-    </testcase>
-    <testcase classname="PromptBuilder generateShots should generate messages successfully" name="PromptBuilder generateShots should generate messages successfully" time="0.001">
-    </testcase>
-    <testcase classname="PromptBuilder generateShots should throw an error if generation fails" name="PromptBuilder generateShots should throw an error if generation fails" time="0.007">
-    </testcase>
-  </testsuite>
-  <testsuite name="Module Exports" errors="0" failures="0" skipped="0" timestamp="2024-12-10T16:38:45" time="2.639" tests="3">
-    <testcase classname="Module Exports should export createTaskExecutor function" name="Module Exports should export createTaskExecutor function" time="0.006">
-    </testcase>
-    <testcase classname="Module Exports should export LLMType enum" name="Module Exports should export LLMType enum" time="0.001">
+    <testcase classname="Module Exports should export LLMType enum" name="Module Exports should export LLMType enum" time="0.012">
     </testcase>
     <testcase classname="Module Exports should export ModelName enum" name="Module Exports should export ModelName enum" time="0">
     </testcase>
   </testsuite>
-  <testsuite name="LLMHandlerFactory" errors="0" failures="0" skipped="0" timestamp="2024-12-10T16:38:45" time="2.637" tests="2">
-    <testcase classname="LLMHandlerFactory should return an OpenAIllmHandler for &apos;openai&apos; LLM type" name="LLMHandlerFactory should return an OpenAIllmHandler for &apos;openai&apos; LLM type" time="0.004">
-    </testcase>
-    <testcase classname="LLMHandlerFactory should throw an error for unsupported LLM types" name="LLMHandlerFactory should throw an error for unsupported LLM types" time="0.004">
+  <testsuite name="Validator" errors="0" failures="0" skipped="0" timestamp="2024-12-11T08:26:54" time="2.08" tests="1">
+    <testcase classname="Validator Should validate the schema successfully" name="Validator Should validate the schema successfully" time="0.005">
     </testcase>
   </testsuite>
-  <testsuite name="TaskExecutor" errors="0" failures="0" skipped="0" timestamp="2024-12-10T16:38:45" time="2.669" tests="1">
-    <testcase classname="TaskExecutor executeTask should process the task using the provided handler" name="TaskExecutor executeTask should process the task using the provided handler" time="0.004">
+  <testsuite name="TaskExecutor" errors="0" failures="0" skipped="0" timestamp="2024-12-11T08:26:54" time="2.106" tests="1">
+    <testcase classname="TaskExecutor executeTask should process the task using the provided handler" name="TaskExecutor executeTask should process the task using the provided handler" time="0.009">
+    </testcase>
+  </testsuite>
+  <testsuite name="createTaskExecutor" errors="0" failures="0" skipped="0" timestamp="2024-12-11T08:26:54" time="2.143" tests="2">
+    <testcase classname="createTaskExecutor should initialize with correct configuration" name="createTaskExecutor should initialize with correct configuration" time="0.003">
+    </testcase>
+    <testcase classname="createTaskExecutor should call executeTask and return the mocked result" name="createTaskExecutor should call executeTask and return the mocked result" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="OpenAIllmHandler" errors="0" failures="0" skipped="0" timestamp="2024-12-11T08:26:54" time="2.135" tests="2">
+    <testcase classname="OpenAIllmHandler should initialize with the correct apiKey and modelName" name="OpenAIllmHandler should initialize with the correct apiKey and modelName" time="0.003">
+    </testcase>
+    <testcase classname="OpenAIllmHandler should process queries correctly" name="OpenAIllmHandler should process queries correctly" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="LLMHandlerFactory" errors="0" failures="0" skipped="0" timestamp="2024-12-11T08:26:54" time="2.178" tests="2">
+    <testcase classname="LLMHandlerFactory should return an OpenAIllmHandler for &apos;openai&apos; LLM type" name="LLMHandlerFactory should return an OpenAIllmHandler for &apos;openai&apos; LLM type" time="0.007">
+    </testcase>
+    <testcase classname="LLMHandlerFactory should throw an error for unsupported LLM types" name="LLMHandlerFactory should throw an error for unsupported LLM types" time="0.005">
     </testcase>
   </testsuite>
 </testsuites>
