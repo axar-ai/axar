@@ -1,9 +1,9 @@
 module.exports = {
 	preset: "ts-jest",
 	testEnvironment: "node",
-	collectCoverage: true, // Enable coverage collection
-	coverageDirectory: "coverage", // Directory to output coverage files
-	coverageReporters: ["json", "text", "lcov", "clover"], // Coverage formats
+	//collectCoverage: true, // Enable coverage collection
+	//coverageDirectory: "coverage", // Directory to output coverage files
+	//coverageReporters: ["json", "text", "lcov", "clover"], // Coverage formats
 	collectCoverageFrom: ["src/**/*.{ts,tsx,js,jsx}"],
 	reporters: [
 		"default",
