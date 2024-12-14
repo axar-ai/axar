@@ -1,7 +1,6 @@
 import { systemPrompt, model, output } from "./decorators";
-import { tool } from "./decorators/toolx";
+import { tool, description, schema, optional } from "./decorators";
 import { Agent } from "./agentx";
-import { description, min, max, schema, optional } from "./schema4";
 import z from "zod";
 
 interface DatabaseConn {

@@ -8,7 +8,7 @@ import {
   Output,
 } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { META_KEYS } from "./decorators/metaKeys";
+import { META_KEYS } from "./decorators/meta-keys";
 
 // Tool metadata interface
 interface ToolMetadata {

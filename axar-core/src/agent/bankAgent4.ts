@@ -1,8 +1,14 @@
-import { systemPrompt, model, output } from "./decorators";
-import { tool } from "./decorators/toolx";
+import {
+  systemPrompt,
+  model,
+  output,
+  tool,
+  description,
+  min,
+  max,
+  schema,
+} from "./decorators";
 import { Agent } from "./agentx";
-import { description, min, max, schema } from "./schema4";
-import z from "zod";
 
 interface DatabaseConn {
   customerName(id: number): Promise<string>;

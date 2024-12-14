@@ -1,7 +1,6 @@
-import z, { custom } from "zod";
-import { model, systemPrompt, output } from "./decorators";
+import z from "zod";
+import { model, systemPrompt, output, tool } from "./decorators";
 import { Agent } from "./agentx";
-import { tool } from "./decorators/toolx";
 
 interface DatabaseConn {
   customerName(id: number): Promise<string>;

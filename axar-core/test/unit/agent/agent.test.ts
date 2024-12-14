@@ -1,6 +1,5 @@
 import { z } from "zod";
 import {
-  toZodSchema,
   email,
   min,
   max,
@@ -14,7 +13,6 @@ import {
   exclusiveMinimum,
   exclusiveMaximum,
   multipleOf,
-  integer,
   minItems,
   maxItems,
   uniqueItems,
@@ -23,7 +21,10 @@ import {
   zodify,
   arrayItems,
   optional,
-} from "../../../src/agent/schema4";
+  integer,
+} from "../../../src/agent/decorators";
+
+import { toZodSchema } from "../../../src/agent/decorators/schema-generator";
 
 describe("toZodSchema", () => {
   // Basic Types and Validations
