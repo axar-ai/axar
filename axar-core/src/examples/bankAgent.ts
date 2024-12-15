@@ -1,15 +1,5 @@
-import {
-  systemPrompt,
-  model,
-  output,
-  description,
-  min,
-  max,
-  schema,
-  tool,
-} from "./decorators";
-import { Agent } from "./agentx";
 import z from "zod";
+import { model, systemPrompt, output, tool, Agent } from "../agent";
 
 interface DatabaseConn {
   customerName(id: number): Promise<string>;
@@ -20,35 +10,34 @@ interface DatabaseConn {
   ): Promise<number>;
 }
 
-@schema()
-class SupportResponse {
-  @description("Human-readable advice to give to the customer.")
-  support_advice!: string;
-  @description("Whether to block customer's card.")
-  block_card!: boolean;
-  @description("Risk level of query")
-  @min(0)
-  @max(1)
-  risk!: number;
-  @description("Customer's emotional state")
-  status?: "Happy" | "Sad" | "Neutral";
-}
+const SupportResponseSchema = z.object({
+  support_advice: z
+    .string()
+    .describe("Human-readable advice to give to the customer."),
+  block_card: z.boolean().describe("Whether to block customer's card."),
+  risk: z.number().min(0).max(1).describe("Risk level of query"),
+  status: z
+    .enum(["Happy", "Sad", "Neutral"])
+    .optional()
+    .describe("Customer's emotional state"),
+});
 
-//TODO: @model("openai/gpt-4o-mini")
+type SupportResponse = z.infer<typeof SupportResponseSchema>;
+
 @model("gpt-4o-mini")
+@output(SupportResponseSchema)
 @systemPrompt(`
   You are a support agent in our bank. 
   Give the customer support and judge the risk level of their query.
   Reply using the customer's name.
 `)
-@output(SupportResponse)
 class SupportAgent extends Agent<string, SupportResponse> {
   constructor(private customerId: number, private db: DatabaseConn) {
     super();
   }
 
   @systemPrompt()
-  async getCustomerContext(): Promise<string> {
+  private async getCustomerContext(): Promise<string> {
     const name = await this.db.customerName(this.customerId);
     return `The customer's name is '${name}'`;
   }
@@ -67,12 +56,12 @@ class SupportAgent extends Agent<string, SupportResponse> {
     customerName: string;
     includePending?: boolean;
   }): Promise<number> {
-    console.log("getCustomerBalance");
-    return this.db.customerBalance(
+    const balance = await this.db.customerBalance(
       this.customerId,
       customerName,
-      includePending ?? false
+      includePending
     );
+    return balance;
   }
 }
 
@@ -100,8 +89,8 @@ async function main() {
   console.log(balanceResult);
 
   // Lost card scenario
-  const cardResult = await agent.run("I just lost my card!");
-  console.log(cardResult);
+  // const cardResult = await agent.run("I just lost my card!");
+  // console.log(cardResult);
 }
 
 main().catch(console.error);

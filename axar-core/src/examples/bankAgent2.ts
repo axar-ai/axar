@@ -1,14 +1,5 @@
-import { Agent } from "./agentx";
-import {
-  systemPrompt,
-  model,
-  output,
-  description,
-  min,
-  max,
-  schema,
-  tool,
-} from "./decorators";
+import { systemPrompt, model, output, tool, Agent } from "../agent";
+import { property, min, max, schema } from "../schema";
 import z from "zod";
 
 interface DatabaseConn {
@@ -22,24 +13,24 @@ interface DatabaseConn {
 
 @schema()
 class SupportResponsex {
-  @description("Human-readable advice to give to the customer.")
+  @property("Human-readable advice to give to the customer.")
   support_advice!: string;
-  @description("Whether to block customer's card.")
+  @property("Whether to block customer's card.")
   block_card!: boolean;
-  @description("Risk level of query")
+  @property("Risk level of query")
   @min(0)
   @max(1)
   risk!: number;
-  @description("Customer's emotional state")
+  @property("Customer's emotional state")
   status?: "Happy" | "Sad" | "Neutral";
 }
 
 @schema()
 class ToolParams {
-  @description("Customer's name")
+  @property("Customer's name")
   customerName!: string;
 
-  @description("Whether to include pending transactions")
+  @property("Whether to include pending transactions")
   includePending?: boolean;
 }
 

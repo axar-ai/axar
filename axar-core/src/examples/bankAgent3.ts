@@ -1,6 +1,6 @@
-import { systemPrompt, model, output } from "./decorators";
-import { tool, description, schema, optional } from "./decorators";
-import { Agent } from "./agentx";
+import { tool, systemPrompt, model, output, Agent } from "../agent";
+import { schema, property, min, max, optional } from "../schema";
+
 import z from "zod";
 
 interface DatabaseConn {
@@ -13,28 +13,19 @@ interface DatabaseConn {
 }
 
 @schema()
-class ToolParams {
-  @description("Customer's name")
-  customerName!: string;
-
-  @description("Whether to include pending transactions")
+class SupportResponse {
+  @property("Human-readable advice to give to the customer.")
+  support_advice!: string;
+  @property("Whether to block customer's card.")
+  block_card!: boolean;
+  @property("Risk level of query")
+  @min(0)
+  @max(1)
+  risk!: number;
+  @property("Customer's emotional state")
   @optional()
-  includePending?: boolean;
+  status?: "Happy" | "Sad" | "Neutral";
 }
-
-const SupportResponseSchema = z.object({
-  support_advice: z
-    .string()
-    .describe("Human-readable advice to give to the customer."),
-  block_card: z.boolean().describe("Whether to block customer's card."),
-  risk: z.number().min(0).max(1).describe("Risk level of query"),
-  status: z
-    .enum(["Happy", "Sad", "Neutral"])
-    .optional()
-    .describe("Customer's emotional state"),
-});
-
-type SupportResponse = z.infer<typeof SupportResponseSchema>;
 
 //TODO: @model("openai/gpt-4o-mini")
 @model("gpt-4o-mini")
@@ -43,7 +34,7 @@ type SupportResponse = z.infer<typeof SupportResponseSchema>;
   Give the customer support and judge the risk level of their query.
   Reply using the customer's name.
 `)
-@output(SupportResponseSchema)
+@output(SupportResponse)
 class SupportAgent extends Agent<string, SupportResponse> {
   constructor(private customerId: number, private db: DatabaseConn) {
     super();
@@ -55,13 +46,25 @@ class SupportAgent extends Agent<string, SupportResponse> {
     return `The customer's name is '${name}'`;
   }
 
-  @tool("Get customer's current balance")
-  async getCustomerBalance(params: ToolParams): Promise<number> {
+  @tool(
+    "Get customer's current balance",
+    z.object({
+      includePending: z.boolean().optional(),
+      customerName: z.string(),
+    })
+  )
+  async customerBalance({
+    customerName,
+    includePending = true,
+  }: {
+    customerName: string;
+    includePending?: boolean;
+  }): Promise<number> {
     console.log("getCustomerBalance");
     return this.db.customerBalance(
       this.customerId,
-      params.customerName,
-      params.includePending ?? true
+      customerName,
+      includePending ?? false
     );
   }
 }
@@ -90,8 +93,8 @@ async function main() {
   console.log(balanceResult);
 
   // Lost card scenario
-  // const cardResult = await agent.run("I just lost my card!");
-  // console.log(cardResult);
+  const cardResult = await agent.run("I just lost my card!");
+  console.log(cardResult);
 }
 
 main().catch(console.error);

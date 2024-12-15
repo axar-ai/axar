@@ -1,6 +1,127 @@
+import { ZodSchema } from "zod";
 import { META_KEYS } from "./meta-keys";
 import { registerProperty, addValidationRule } from "./utils";
-import { ClassConstructor, ValidationRule } from "./types";
+import { toZodSchema } from "./generator";
+import {
+  SchemaOptions,
+  PropertyOptions,
+  ValidationRule,
+  ClassConstructor,
+} from "./types";
+
+/**
+ * Decorates a class for automatic schema generation using Zod.
+ * When applied, it generates and stores a Zod schema based on the class properties
+ * and their decorators.
+ *
+ * @param descriptionOrOptions - Either a description string or a SchemaOptions object
+ * @returns A class decorator
+ *
+ * @example
+ * ```typescript
+ * // Using string description
+ * @schema("User profile information")
+ * class UserProfile {
+ *   @property("User's full name")
+ *   name: string;
+ * }
+ *
+ * // Using SchemaOptions object
+ * @schema({
+ *   description: "User profile information"
+ * })
+ * class UserProfile {
+ *   @property("User's full name")
+ *   name: string;
+ * }
+ * ```
+ */
+export function schema(
+  descriptionOrOptions: string | SchemaOptions = {}
+): ClassDecorator {
+  return function (target: Function): void {
+    let options: SchemaOptions;
+    if (typeof descriptionOrOptions === "string") {
+      options = { description: descriptionOrOptions };
+    } else {
+      options = descriptionOrOptions;
+    }
+
+    Reflect.defineMetadata(META_KEYS.SCHEMA, options, target);
+    // Generate and store the Zod schema
+    const zodSchema: ZodSchema<any> = toZodSchema(target as any);
+    Reflect.defineMetadata(META_KEYS.SCHEMA_DEF, zodSchema, target);
+  };
+}
+
+/** Alias for {@link schema} decorator, use if conflicts with Zod */
+export const zodify = schema;
+
+/**
+ * Adds metadata to a class property. This can include descriptions and examples
+ * that will be included in the generated schema.
+ *
+ * @param descriptionOrOptions - Either a description string or a PropertyOptions object
+ * @returns A property decorator
+ *
+ * @example
+ * ```typescript
+ * class User {
+ *   // Using string description
+ *   @property("User's full name")
+ *   name: string;
+ *
+ *   // Using PropertyOptions object
+ *   @property({
+ *     description: "User's age in years",
+ *     example: 25
+ *   })
+ *   age: number;
+ * }
+ * ```
+ */
+export function property(
+  descriptionOrOptions: string | PropertyOptions
+): PropertyDecorator {
+  return function (target: any, propertyKey: string | symbol): void {
+    registerProperty(target, propertyKey);
+
+    let options: PropertyOptions;
+    if (typeof descriptionOrOptions === "string") {
+      options = { description: descriptionOrOptions };
+    } else {
+      options = descriptionOrOptions;
+    }
+
+    Reflect.defineMetadata(META_KEYS.PROPERTY, options, target, propertyKey);
+  };
+}
+
+/**
+ * Marks a class property as optional in the generated schema.
+ * Optional properties can be undefined or omitted when creating instances.
+ *
+ * @returns A property decorator
+ *
+ * @example
+ * ```typescript
+ * class UserSettings {
+ *   @optional()
+ *   @description("Preferred theme (defaults to system)")
+ *   theme?: 'light' | 'dark';
+ *
+ *   @optional()
+ *   @example("en-US")
+ *   language?: string;
+ * }
+ * ```
+ */
+export function optional(): PropertyDecorator {
+  return function (target: Object, propertyKey: string | symbol): void {
+    registerProperty(target, propertyKey);
+    Reflect.defineMetadata(META_KEYS.OPTIONAL, true, target, propertyKey);
+  };
+}
 
 /**
  * Creates a validation decorator with proper type checking

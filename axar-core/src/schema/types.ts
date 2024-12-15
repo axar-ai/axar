@@ -1,10 +1,21 @@
-import { z } from "zod";
-
 /**
  * Represents a class constructor with no argument
  */
 export type ClassConstructor<T = any> = { new (): T };
-// TODO: export type ClassConstructor<T = unknown> = new (...args: any[]) => T;
+
+/**
+ * Options for schema annotation
+ */
+export type SchemaOptions = Readonly<{
+  description?: string;
+  example?: any;
+  deprecated?: boolean;
+}>;
+
+export type PropertyOptions = Readonly<{
+  description?: string;
+  example?: any;
+}>;
 
 /**
  * String validation rule types
@@ -40,22 +51,3 @@ export type ValidationRule = {
   type: StringValidation | NumberValidation | ArrayValidation | "enum";
   params?: any[];
 };
-
-/**
- * Options for schema annotation
- */
-export type SchemaOptions = Readonly<{
-  description?: string;
-  example?: any;
-  deprecated?: boolean;
-}>;
-
-/**
- * Metadata for tool annotation
- */
-export type ToolMetadata = Readonly<{
-  name: string;
-  description: string;
-  method: string;
-  parameters: z.ZodObject<any>;
-}>;

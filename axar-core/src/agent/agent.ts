@@ -1,5 +1,5 @@
 // src/agent/Agent.ts
-import { z, ZodSchema } from "zod";
+import { ZodSchema } from "zod";
 import {
   generateText,
   LanguageModelV1,
@@ -8,15 +8,8 @@ import {
   Output,
 } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { META_KEYS } from "./decorators/meta-keys";
-
-// Tool metadata interface
-interface ToolMetadata {
-  name: string;
-  description: string;
-  method: string;
-  parameters: z.ZodObject<any>;
-}
+import { META_KEYS } from "./meta-keys";
+import { ToolMetadata } from "./types";
 
 // Base agent that handles core functionality
 export abstract class Agent<TInput = string, TOutput = any> {
@@ -67,17 +60,10 @@ export abstract class Agent<TInput = string, TOutput = any> {
     );
   }
 
-  // protected getValidationSchema(): ZodSchema<any> {
-  //   return Agent.getMetadata<ZodSchema<any>>(
-  //     META_KEYS.VALIDATION,
-  //     this.constructor
-  //   );
-  // }
-
   protected getValidationSchema(): ZodSchema<any> {
     // Retrieve the ZodSchema from metadata
     const schema: ZodSchema<TOutput> = Reflect.getMetadata(
-      META_KEYS.OUTPUT_SCHEMA,
+      META_KEYS.OUTPUT,
       this.constructor
     );
 

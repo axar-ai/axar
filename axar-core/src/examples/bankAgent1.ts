@@ -1,14 +1,6 @@
-import {
-  systemPrompt,
-  model,
-  output,
-  tool,
-  description,
-  min,
-  max,
-  schema,
-} from "./decorators";
-import { Agent } from "./agentx";
+import { systemPrompt, model, output, Agent, tool } from "../agent";
+import { property, schema, optional } from "../schema";
+import z from "zod";
 
 interface DatabaseConn {
   customerName(id: number): Promise<string>;
@@ -20,27 +12,28 @@ interface DatabaseConn {
 }
 
 @schema()
-class SupportResponse {
-  @description("Human-readable advice to give to the customer.")
-  support_advice!: string;
-  @description("Whether to block customer's card.")
-  block_card!: boolean;
-  @description("Risk level of query")
-  @min(0)
-  @max(1)
-  risk!: number;
-  @description("Customer's emotional state")
-  status?: "Happy" | "Sad" | "Neutral";
-}
-
-@schema()
 class ToolParams {
-  @description("Customer's name")
+  @property("Customer's name")
   customerName!: string;
 
-  @description("Whether to include pending transactions")
+  @property("Whether to include pending transactions")
+  @optional()
   includePending?: boolean;
 }
+
+const SupportResponseSchema = z.object({
+  support_advice: z
+    .string()
+    .describe("Human-readable advice to give to the customer."),
+  block_card: z.boolean().describe("Whether to block customer's card."),
+  risk: z.number().min(0).max(1).describe("Risk level of query"),
+  status: z
+    .enum(["Happy", "Sad", "Neutral"])
+    .optional()
+    .describe("Customer's emotional state"),
+});
+
+type SupportResponse = z.infer<typeof SupportResponseSchema>;
 
 //TODO: @model("openai/gpt-4o-mini")
 @model("gpt-4o-mini")
@@ -49,7 +42,7 @@ class ToolParams {
   Give the customer support and judge the risk level of their query.
   Reply using the customer's name.
 `)
-@output(SupportResponse)
+@output(SupportResponseSchema)
 class SupportAgent extends Agent<string, SupportResponse> {
   constructor(private customerId: number, private db: DatabaseConn) {
     super();
@@ -62,7 +55,7 @@ class SupportAgent extends Agent<string, SupportResponse> {
   }
 
   @tool("Get customer's current balance")
-  async customerBalance(params: ToolParams): Promise<number> {
+  async getCustomerBalance(params: ToolParams): Promise<number> {
     console.log("getCustomerBalance");
     return this.db.customerBalance(
       this.customerId,
@@ -96,8 +89,8 @@ async function main() {
   console.log(balanceResult);
 
   // Lost card scenario
-  const cardResult = await agent.run("I just lost my card!");
-  console.log(cardResult);
+  // const cardResult = await agent.run("I just lost my card!");
+  // console.log(cardResult);
 }
 
 main().catch(console.error);

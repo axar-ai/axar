@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { z } from "zod";
 import { ClassConstructor } from "./types";
 import { META_KEYS } from "./meta-keys";
-import { SchemaOptions, ValidationRule } from "./types";
+import { SchemaOptions, PropertyOptions, ValidationRule } from "./types";
 
 /**
  * Checks if a property is marked as optional
@@ -284,36 +284,36 @@ export function toZodSchema<T>(target: ClassConstructor<T>): z.ZodObject<any> {
   for (const propertyKey of properties) {
     const rules: ValidationRule[] =
       Reflect.getMetadata(
-        META_KEYS.OUTPUT_SCHEMA,
+        META_KEYS.PROPERTY_RULES,
         target.prototype,
         propertyKey
       ) || [];
 
-    const description: string | undefined = Reflect.getMetadata(
-      META_KEYS.DESCRIPTION,
+    const propertyOptions: PropertyOptions | undefined = Reflect.getMetadata(
+      META_KEYS.PROPERTY,
       target.prototype,
       propertyKey
     );
 
     // Create base schema from type
-    let schema = createBaseSchema(target.prototype, propertyKey);
+    let propertySchema = createBaseSchema(target.prototype, propertyKey);
 
     // Apply validation rules
     rules.forEach((rule) => {
-      schema = applyValidationRule(schema, rule);
+      propertySchema = applyValidationRule(propertySchema, rule);
     });
 
     // Apply description if exists
-    if (description) {
-      schema = schema.describe(description);
+    if (propertyOptions?.description) {
+      propertySchema = propertySchema.describe(propertyOptions.description);
     }
 
     // Check if the property is optional
     if (isOptional(target.prototype, propertyKey)) {
-      schema = schema.optional();
+      propertySchema = propertySchema.optional();
     }
 
-    shape[propertyKey] = schema;
+    shape[propertyKey] = propertySchema;
   }
 
   let zodSchema = z.object(shape);

@@ -1,4 +1,4 @@
-import { model, systemPrompt } from "./decorators";
+import { model, systemPrompt } from "../agent/decorators";
 import { Agent } from "./agent";
 
 type User = {

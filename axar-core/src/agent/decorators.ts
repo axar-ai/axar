@@ -1,8 +1,8 @@
 import "reflect-metadata";
 import { z, ZodSchema, ZodObject } from "zod";
 import { META_KEYS } from "./meta-keys";
-import { toZodSchema } from "./schema-generator";
 import { ClassConstructor, ToolMetadata } from "./types";
+import { hasSchemaDef, getSchemaDef } from "../schema";
 
 /**
  * `model` decorator to associate a model identifier with a class.
@@ -29,24 +29,24 @@ export function model(modelIdentifier: string): ClassDecorator {
  * @returns A class decorator function.
  */
 export function output(
-  schemaOrClass: ZodSchema<any> | ClassConstructor
+  schemaOrClass: ZodSchema | ClassConstructor
 ): ClassDecorator {
   return function (target: Function): void {
-    let zodSchema: ZodSchema<any>;
+    let zodSchema: ZodSchema;
 
     if (schemaOrClass instanceof ZodSchema) {
-      // Directly use the provided ZodSchema
       zodSchema = schemaOrClass;
+    } else if (hasSchemaDef(schemaOrClass)) {
+      zodSchema = getSchemaDef(schemaOrClass);
     } else {
-      // Assume it's a class constructor decorated with @schema
-      zodSchema = toZodSchema(schemaOrClass);
+      throw new Error(
+        `${schemaOrClass.name} must be either a Zod schema or a class decorated with @schema`
+      );
     }
 
-    // Store the ZodSchema in metadata for the Agent base class to retrieve
-    Reflect.defineMetadata(META_KEYS.OUTPUT_SCHEMA, zodSchema, target);
+    Reflect.defineMetadata(META_KEYS.OUTPUT, zodSchema, target);
   };
 }
-
 /**
  * `systemPrompt` decorator to set system prompts for classes and methods.
  *
@@ -152,16 +152,19 @@ export function tool(
     target: Object,
     propertyKey: string | symbol,
     descriptor: PropertyDescriptor
-  ): void | PropertyDescriptor {
+  ): PropertyDescriptor {
     let schema: ZodSchema<any>;
 
     if (schemaOrClass) {
       if (schemaOrClass instanceof z.ZodSchema) {
         // Explicit Zod schema provided
         schema = schemaOrClass;
+      } else if (hasSchemaDef(schemaOrClass)) {
+        schema = getSchemaDef(schemaOrClass);
       } else {
-        // Assume it's a class constructor decorated with @schema
-        schema = toZodSchema(schemaOrClass);
+        throw new Error(
+          `${schemaOrClass.name} must be either a Zod schema or a class decorated with @schema`
+        );
       }
     } else {
       // No schema provided, derive via reflection
@@ -182,8 +185,7 @@ export function tool(
       const paramType = paramTypes[0];
 
       // Check if paramType is a class decorated with @schema
-      const hasSchema = Reflect.hasMetadata(META_KEYS.SCHEMA, paramType);
-      if (!hasSchema) {
+      if (!hasSchemaDef(paramType)) {
         throw new Error(
           `@tool decorator on ${String(
             propertyKey
@@ -192,7 +194,7 @@ export function tool(
       }
 
       // Convert the parameter class to Zod schema
-      schema = toZodSchema(paramType);
+      schema = getSchemaDef(paramType);
     }
 
     // Retrieve existing tools metadata or initialize an empty array

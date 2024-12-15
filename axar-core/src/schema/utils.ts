@@ -28,8 +28,8 @@ export function registerProperty(target: Object, propertyKey: string | symbol) {
  * @example
  * ```typescript
  * addValidationRule(user, 'age', {
- *   validate: (value) => value >= 0,
- *   message: 'Age must be non-negative'
+ *   type: 'minimum',
+ *   params: [0]
  * });
  * ```
  */
@@ -56,7 +56,7 @@ function getValidationMetadata(
   propertyKey: string
 ): ValidationRule[] {
   return (
-    Reflect.getMetadata(META_KEYS.OUTPUT_SCHEMA, target, propertyKey) || []
+    Reflect.getMetadata(META_KEYS.PROPERTY_RULES, target, propertyKey) || []
   );
 }
 
@@ -73,5 +73,5 @@ function setValidationMetadata(
   propertyKey: string,
   rules: ValidationRule[]
 ): void {
-  Reflect.defineMetadata(META_KEYS.OUTPUT_SCHEMA, rules, target, propertyKey);
+  Reflect.defineMetadata(META_KEYS.PROPERTY_RULES, rules, target, propertyKey);
 }

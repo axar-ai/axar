@@ -17,14 +17,14 @@ import {
   maxItems,
   uniqueItems,
   enumValues,
-  description,
+  property,
   zodify,
   arrayItems,
   optional,
   integer,
-} from "../../../src/agent/decorators";
+} from "../../../src/schema";
 
-import { toZodSchema } from "../../../src/agent/decorators/schema-generator";
+import { toZodSchema } from "../../../src/schema/generator";
 
 describe("toZodSchema", () => {
   // Basic Types and Validations
@@ -323,7 +323,7 @@ describe("toZodSchema", () => {
       description: "User data validation schema",
     })
     class MetadataTest {
-      @description("User's email address")
+      @property("User's email address")
       @email()
       email!: string;
     }
