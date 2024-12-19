@@ -1,17 +1,16 @@
 {
-  "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
-    "strict": true,
-    "module": "CommonJS",
-    "target": "es2020",
-    "declaration": true,
-    "declarationDir": "dist",
-    "esModuleInterop": true,
-    "baseUrl": "./src",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "test", "**/*.test.ts"]
+	"compilerOptions": {
+		"outDir": "dist",
+		"strict": true,
+		"module": "CommonJS",
+		"target": "es2020",
+		"declaration": true,
+		"declarationDir": "dist",
+		"esModuleInterop": true,
+		"baseUrl": "./src",
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true
+	},
+	"include": ["src/**/*", "test/**/*"],
+	"exclude": ["node_modules"]
 }
