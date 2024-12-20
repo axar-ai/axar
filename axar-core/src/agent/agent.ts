@@ -14,7 +14,7 @@ import { ToolMetadata } from "./types";
 // Base agent that handles core functionality
 export abstract class Agent<TInput = string, TOutput = any> {
 	private static getMetadata<T>(key: symbol, target: any): T {
-		return Reflect.getMetadata(key, target) || ([] as unknown as T);
+		return Reflect.getMetadata(key, target) || null;
 	}
 
 	protected getModel(): LanguageModelV1 {
@@ -22,6 +22,7 @@ export abstract class Agent<TInput = string, TOutput = any> {
 			META_KEYS.MODEL,
 			this.constructor
 		);
+
 		if (!modelName) {
 			throw new Error(
 				"Model metadata not found. Please apply @model decorator."

@@ -1,365 +1,153 @@
+import { Agent, model, output, systemPrompt, tool } from "../../../src/agent";
 import { z } from "zod";
-import {
-  email,
-  min,
-  max,
-  pattern,
-  uuid,
-  cuid,
-  datetime,
-  ip,
-  minimum,
-  maximum,
-  exclusiveMinimum,
-  exclusiveMaximum,
-  multipleOf,
-  minItems,
-  maxItems,
-  uniqueItems,
-  enumValues,
-  property,
-  zodify,
-  arrayItems,
-  optional,
-  integer,
-} from "../../../src/schema";
+import { generateText } from "ai";
 
-import { toZodSchema } from "../../../src/schema/generator";
+jest.mock("ai", () => ({
+	generateText: jest.fn(),
+}));
 
-describe("toZodSchema", () => {
-  // Basic Types and Validations
-  describe("string validations", () => {
-    @zodify()
-    class StringValidations {
-      @email()
-      email!: string;
+jest.mock("@ai-sdk/openai", () => ({
+	openai: jest.fn((modelName) => modelName),
+}));
 
-      @min(5)
-      @max(10)
-      username!: string;
+const SupportResponseSchema = z.object({
+	support_advice: z
+		.string()
+		.describe("Human-readable advice to give to the customer."),
+	block_card: z.boolean().describe("Whether to block customer's card."),
+	risk: z.number().min(0).max(1).describe("Risk level of query"),
+	status: z
+		.enum(["Happy", "Sad", "Neutral"])
+		.optional()
+		.describe("Customer's emotional state"),
+});
 
-      @pattern(/^[A-Z]+$/)
-      uppercaseOnly!: string;
+type SupportResponse = z.infer<typeof SupportResponseSchema>;
 
-      @uuid()
-      id!: string;
+describe("Agent", () => {
+	@model("gpt-4o-mini")
+	@output(SupportResponseSchema)
+	@systemPrompt(`
+      You are a support agent in our bank. 
+      Give the customer support and judge the risk level of their query.
+      Reply using the customer's name.
+    `)
+	class TestAgent extends Agent<string, SupportResponse> {
+		constructor(private customerId: number) {
+			super();
+		}
 
-      @cuid()
-      cuid!: string;
+		@systemPrompt()
+		async getCustomerContext(): Promise<string> {
+			const name = "Sudipta";
+			return `Customer ID: ${name}`;
+		}
 
-      @datetime()
-      timestamp!: string;
+		@tool(
+			"Get customer's current balance",
+			z.object({
+				includePending: z.boolean().optional(),
+				customerName: z.string(),
+			})
+		)
+		async customerBalance(
+			includePending: boolean,
+			customerName: string
+		): Promise<number> {
+			return 123.45;
+		}
+	}
 
-      @ip()
-      ipAddress!: string;
-    }
+	afterAll(() => {
+		jest.restoreAllMocks();
+	});
 
-    const schema = toZodSchema(StringValidations);
+	let agent: TestAgent;
 
-    it("validates email correctly", () => {
-      expect(
-        schema.safeParse({
-          email: "test@example.com",
-          username: "user123",
-          uppercaseOnly: "ABC",
-          id: "123e4567-e89b-12d3-a456-426614174000",
-          cuid: "cjld2cjxh0000qzrmn831i7rn",
-          timestamp: "2023-01-01T00:00:00Z",
-          ipAddress: "192.168.1.1",
-        }).success
-      ).toBe(true);
+	beforeEach(() => {
+		agent = new TestAgent(1);
+	});
 
-      expect(
-        schema.safeParse({
-          email: "invalid-email",
-          username: "user123",
-          uppercaseOnly: "ABC",
-          id: "123e4567-e89b-12d3-a456-426614174000",
-          cuid: "cjld2cjxh0000qzrmn831i7rn",
-          timestamp: "2023-01-01T00:00:00Z",
-          ipAddress: "192.168.1.1",
-        }).success
-      ).toBe(false);
-    });
+	describe("getModel", () => {
+		it("should return the model from metadata", () => {
+			const model = agent["getModel"]();
+			expect(model).toEqual("gpt-4o-mini");
+		});
 
-    // Add more specific tests for each string validation
-  });
+		it("should throw an error if model metadata is missing", () => {
+			jest.spyOn(Reflect, "getMetadata").mockReturnValue(null);
+			expect(() => agent["getModel"]()).toThrow(
+				"Model metadata not found. Please apply @model decorator."
+			);
+		});
+	});
 
-  describe("email validation", () => {
-    @zodify()
-    class EmailTest {
-      @email()
-      email!: string;
-    }
+	describe("getTools", () => {
+		it("should return the tools formatted correctly", () => {
+			const tools = agent["getTools"]();
+			expect(tools).toHaveProperty("customerBalance");
 
-    const emailSchema = toZodSchema(EmailTest);
+			const customerBalanceTool = tools["customerBalance"] as {
+				description: string;
+				parameters: unknown;
+				execute: (...args: any[]) => Promise<number>;
+			};
 
-    // Debug the schema
-    console.log("Schema:", emailSchema);
+			expect(customerBalanceTool.description).toBe(
+				"Get customer's current balance"
+			);
+		});
+	});
 
-    it("rejects invalid emails", () => {
-      const testCases = [
-        "invalid-email",
-        "missingat.com",
-        "@nodomain",
-        "spaces in@email.com",
-        "",
-      ];
+	describe("getSystemPrompts", () => {
+		it("should return system prompts from metadata", async () => {
+			const prompts = await Promise.all(
+				agent["getSystemPrompts"]().map((fn) => fn())
+			);
+			expect(prompts).toEqual([
+				"\n" +
+					"      You are a support agent in our bank. \n" +
+					"      Give the customer support and judge the risk level of their query.\n" +
+					"      Reply using the customer's name.\n" +
+					"    ",
+				"Customer ID: Sudipta",
+			]);
+		});
+	});
 
-      testCases.forEach((email) => {
-        const parsed = emailSchema.safeParse({ email });
-        if (parsed.success) {
-          console.log(`Email "${email}" was accepted`);
-          // Log the actual validated data
-          console.log("Validated data:", parsed.data);
-        } else {
-          console.log(`Email "${email}" was rejected:`, parsed.error.errors);
-        }
-      });
-    });
-  });
+	describe("getValidationSchema", () => {
+		it("should return the validation schema from metadata", () => {
+			const mockSchema = SupportResponseSchema;
 
-  // Number Validations
-  describe("number validations", () => {
-    @zodify()
-    class NumberValidations {
-      @minimum(0)
-      @maximum(100)
-      percentage!: number;
+			const schema = agent["getValidationSchema"]();
+			expect(schema).toEqual(mockSchema);
+		});
 
-      @exclusiveMinimum(0)
-      @exclusiveMaximum(10)
-      score!: number;
+		it("should throw an error if schema metadata is missing", () => {
+			Reflect.getMetadata = jest.fn(() => null);
+			expect(() => agent["getValidationSchema"]()).toThrow(
+				"Validation schema for TestAgent not found. Ensure the class is decorated with @output."
+			);
+		});
+	});
 
-      @multipleOf(5)
-      multiple!: number;
+	// describe("run", () => {
+	// 	it("should call generateText with the correct arguments and validate the output", async () => {
+	// 		(generateText as jest.Mock).mockResolvedValue({
+	// 			experimental_output: { key: "value" },
+	// 		});
 
-      @integer()
-      count!: number;
-    }
+	// 		const result = await agent.run("input");
+	// 		console.log("🚀 ~ it ~ result:", result);
+	// 		expect(result).toEqual({ key: "value" });
+	// 	});
 
-    const schema = toZodSchema(NumberValidations);
+	// 	it("should throw an error if validation fails", async () => {
+	// 		(generateText as jest.Mock).mockResolvedValue({
+	// 			experimental_output: { invalidKey: "value" },
+	// 		});
 
-    it("validates number constraints correctly", () => {
-      expect(
-        schema.safeParse({
-          percentage: 50,
-          score: 5,
-          multiple: 15,
-          count: 1,
-        }).success
-      ).toBe(true);
-
-      expect(
-        schema.safeParse({
-          percentage: -1,
-          score: 5,
-          multiple: 15,
-          count: 1,
-        }).success
-      ).toBe(false);
-    });
-
-    // Add more specific tests for each number validation
-  });
-
-  // Array Validations
-  // describe("array validations", () => {
-  //   @zodify()
-  //   class ArrayValidations {
-  //     @minItems(1)
-  //     @maxItems(3)
-  //     tags!: string[];
-
-  //     @uniqueItems()
-  //     uniqueNumbers!: number[];
-  //   }
-
-  //   const schema = toZodSchema(ArrayValidations);
-
-  //   it("validates array constraints correctly", () => {
-  //     expect(
-  //       schema.safeParse({
-  //         tags: ["tag1", "tag2"],
-  //         uniqueNumbers: [1, 2, 3],
-  //       }).success
-  //     ).toBe(true);
-
-  //     expect(
-  //       schema.safeParse({
-  //         tags: [],
-  //         uniqueNumbers: [1, 2, 3],
-  //       }).success
-  //     ).toBe(false);
-
-  //     expect(
-  //       schema.safeParse({
-  //         tags: ["tag1"],
-  //         uniqueNumbers: [1, 1, 2],
-  //       }).success
-  //     ).toBe(false);
-  //   });
-  // });
-
-  // Enum Validations
-  describe("enum validations", () => {
-    enum Role {
-      Admin = "ADMIN",
-      User = "USER",
-    }
-
-    @zodify()
-    class EnumValidations {
-      @enumValues(["ADMIN", "USER"] as const)
-      role!: Role;
-    }
-
-    const schema = toZodSchema(EnumValidations);
-
-    it("validates enum values correctly", () => {
-      expect(schema.safeParse({ role: "ADMIN" }).success).toBe(true);
-      expect(schema.safeParse({ role: "INVALID" }).success).toBe(false);
-    });
-  });
-
-  // Nested Objects
-  // describe("nested objects", () => {
-  //   class Address {
-  //     @pattern(/^[0-9]{5}$/)
-  //     zipCode!: string;
-
-  //     @minItems(1)
-  //     streetLines!: string[];
-  //   }
-
-  //   @zodify()
-  //   class User {
-  //     @email()
-  //     email!: string;
-
-  //     address!: Address;
-
-  //     @minItems(1)
-  //     alternateAddresses!: Address[];
-  //   }
-
-  //   const schema = toZodSchema(User);
-
-  //   it("validates nested objects correctly", () => {
-  //     expect(
-  //       schema.safeParse({
-  //         email: "test@example.com",
-  //         address: {
-  //           zipCode: "12345",
-  //           streetLines: ["123 Main St"],
-  //         },
-  //         alternateAddresses: [
-  //           {
-  //             zipCode: "54321",
-  //             streetLines: ["456 Oak Ave"],
-  //           },
-  //         ],
-  //       }).success
-  //     ).toBe(true);
-
-  //     expect(
-  //       schema.safeParse({
-  //         email: "test@example.com",
-  //         address: {
-  //           zipCode: "invalid",
-  //           streetLines: ["123 Main St"],
-  //         },
-  //         alternateAddresses: [],
-  //       }).success
-  //     ).toBe(false);
-  //   });
-  // });
-
-  // Optional Fields
-  describe("optional fields", () => {
-    @zodify()
-    class OptionalFields {
-      @email()
-      email!: string;
-
-      @min(3)
-      @optional()
-      nickname?: string;
-
-      @minimum(0)
-      @optional()
-      age?: number;
-    }
-
-    const schema = toZodSchema(OptionalFields);
-
-    it("handles optional fields correctly", () => {
-      expect(
-        schema.safeParse({
-          email: "test@example.com",
-        }).success
-      ).toBe(true);
-
-      expect(
-        schema.safeParse({
-          email: "test@example.com",
-          nickname: "joe",
-          age: 25,
-        }).success
-      ).toBe(true);
-
-      expect(
-        schema.safeParse({
-          email: "test@example.com",
-          nickname: "a", // too short
-        }).success
-      ).toBe(false);
-    });
-  });
-
-  // Schema Metadata
-  describe("schema metadata", () => {
-    @zodify({
-      description: "User data validation schema",
-    })
-    class MetadataTest {
-      @property("User's email address")
-      @email()
-      email!: string;
-    }
-
-    const schema = toZodSchema(MetadataTest);
-
-    it("includes schema metadata", () => {
-      expect(schema.description).toBe("User data validation schema");
-      // Access shape as a property instead of calling it as a function
-      const fields = schema.shape as { [key: string]: z.ZodTypeAny };
-      expect(fields.email.description).toBe("User's email address");
-    });
-  });
-
-  // Error Cases
-  describe("error handling", () => {
-    it("handles invalid validation combinations", () => {
-      expect(() => {
-        @zodify()
-        class InvalidValidation {
-          @email()
-          @integer() // Should throw error - can't apply integer to string
-          invalid!: string;
-        }
-        toZodSchema(InvalidValidation);
-      }).toThrow();
-    });
-
-    it("handles missing required fields", () => {
-      @zodify()
-      class Required {
-        @email()
-        email!: string;
-      }
-      const schema = toZodSchema(Required);
-      expect(schema.safeParse({}).success).toBe(false);
-    });
-  });
+	// 		await expect(agent.run("input")).rejects.toThrow("Validation error");
+	// 	});
+	// });
 });
