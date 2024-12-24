@@ -97,12 +97,4 @@ describe("TaskExecutor", () => {
 			expect(result).toBe("mock-result");
 		});
 	});
-
-	// describe("getTaskHandler", () => {
-	// 	it("should return an appropriate QueryProcessor instance", async () => {
-	// 		const handler = await taskExecutor.getTaskHandler();
-
-	// 		expect(handler).toBe(mockQueryProcessor);
-	// 	});
-	// });
 });

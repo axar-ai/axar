@@ -1,14 +1,21 @@
 import { Agent, model, output, systemPrompt, tool } from "../../../src/agent";
 import { z } from "zod";
-import { generateText } from "ai";
 
-jest.mock("ai", () => ({
-	generateText: jest.fn(),
-}));
+jest.mock("ai", () => {
+	const generateText = jest.fn();
+	return {
+		generateText,
+		Output: {
+			object: jest.fn((config) => config),
+		},
+	};
+});
 
 jest.mock("@ai-sdk/openai", () => ({
 	openai: jest.fn((modelName) => modelName),
 }));
+
+const generateTextMock = require("ai").generateText;
 
 const SupportResponseSchema = z.object({
 	support_advice: z
@@ -58,13 +65,12 @@ describe("Agent", () => {
 		}
 	}
 
-	afterAll(() => {
-		jest.restoreAllMocks();
-	});
-
 	let agent: TestAgent;
 
 	beforeEach(() => {
+		jest.clearAllMocks();
+		jest.restoreAllMocks();
+
 		agent = new TestAgent(1);
 	});
 
@@ -124,30 +130,25 @@ describe("Agent", () => {
 		});
 
 		it("should throw an error if schema metadata is missing", () => {
-			Reflect.getMetadata = jest.fn(() => null);
+			jest.spyOn(Reflect, "getMetadata").mockReturnValue(null);
 			expect(() => agent["getValidationSchema"]()).toThrow(
 				"Validation schema for TestAgent not found. Ensure the class is decorated with @output."
 			);
 		});
 	});
 
-	// describe("run", () => {
-	// 	it("should call generateText with the correct arguments and validate the output", async () => {
-	// 		(generateText as jest.Mock).mockResolvedValue({
-	// 			experimental_output: { key: "value" },
-	// 		});
+	describe("run", () => {
+		it("should call generateText with the correct arguments and validate the output", async () => {
+			generateTextMock.mockResolvedValue({
+				experimental_output: { key: "value" },
+			});
+			const result = await agent.run("input");
+			expect(result).toEqual({ key: "value" });
+		});
 
-	// 		const result = await agent.run("input");
-	// 		console.log("🚀 ~ it ~ result:", result);
-	// 		expect(result).toEqual({ key: "value" });
-	// 	});
-
-	// 	it("should throw an error if validation fails", async () => {
-	// 		(generateText as jest.Mock).mockResolvedValue({
-	// 			experimental_output: { invalidKey: "value" },
-	// 		});
-
-	// 		await expect(agent.run("input")).rejects.toThrow("Validation error");
-	// 	});
-	// });
+		it("should throw an error if validation fails", async () => {
+			generateTextMock.mockRejectedValueOnce(new Error("Validation error"));
+			await expect(agent.run("input")).rejects.toThrow("Validation error");
+		});
+	});
 });

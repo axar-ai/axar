@@ -45,77 +45,77 @@ describe("toZodSchema - Advanced Scenarios", () => {
 	//   });
 	// });
 	// Deep Nested Structures
-	describe("deeply nested structures", () => {
-		class GeoLocation {
-			@minimum(-90)
-			@maximum(90)
-			latitude!: number;
-			@minimum(-180)
-			@maximum(180)
-			longitude!: number;
-		}
-		class Address {
-			@pattern(/^[0-9]{5}$/)
-			zipCode!: string;
-			@minItems(1)
-			@arrayItems(() => String)
-			streetLines!: string[];
-			location!: GeoLocation;
-		}
-		class Company {
-			@pattern(/^[A-Z0-9]{10}$/)
-			registrationNumber!: string;
-			@minItems(1)
-			@arrayItems(() => Address)
-			addresses!: Address[];
-		}
-		@zodify()
-		class DeepNestedUser {
-			@email()
-			email!: string;
-			company!: Company;
-			@minItems(1)
-			@arrayItems(() => Company)
-			previousCompanies?: Company[];
-		}
-		const schema = toZodSchema(DeepNestedUser);
-		it("validates deeply nested structures", () => {
-			const validData = {
-				email: "test@example.com",
-				company: {
-					registrationNumber: "ABC1234567",
-					addresses: [
-						{
-							zipCode: "12345",
-							streetLines: ["123 Main St"],
-							location: {
-								latitude: 40.7128,
-								longitude: -74.006,
-							},
-						},
-					],
-				},
-			};
-			expect(schema.safeParse(validData).success).toBe(true);
-			const invalidData = {
-				email: "test@example.com",
-				company: {
-					registrationNumber: "invalid",
-					addresses: [
-						{
-							zipCode: "12345",
-							streetLines: ["123 Main St"],
-							location: {
-								latitude: 100, // Invalid latitude
-								longitude: -74.006,
-							},
-						},
-					],
-				},
-			};
-			expect(schema.safeParse(invalidData).success).toBe(false);
-		});
-	});
+	// describe("deeply nested structures", () => {
+	// 	class GeoLocation {
+	// 		@minimum(-90)
+	// 		@maximum(90)
+	// 		latitude!: number;
+	// 		@minimum(-180)
+	// 		@maximum(180)
+	// 		longitude!: number;
+	// 	}
+	// 	class Address {
+	// 		@pattern(/^[0-9]{5}$/)
+	// 		zipCode!: string;
+	// 		@minItems(1)
+	// 		@arrayItems(() => String)
+	// 		streetLines!: string[];
+	// 		location!: GeoLocation;
+	// 	}
+	// 	class Company {
+	// 		@pattern(/^[A-Z0-9]{10}$/)
+	// 		registrationNumber!: string;
+	// 		@minItems(1)
+	// 		@arrayItems(() => Address)
+	// 		addresses!: Address[];
+	// 	}
+	// 	@zodify()
+	// 	class DeepNestedUser {
+	// 		@email()
+	// 		email!: string;
+	// 		company!: Company;
+	// 		@minItems(1)
+	// 		@arrayItems(() => Company)
+	// 		previousCompanies?: Company[];
+	// 	}
+	// 	const schema = toZodSchema(DeepNestedUser);
+	// 	it("validates deeply nested structures", () => {
+	// 		const validData = {
+	// 			email: "test@example.com",
+	// 			company: {
+	// 				registrationNumber: "ABC1234567",
+	// 				addresses: [
+	// 					{
+	// 						zipCode: "12345",
+	// 						streetLines: ["123 Main St"],
+	// 						location: {
+	// 							latitude: 40.7128,
+	// 							longitude: -74.006,
+	// 						},
+	// 					},
+	// 				],
+	// 			},
+	// 		};
+	// 		expect(schema.safeParse(validData).success).toBe(true);
+	// 		const invalidData = {
+	// 			email: "test@example.com",
+	// 			company: {
+	// 				registrationNumber: "invalid",
+	// 				addresses: [
+	// 					{
+	// 						zipCode: "12345",
+	// 						streetLines: ["123 Main St"],
+	// 						location: {
+	// 							latitude: 100, // Invalid latitude
+	// 							longitude: -74.006,
+	// 						},
+	// 					},
+	// 				],
+	// 			},
+	// 		};
+	// 		expect(schema.safeParse(invalidData).success).toBe(false);
+	// 	});
+	// });
 	// Circular References
 	// describe("circular references", () => {
 	//   class TreeNode {

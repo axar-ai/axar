@@ -22,7 +22,6 @@ export abstract class Agent<TInput = string, TOutput = any> {
 			META_KEYS.MODEL,
 			this.constructor
 		);
-
 		if (!modelName) {
 			throw new Error(
 				"Model metadata not found. Please apply @model decorator."
