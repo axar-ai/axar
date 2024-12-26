@@ -5,12 +5,12 @@ import { Agent } from "./../agent";
 @model("gpt-4o-mini")
 // @validateOutput(SupportResponseSchema)
 @systemPrompt(`Respond in one line`)
-class ConversationAgent extends Agent<string, string> {}
+export class ConversationAgent extends Agent<string, string> {}
 
 @model("gpt-4o-mini")
 // @validateOutput(SupportResponseSchema)
 @systemPrompt(`Respond with a joke`)
-class JokeAgent extends Agent<string, string> {}
+export class JokeAgent extends Agent<string, string> {}
 
 async function main() {
 	const cAgent = new ConversationAgent();

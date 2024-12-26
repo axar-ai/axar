@@ -3,9 +3,7 @@ import { Agent } from "./../agent";
 
 @model("gpt-4o-mini")
 @systemPrompt("Be concise, reply with one sentence")
-class SimpleAgent extends Agent<string, string> {
-	// It will do
-}
+export class SimpleAgent extends Agent<string, string> {}
 
 async function main() {
 	const response = await new SimpleAgent().run(

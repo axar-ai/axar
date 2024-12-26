@@ -36,6 +36,12 @@ export abstract class Agent<TInput = string, TOutput = any> {
 			this.constructor
 		);
 
+		if (!tools) {
+			throw new Error(
+				"Tools metadata not found. Please apply @tool decorator."
+			);
+		}
+
 		const toolsFormatted = Object.fromEntries(
 			tools.map((tool) => [
 				tool.name,

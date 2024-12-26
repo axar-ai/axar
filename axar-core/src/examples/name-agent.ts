@@ -7,7 +7,7 @@ type User = {
 
 @model("gpt-4o-mini")
 @systemPrompt("Be concise, reply with one sentence")
-class NameAgent extends Agent<string, string> {
+export class NameAgent extends Agent<string, string> {
 	constructor(private user: User) {
 		super();
 	}

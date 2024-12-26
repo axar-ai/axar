@@ -1,14 +1,18 @@
 import z from "zod";
-import { model, systemPrompt, tool } from "./../agent/decorators";
+import { model, output, systemPrompt, tool } from "./../agent/decorators";
 import { Agent } from "./../agent";
 
 // FIXME: Support boolean output
+
+export const SupportResponseSchema = z.boolean();
+
+type SupportResponse = z.infer<typeof SupportResponseSchema>;
 @model("gpt-4o-mini")
-// @validateOutput(SupportResponseSchema)
+@output(SupportResponseSchema)
 @systemPrompt(`
   See if the customer has won the game based on the number they provide
 `)
-class RouletteAgent extends Agent<string, boolean> {
+export class RouletteAgent extends Agent<string, SupportResponse> {
 	constructor(private winningNumber: number) {
 		super();
 	}

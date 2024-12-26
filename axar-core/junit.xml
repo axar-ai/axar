@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="55" failures="4" errors="0" time="7.077">
+  <testsuite name="createTaskExecutor" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:33" time="4.228" tests="2">
+    <testcase classname="createTaskExecutor should initialize with correct configuration" name="createTaskExecutor should initialize with correct configuration" time="0.002">
+    </testcase>
+    <testcase classname="createTaskExecutor should call executeTask and return the mocked result" name="createTaskExecutor should call executeTask and return the mocked result" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="Translator" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:33" time="4.232" tests="2">
+    <testcase classname="Translator should translate schema to JSON successfully" name="Translator should translate schema to JSON successfully" time="0.003">
+    </testcase>
+    <testcase classname="Translator should throw an error if schema translation fails" name="Translator should throw an error if schema translation fails" time="0.003">
+    </testcase>
+  </testsuite>
+  <testsuite name="OpenAIllmHandler" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:33" time="4.241" tests="2">
+    <testcase classname="OpenAIllmHandler should initialize with the correct apiKey and modelName" name="OpenAIllmHandler should initialize with the correct apiKey and modelName" time="0.002">
+    </testcase>
+    <testcase classname="OpenAIllmHandler should process queries correctly" name="OpenAIllmHandler should process queries correctly" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="PromptBuilder" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:33" time="4.318" tests="4">
+    <testcase classname="PromptBuilder generatePrompt should generate a prompt successfully" name="PromptBuilder generatePrompt should generate a prompt successfully" time="0.002">
+    </testcase>
+    <testcase classname="PromptBuilder generatePrompt should throw an error if translation fails" name="PromptBuilder generatePrompt should throw an error if translation fails" time="0.004">
+    </testcase>
+    <testcase classname="PromptBuilder generateShots should generate messages successfully" name="PromptBuilder generateShots should generate messages successfully" time="0.001">
+    </testcase>
+    <testcase classname="PromptBuilder generateShots should throw an error if generation fails" name="PromptBuilder generateShots should throw an error if generation fails" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="TaskExecutor" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:33" time="4.427" tests="1">
+    <testcase classname="TaskExecutor executeTask should process the task using the provided handler" name="TaskExecutor executeTask should process the task using the provided handler" time="0.017">
+    </testcase>
+  </testsuite>
+  <testsuite name="Validator" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:38" time="0.256" tests="1">
+    <testcase classname="Validator Should validate the schema successfully" name="Validator Should validate the schema successfully" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="LLMHandlerFactory" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:38" time="0.707" tests="2">
+    <testcase classname="LLMHandlerFactory should return an OpenAIllmHandler for &apos;openai&apos; LLM type" name="LLMHandlerFactory should return an OpenAIllmHandler for &apos;openai&apos; LLM type" time="0.004">
+    </testcase>
+    <testcase classname="LLMHandlerFactory should throw an error for unsupported LLM types" name="LLMHandlerFactory should throw an error for unsupported LLM types" time="0.008">
+    </testcase>
+  </testsuite>
+  <testsuite name="Module Exports" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:38" time="0.792" tests="3">
+    <testcase classname="Module Exports should export createTaskExecutor function" name="Module Exports should export createTaskExecutor function" time="0.001">
+    </testcase>
+    <testcase classname="Module Exports should export LLMType enum" name="Module Exports should export LLMType enum" time="0">
+    </testcase>
+    <testcase classname="Module Exports should export ModelName enum" name="Module Exports should export ModelName enum" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="Agent" errors="0" failures="3" skipped="0" timestamp="2024-12-23T10:11:33" time="5.546" tests="6">
+    <testcase classname="Agent getModel should return the model from metadata" name="Agent getModel should return the model from metadata" time="0.002">
+    </testcase>
+    <testcase classname="Agent getModel should throw an error if model metadata is missing" name="Agent getModel should throw an error if model metadata is missing" time="0.05">
+    </testcase>
+    <testcase classname="Agent getTools should return the tools formatted correctly" name="Agent getTools should return the tools formatted correctly" time="0">
+      <failure>TypeError: Cannot read properties of null (reading &apos;map&apos;)
+    at TestAgent.map [as getTools] (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/src/agent/agent.ts:41:10)
+    at Object.&lt;anonymous&gt; (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/test/unit/agent/agent.test.ts:87:35)
+    at Promise.then.completed (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:121:9)
+    at run (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-runner/build/runTest.js:444:34)
+    at Object.worker (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-runner/build/testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Agent getSystemPrompts should return system prompts from metadata" name="Agent getSystemPrompts should return system prompts from metadata" time="0">
+      <failure>TypeError: Cannot read properties of null (reading &apos;map&apos;)
+    at Object.&lt;anonymous&gt; (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/test/unit/agent/agent.test.ts:105:32)
+    at Promise.then.completed (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:121:9)
+    at run (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-runner/build/runTest.js:444:34)
+    at Object.worker (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-runner/build/testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Agent getValidationSchema should return the validation schema from metadata" name="Agent getValidationSchema should return the validation schema from metadata" time="0">
+      <failure>Error: Validation schema for TestAgent not found. Ensure the class is decorated with @output.
+    at TestAgent.getValidationSchema (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/src/agent/agent.ts:72:10)
+    at Object.&lt;anonymous&gt; (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/test/unit/agent/agent.test.ts:122:47)
+    at Promise.then.completed (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:121:9)
+    at run (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-runner/build/runTest.js:444:34)
+    at Object.worker (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-runner/build/testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Agent getValidationSchema should throw an error if schema metadata is missing" name="Agent getValidationSchema should throw an error if schema metadata is missing" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="toZodSchema - Advanced Scenarios" errors="0" failures="1" skipped="0" timestamp="2024-12-23T10:11:33" time="5.722" tests="4">
+    <testcase classname="toZodSchema - Advanced Scenarios deeply nested structures validates deeply nested structures" name="toZodSchema - Advanced Scenarios deeply nested structures validates deeply nested structures" time="0.077">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at Object.&lt;anonymous&gt; (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/test/unit/agent/agent-advanced.test.ts:99:48)
+    at Promise.then.completed (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:121:9)
+    at run (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-runner/build/runTest.js:444:34)
+    at Object.worker (/Users/sudiptaghosh/Project/Tackle/git/axar/axar-core/node_modules/jest-runner/build/testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="toZodSchema - Advanced Scenarios date validations validates dates correctly" name="toZodSchema - Advanced Scenarios date validations validates dates correctly" time="0.003">
+    </testcase>
+    <testcase classname="toZodSchema - Advanced Scenarios union types validates union types correctly" name="toZodSchema - Advanced Scenarios union types validates union types correctly" time="0">
+    </testcase>
+    <testcase classname="toZodSchema - Advanced Scenarios edge cases handles edge cases correctly" name="toZodSchema - Advanced Scenarios edge cases handles edge cases correctly" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="toZodSchema" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:33" time="5.808" tests="8">
+    <testcase classname="toZodSchema string validations validates email correctly" name="toZodSchema string validations validates email correctly" time="0.004">
+    </testcase>
+    <testcase classname="toZodSchema email validation rejects invalid emails" name="toZodSchema email validation rejects invalid emails" time="0.002">
+    </testcase>
+    <testcase classname="toZodSchema number validations validates number constraints correctly" name="toZodSchema number validations validates number constraints correctly" time="0">
+    </testcase>
+    <testcase classname="toZodSchema enum validations validates enum values correctly" name="toZodSchema enum validations validates enum values correctly" time="0.001">
+    </testcase>
+    <testcase classname="toZodSchema optional fields handles optional fields correctly" name="toZodSchema optional fields handles optional fields correctly" time="0">
+    </testcase>
+    <testcase classname="toZodSchema schema metadata includes schema metadata" name="toZodSchema schema metadata includes schema metadata" time="0">
+    </testcase>
+    <testcase classname="toZodSchema error handling handles invalid validation combinations" name="toZodSchema error handling handles invalid validation combinations" time="0.091">
+    </testcase>
+    <testcase classname="toZodSchema error handling handles missing required fields" name="toZodSchema error handling handles missing required fields" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="SupportAgent" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:38" time="1.305" tests="4">
+    <testcase classname="SupportAgent should return a valid customer context" name="SupportAgent should return a valid customer context" time="0.002">
+    </testcase>
+    <testcase classname="SupportAgent should return the customer balance" name="SupportAgent should return the customer balance" time="0.012">
+    </testcase>
+    <testcase classname="SupportAgent should handle a simple query and validate the response schema" name="SupportAgent should handle a simple query and validate the response schema" time="0.001">
+    </testcase>
+    <testcase classname="SupportAgent should handle a lost card scenario" name="SupportAgent should handle a lost card scenario" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="SupportAgent" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:38" time="1.471" tests="4">
+    <testcase classname="SupportAgent should return a valid customer context" name="SupportAgent should return a valid customer context" time="0.001">
+    </testcase>
+    <testcase classname="SupportAgent should return the customer balance" name="SupportAgent should return the customer balance" time="0.007">
+    </testcase>
+    <testcase classname="SupportAgent should handle simple queries and validate response schema" name="SupportAgent should handle simple queries and validate response schema" time="0.001">
+    </testcase>
+    <testcase classname="SupportAgent should handle lost card scenario" name="SupportAgent should handle lost card scenario" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="SupportAgent" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:38" time="1.579" tests="4">
+    <testcase classname="SupportAgent should return a valid customer context" name="SupportAgent should return a valid customer context" time="0.004">
+    </testcase>
+    <testcase classname="SupportAgent should return the customer balance" name="SupportAgent should return the customer balance" time="0.006">
+    </testcase>
+    <testcase classname="SupportAgent should handle simple queries and validate response schema" name="SupportAgent should handle simple queries and validate response schema" time="0.002">
+    </testcase>
+    <testcase classname="SupportAgent should handle lost card scenario" name="SupportAgent should handle lost card scenario" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="SupportAgent" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:33" time="5.993" tests="4">
+    <testcase classname="SupportAgent should return a valid customer context" name="SupportAgent should return a valid customer context" time="0.005">
+    </testcase>
+    <testcase classname="SupportAgent should return the customer balance" name="SupportAgent should return the customer balance" time="0.004">
+    </testcase>
+    <testcase classname="SupportAgent should handle simple queries and validate response schema" name="SupportAgent should handle simple queries and validate response schema" time="0.001">
+    </testcase>
+    <testcase classname="SupportAgent should handle lost card scenario" name="SupportAgent should handle lost card scenario" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="SupportAgent" errors="0" failures="0" skipped="0" timestamp="2024-12-23T10:11:38" time="1.249" tests="4">
+    <testcase classname="SupportAgent should return a valid customer context" name="SupportAgent should return a valid customer context" time="0.001">
+    </testcase>
+    <testcase classname="SupportAgent should return the customer balance" name="SupportAgent should return the customer balance" time="0">
+    </testcase>
+    <testcase classname="SupportAgent should handle simple queries and validate response schema" name="SupportAgent should handle simple queries and validate response schema" time="0.001">
+    </testcase>
+    <testcase classname="SupportAgent should handle lost card scenario" name="SupportAgent should handle lost card scenario" time="0">
+    </testcase>
+  </testsuite>
+</testsuites>

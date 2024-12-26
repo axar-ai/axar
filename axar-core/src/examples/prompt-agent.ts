@@ -3,7 +3,7 @@ import { Agent } from "./../agent";
 
 @model("gpt-4o-mini")
 @systemPrompt("Use the customer's name while replying.")
-class PromptAgent extends Agent<string, string> {
+export class PromptAgent extends Agent<string, string> {
 	constructor(private userName: string) {
 		super();
 	}
