@@ -13,115 +13,123 @@ import {
 	enumValues,
 	zodify,
 	arrayItems,
+	optional,
 } from "../../../src/schema";
 import { toZodSchema } from "../../../src/schema/generator";
 
 describe("toZodSchema - Advanced Scenarios", () => {
 	// Mixed Type Arrays
-	// describe("mixed type arrays", () => {
-	// 	@zodify()
-	// 	class MixedArrays {
-	// 		@uniqueItems()
-	// 		@arrayItems(() => Object)
-	// 		mixedArray!: (string | number)[];
-	// 		@minItems(1)
-	// 		@arrayItems(() => Object)
-	// 		objectArray!: { id: number; name: string }[];
-	// 	}
-	// 	const schema = toZodSchema(MixedArrays);
-	// 	it("validates mixed type arrays", () => {
-	// 		expect(
-	// 			schema.safeParse({
-	// 				mixedArray: ["test", 123, "abc"],
-	// 				objectArray: [{ id: 1, name: "test" }],
-	// 			}).success
-	// 		).toBe(true);
-	// 		expect(
-	// 			schema.safeParse({
-	// 				mixedArray: ["test", "test"], // Duplicate values
-	// 				objectArray: [{ id: 1, name: "test" }],
-	// 			}).success
-	// 		).toBe(false);
-	// 	});
-	// });
+	describe("mixed type arrays", () => {
+		@zodify()
+		class MixedArrays {
+			@uniqueItems()
+			@arrayItems(() => [String, Number])
+			mixedArray!: (string | number)[];
+			@minItems(1)
+			@arrayItems(() => Object)
+			objectArray!: { id: number; name: string }[];
+		}
+		const schema = toZodSchema(MixedArrays);
+		it("validates mixed type arrays", () => {
+			expect(
+				schema.safeParse({
+					mixedArray: ["test", 123, "abc"],
+					objectArray: [{ id: 1, name: "test" }],
+				}).success
+			).toBe(true);
+			expect(
+				schema.safeParse({
+					mixedArray: ["test", "test"], // Duplicate values
+					objectArray: [{ id: 1, name: "test" }],
+				}).success
+			).toBe(false);
+		});
+	});
 	//Deep Nested Structures
-	// describe("deeply nested structures", () => {
-	// 	class GeoLocation {
-	// 		@minimum(-90)
-	// 		@maximum(90)
-	// 		latitude!: number;
-	// 		@minimum(-180)
-	// 		@maximum(180)
-	// 		longitude!: number;
-	// 	}
-	// 	class Address {
-	// 		@pattern(/^[0-9]{5}$/)
-	// 		zipCode!: string;
-	// 		@minItems(1)
-	// 		@arrayItems(() => String)
-	// 		streetLines!: string[];
-	// 		location!: GeoLocation;
-	// 	}
-	// 	class Company {
-	// 		@pattern(/^[A-Z0-9]{10}$/)
-	// 		registrationNumber!: string;
-	// 		@minItems(1)
-	// 		@arrayItems(() => Address)
-	// 		addresses!: Address[];
-	// 	}
-	// 	@zodify()
-	// 	class DeepNestedUser {
-	// 		@email()
-	// 		email!: string;
-	// 		company!: Company;
-	// 		@minItems(1)
-	// 		@arrayItems(() => Company)
-	// 		previousCompanies?: Company[];
-	// 	}
-	// 	const schema = toZodSchema(DeepNestedUser);
-	// 	it("validates deeply nested structures", () => {
-	// 		const validData = {
-	// 			email: "test@example.com",
-	// 			company: {
-	// 				registrationNumber: "ABC1234567",
-	// 				addresses: [
-	// 					{
-	// 						zipCode: "12345",
-	// 						streetLines: ["123 Main St"],
-	// 						location: {
-	// 							latitude: 40.7128,
-	// 							longitude: -74.006,
-	// 						},
-	// 					},
-	// 				],
-	// 			},
-	// 		};
-	// 		expect(schema.safeParse(validData).success).toBe(true);
-	// 		const invalidData = {
-	// 			email: "test@example.com",
-	// 			company: {
-	// 				registrationNumber: "invalid",
-	// 				addresses: [
-	// 					{
-	// 						zipCode: "12345",
-	// 						streetLines: ["123 Main St"],
-	// 						location: {
-	// 							latitude: 100, // Invalid latitude
-	// 							longitude: -74.006,
-	// 						},
-	// 					},
-	// 				],
-	// 			},
-	// 		};
-	// 		expect(schema.safeParse(invalidData).success).toBe(false);
-	// 	});
-	// });
+	describe("deeply nested structures", () => {
+		class GeoLocation {
+			@minimum(-90)
+			@maximum(90)
+			latitude!: number;
+			@minimum(-180)
+			@maximum(180)
+			longitude!: number;
+		}
+		@zodify()
+		class Address {
+			@pattern(/^[0-9]{5}$/)
+			zipCode!: string;
+			@minItems(1)
+			@arrayItems(() => String)
+			streetLines!: string[];
+			location!: GeoLocation;
+		}
+		@zodify()
+		class Company {
+			@pattern(/^[A-Z0-9]{10}$/)
+			registrationNumber!: string;
+			@minItems(1)
+			@arrayItems(() => Address)
+			addresses!: Address[];
+		}
+		@zodify()
+		class DeepNestedUser {
+			@email()
+			email!: string;
+			company!: Company;
+
+			@optional()
+			@minItems(1)
+			@arrayItems(() => Company)
+			previousCompanies?: Company[];
+		}
+		const schema = toZodSchema(DeepNestedUser);
+		it("validates deeply nested structures", () => {
+			const validData = {
+				email: "test@example.com",
+				company: {
+					registrationNumber: "ABC1234567",
+					addresses: [
+						{
+							zipCode: "12345",
+							streetLines: ["123 Main St"],
+							location: {
+								latitude: 40.7128,
+								longitude: -74.006,
+							},
+						},
+					],
+				},
+			};
+			expect(schema.safeParse(validData).success).toBe(true);
+			const invalidData = {
+				email: "test@example.com",
+				company: {
+					registrationNumber: "invalid",
+					addresses: [
+						{
+							zipCode: "12345",
+							streetLines: ["123 Main St"],
+							location: {
+								latitude: 100, // Invalid latitude
+								longitude: -74.006,
+							},
+						},
+					],
+				},
+			};
+			expect(schema.safeParse(invalidData).success).toBe(false);
+		});
+	});
 	//Circular References
 	// describe("circular references", () => {
+	// 	@zodify()
 	// 	class TreeNode {
 	// 		@min(1)
 	// 		value!: number;
-	// 		parent?: TreeNode;
+
+	// 		@optional()
+	// 		parent!: TreeNode;
 	// 		@minItems(0)
 	// 		@arrayItems(() => TreeNode)
 	// 		children!: TreeNode[];
@@ -140,6 +148,7 @@ describe("toZodSchema - Advanced Scenarios", () => {
 	// 		expect(schema.safeParse(validNode).success).toBe(true);
 	// 	});
 	// });
+
 	//Complex Validation Combinations
 	describe("complex validation combinations", () => {
 		class Tag {
@@ -194,20 +203,16 @@ describe("toZodSchema - Advanced Scenarios", () => {
 
 			// Invalid case
 			const invalidData = {
-				username: "u", // Too short
-				roles: ["admin", "admin"], // Duplicate
-				score: 8.7, // Not a multiple of 0.5
-				tags: [
-					{ name: "t", weight: 50 }, // Name too short
-				],
+				username: "u",
+				roles: ["admin", "admin"],
+				score: 8.7,
+				tags: [{ name: "t", weight: 50 }],
 			};
 			const invalidResult = schema.safeParse(invalidData);
 			expect(invalidResult.success).toBe(false);
 
-			// Checking specific validation errors
 			if (!invalidResult.success) {
 				const errors = invalidResult.error.errors;
-
 				// Error messages to assert
 				expect(errors).toEqual(
 					expect.arrayContaining([
@@ -330,6 +335,83 @@ describe("toZodSchema - Advanced Scenarios", () => {
 					whitespaceString: "   ",
 				}).success
 			).toBe(true);
+		});
+	});
+
+	describe("conditional validation", () => {
+		@zodify()
+		class ConditionalValidation {
+			@min(3)
+			@max(10)
+			fieldA!: string;
+
+			@optional()
+			@min(1)
+			@max(5)
+			fieldB!: number;
+
+			@optional()
+			@min(5)
+			@max(20)
+			fieldC!: number;
+		}
+
+		const schema = toZodSchema(ConditionalValidation);
+
+		it("validates conditionally based on fieldA value", () => {
+			expect(schema.safeParse({ fieldA: "valid", fieldB: 2 }).success).toBe(
+				true
+			);
+
+			expect(schema.safeParse({ fieldA: "valid", fieldB: 0 }).success).toBe(
+				false
+			);
+
+			expect(schema.safeParse({ fieldA: "valid", fieldC: 6 }).success).toBe(
+				true
+			);
+		});
+	});
+
+	describe("large data sets", () => {
+		@zodify()
+		class LargeArray {
+			@minItems(1)
+			@maxItems(10000)
+			@arrayItems(() => String)
+			largeArray!: string[];
+		}
+
+		const schema = toZodSchema(LargeArray);
+
+		it("handles large arrays", () => {
+			const validData = { largeArray: Array(10000).fill("valid") };
+			expect(schema.safeParse(validData).success).toBe(true);
+
+			const invalidData = { largeArray: Array(10001).fill("valid") };
+			expect(schema.safeParse(invalidData).success).toBe(false); // Exceeds maxItems
+		});
+	});
+
+	describe("null and undefined values", () => {
+		@zodify()
+		class NullableValidation {
+			@optional()
+			value!: number | null;
+		}
+
+		const schema = toZodSchema(NullableValidation);
+
+		it("allows undefined values", () => {
+			expect(schema.safeParse({}).success).toBe(true);
+		});
+
+		it("handles null values", () => {
+			expect(schema.safeParse({ value: null }).success).toBe(true);
+		});
+
+		it("handles null values", () => {
+			expect(schema.safeParse(null).success).toBe(true);
 		});
 	});
 });
