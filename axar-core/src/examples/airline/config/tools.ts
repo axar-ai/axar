@@ -37,7 +37,7 @@ export function changeFlight(): {
 	};
 }
 
-export function initiateRefund(): string {
+export function initiateRefund(context: string): string {
 	const status = "Refund initiated";
 	return status;
 }

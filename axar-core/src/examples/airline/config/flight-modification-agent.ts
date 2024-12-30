@@ -27,15 +27,6 @@ export class FlightModificationResponse {
 }
 
 @schema()
-export class ToolParams {
-	@property("Flight details")
-	flightDetails!: Object;
-
-	@property("Customer's information")
-	customerInfo!: Object;
-}
-
-@schema()
 export class FlightCancelResponse {
 	@property("Confirmation of cancellation.")
 	confirmation!: string;
@@ -54,22 +45,30 @@ ${STARTER_PROMPT}  ${FLIGHT_CANCELLATION_POLICY}`)
 export class FlightCancelAgent extends Agent<string, FlightCancelResponse> {
 	@tool("Escalate to agent", z.string())
 	async escalateToAgentRequest(reason?: string): Promise<string> {
-		return escalateToAgent(reason);
+		const response = escalateToAgent(reason);
+		console.log("🚀 ~ FlightCancelAgent ~ response:", response);
+		return response;
 	}
 
-	@tool("Initiate refund")
-	async initiateRefundRequest(): Promise<string> {
-		return initiateRefund();
+	@tool("Initiate refund", z.string())
+	async initiateRefundRequest(context: string): Promise<string> {
+		const response = initiateRefund(context);
+		console.log("🚀 ~ FlightCancelAgent ~ response:", response);
+		return response;
 	}
 
-	@tool("Initiate flight credits")
-	async initiateFlightCreditsRequest(): Promise<string> {
-		return initiateFlightCredits();
+	@tool("Initiate flight credits", z.string())
+	async initiateFlightCreditsRequest(context?: string): Promise<string> {
+		const response = initiateFlightCredits();
+		console.log("🚀 ~ FlightCancelAgent ~ response:", response);
+		return response;
 	}
 
-	@tool("case resolved")
-	async caseResolvedRequest(): Promise<string> {
-		return caseResolved();
+	@tool("case resolved", z.string())
+	async caseResolvedRequest(context?: string): Promise<string> {
+		const response = caseResolved();
+		console.log("🚀 ~ FlightCancelAgent ~ response:", response);
+		return response;
 	}
 }
 
@@ -78,24 +77,32 @@ export class FlightCancelAgent extends Agent<string, FlightCancelResponse> {
 ${STARTER_PROMPT}  ${FLIGHT_CHANGE_POLICY}`)
 @output(FlightCancelResponse)
 export class FlightChangeAgent extends Agent<string, FlightCancelResponse> {
-	@tool("Escalate to agent")
+	@tool("Escalate to agent", z.string())
 	async escalateToAgentRequest(reason?: string): Promise<string> {
 		return escalateToAgent(reason);
 	}
 
-	@tool("Change flight")
-	async initiateChangeFlightRequest(): Promise<IChnageFlightResponse> {
-		return changeFlight();
+	@tool("Change flight", z.string())
+	async initiateChangeFlightRequest(
+		context?: string
+	): Promise<IChnageFlightResponse> {
+		const response = changeFlight();
+		console.log("🚀 ~ FlightChangeAgent ~ response:", response);
+		return response;
 	}
 
-	@tool("Validate to change flight")
-	async validToChangeFlightRequest(): Promise<string> {
-		return validToChangeFlight();
+	@tool("Validate to change flight", z.string())
+	async validToChangeFlightRequest(context?: string): Promise<string> {
+		const response = validToChangeFlight();
+		console.log("🚀 ~ FlightChangeAgent ~ response:", response);
+		return response;
 	}
 
-	@tool("case resolved")
-	async caseResolvedRequest(): Promise<string> {
-		return caseResolved();
+	@tool("case resolved", z.string())
+	async caseResolvedRequest(context?: string): Promise<string> {
+		const response = caseResolved();
+		console.log("🚀 ~ FlightChangeAgent ~ response:", response);
+		return response;
 	}
 }
 
@@ -129,11 +136,17 @@ export class FlightModificationAgent extends Agent<
 		super();
 	}
 
-	@tool("Flight modification decision")
-	async handleFlightModificationRequest(
-		params: string
-	): Promise<FlightModificationResponse> {
-		const userQuery = params; // This is the flight request from the user
+	@tool(
+		"Flight modification decision",
+		z.object({
+			query: z.string(),
+		})
+	)
+	async handleFlightModificationRequest(params: {
+		query: string;
+	}): Promise<FlightModificationResponse> {
+		const { query: userQuery } = params; // This is the flight request from the user
+		console.log("🚀 ~ userQuery======>>>:", userQuery);
 
 		// Let LLM decide if the user wants to cancel or change their flight
 		let intent: "cancel" | "change" | "unknown" = "unknown";
@@ -153,14 +166,14 @@ export class FlightModificationAgent extends Agent<
 		switch (intent) {
 			case "cancel":
 				// Delegate the flight cancellation to the cancel agent
-				const cancelResponse = await this.cancelAgent.run(params);
+				const cancelResponse = await this.cancelAgent.run(userQuery);
 				return {
 					confirmation: cancelResponse.confirmation,
 					details: cancelResponse.details,
 				};
 			case "change":
 				// Delegate the flight change to the change agent
-				const changeResponse = await this.changeAgent.run(params);
+				const changeResponse = await this.changeAgent.run(userQuery);
 				return {
 					confirmation: changeResponse.confirmation,
 					details: changeResponse.details,
