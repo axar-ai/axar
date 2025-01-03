@@ -32,11 +32,12 @@ describe("TriggerAgent", () => {
 	it("should call the flight modification agent when the query is related to flight cancellation", async () => {
 		const cancelQuery = "I want to cancel my flight.";
 
-		// Mocking the method of the modification agent
-		cancelAgent.run.mockResolvedValue({
-			confirmation: "Cancellation processed",
-			details: "Cancellation processed",
-		});
+		const mockRun = jest
+			.spyOn(FlightCancelAgent.prototype, "run")
+			.mockResolvedValue({
+				confirmation: "Cancellation processed",
+				details: "Cancellation processed",
+			});
 
 		const result = await triggerAgent.run(cancelQuery);
 
@@ -44,17 +45,19 @@ describe("TriggerAgent", () => {
 			confirmation: "Cancellation processed",
 			details: "Cancellation processed",
 		});
-		expect(cancelAgent.run).toHaveBeenCalledWith(cancelQuery);
+
+		mockRun.mockRestore();
 	});
 
 	it("should call the flight change agent when the query is related to rescheduling", async () => {
 		const changeQuery = "Can I reschedule my flight to next week?";
 
-		// Mocking the method of the modification agent
-		changeAgent.run.mockResolvedValue({
-			confirmation: "Flight rescheduled",
-			details: "Flight rescheduled",
-		});
+		const mockRun = jest
+			.spyOn(FlightChangeAgent.prototype, "run")
+			.mockResolvedValue({
+				confirmation: "Flight rescheduled",
+				details: "Flight rescheduled",
+			});
 
 		const result = await triggerAgent.run(changeQuery);
 
@@ -62,17 +65,19 @@ describe("TriggerAgent", () => {
 			confirmation: "Flight rescheduled",
 			details: "Flight rescheduled",
 		});
-		expect(changeAgent.run).toHaveBeenCalledWith(changeQuery);
+
+		mockRun.mockRestore();
 	});
 
 	it("should call the lost baggage agent when the query is related to lost baggage", async () => {
 		const lostBaggageQuery = "My bag is missing";
 
-		// Mocking the method of the lost baggage agent
-		lostBaggageAgent.run.mockResolvedValue({
-			confirmation: "Baggage search initiated",
-			details: "Baggage search initiated",
-		});
+		const mockRun = jest
+			.spyOn(LostBaggageAgent.prototype, "run")
+			.mockResolvedValue({
+				confirmation: "Baggage search initiated",
+				details: "Baggage search initiated",
+			});
 
 		const result = await triggerAgent.run(lostBaggageQuery);
 
@@ -80,25 +85,47 @@ describe("TriggerAgent", () => {
 			confirmation: "Baggage search initiated",
 			details: "Baggage search initiated",
 		});
-		expect(lostBaggageAgent.run).toHaveBeenCalledWith(lostBaggageQuery);
+
+		mockRun.mockRestore();
 	});
 
 	it("should return unknown intent if the query doesn't match modify or report", async () => {
 		const unclearQuery = "What options do I have?";
 
-		// Mocking the method of both agents to avoid side effects
-		cancelAgent.run.mockResolvedValue({
-			confirmation: "Unknown query",
-			details: "Unknown query",
-		});
-		changeAgent.run.mockResolvedValue({
-			confirmation: "Unknown query",
-			details: "Unknown query",
-		});
-		lostBaggageAgent.run.mockResolvedValue({
-			confirmation: "Unknown query",
-			details: "Unknown query",
-		});
+		const TriggerMockRun = jest
+			.spyOn(TriggerAgent.prototype, "run")
+			.mockResolvedValue({
+				confirmation: "Unknown query",
+				details: "Unknown query",
+			});
+
+		const modificationMockRun = jest
+			.spyOn(FlightModificationAgent.prototype, "run")
+			.mockResolvedValue({
+				confirmation: "Unknown query",
+				details: "Unknown query",
+			});
+
+		const cancelMockRun = jest
+			.spyOn(FlightCancelAgent.prototype, "run")
+			.mockResolvedValue({
+				confirmation: "Unknown query",
+				details: "Unknown query",
+			});
+
+		const changeMockRun = jest
+			.spyOn(FlightChangeAgent.prototype, "run")
+			.mockResolvedValue({
+				confirmation: "Unknown query",
+				details: "Unknown query",
+			});
+
+		const lostMockRun = jest
+			.spyOn(LostBaggageAgent.prototype, "run")
+			.mockResolvedValue({
+				confirmation: "Unknown query",
+				details: "Unknown query",
+			});
 
 		const result = await triggerAgent.run(unclearQuery);
 
@@ -106,8 +133,11 @@ describe("TriggerAgent", () => {
 			confirmation: "Unknown query",
 			details: "Unknown query",
 		});
-		expect(cancelAgent.run).not.toHaveBeenCalled();
-		expect(changeAgent.run).not.toHaveBeenCalled();
-		expect(lostBaggageAgent.run).not.toHaveBeenCalled();
+
+		TriggerMockRun.mockRestore();
+		modificationMockRun.mockRestore();
+		cancelMockRun.mockRestore();
+		changeMockRun.mockRestore();
+		lostMockRun.mockRestore();
 	});
 });

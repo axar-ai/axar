@@ -19,10 +19,7 @@ export function validToChangeFlight(): string {
 	return "Customer is eligible to change flight";
 }
 
-export function changeFlight(): {
-	status: string;
-	flightDetails: IFlightChangeDetails;
-} {
+export function changeFlight(): string {
 	const flightDetails: IFlightChangeDetails = {
 		newFlightNumber: "AB1234",
 		newDepartureDate: "2024-12-28",
@@ -31,10 +28,14 @@ export function changeFlight(): {
 		newArrivalTime: "12:00 PM",
 	};
 
-	return {
-		status: "Flight was successfully changed!",
-		flightDetails: flightDetails,
-	};
+	return `Flight was successfully changed! New flight details: ${JSON.stringify(
+		flightDetails
+	)}`;
+
+	// return {
+	// 	status: "Flight was successfully changed!",
+	// 	flightDetails: flightDetails,
+	// };
 }
 
 export function initiateRefund(context: string): string {

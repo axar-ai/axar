@@ -21,14 +21,21 @@ async function main() {
 	const triggerAgent = new TriggerAgent(modificationAgent, lostBaggageAgent);
 
 	// Test cases
-	const cancelQuery = "I want to change my flight to one day earlier";
-	const changeQuery =
+	const changeQuery = "I want to change my flight to one day earlier";
+	const cancelQuery =
 		"I want to cancel my flight. I can't make it anymore due to a personal conflict";
-	const unclearQuery = "I dont want this flight";
 
-	console.log(await triggerAgent.run(cancelQuery));
+	const cancelQuery2 =
+		"I want to cancel my flight. I can't make it anymore due to a personal conflict, and I want refund";
+	const unclearQuery =
+		"I dont want this flight, please reschedule it for next week";
+	const lostBaggageQuery = "My bag is missing";
+
 	console.log(await triggerAgent.run(changeQuery));
+	console.log(await triggerAgent.run(cancelQuery));
+	console.log(await triggerAgent.run(cancelQuery2));
 	console.log(await triggerAgent.run(unclearQuery));
+	console.log(await triggerAgent.run(lostBaggageQuery));
 }
 
 main().catch(console.error);

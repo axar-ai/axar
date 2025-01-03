@@ -18,24 +18,32 @@ export class LostBaggageResponse {
 @systemPrompt(`${STARTER_PROMPT} ${LOST_BAGGAGE_POLICY}`)
 @output(LostBaggageResponse)
 export class LostBaggageAgent extends Agent<string, LostBaggageResponse> {
-	@tool("Escalate to agent", z.string())
-	async escalateToAgentRequest(reason?: string): Promise<string> {
+	@tool("Escalate to agent", z.object({ reason: z.string() }))
+	async escalateToAgentRequest({
+		reason,
+	}: {
+		reason: string;
+	}): Promise<string> {
 		const response = escalateToAgent(reason);
-		console.log("🚀 ~ FlightCancelAgent ~ response:", response);
+		// console.log("🚀 ~ FlightCancelAgent ~ response:", response);
 		return response;
 	}
 
-	@tool("Initiate baggage search", z.string())
-	async initiateBaggageSearchRequest(context?: string): Promise<string> {
+	@tool("Initiate baggage search", z.object({ context: z.string() }))
+	async initiateBaggageSearchRequest({
+		context,
+	}: {
+		context: string;
+	}): Promise<string> {
 		const response = initiateBaggageSearch();
-		console.log("🚀 ~ FlightCancelAgent ~ response:", response);
+		// console.log("🚀 ~ FlightCancelAgent ~ response:", response);
 		return response;
 	}
 
-	@tool("Case resolved", z.string())
-	async caseResolvedRequest(context?: string): Promise<string> {
+	@tool("Case resolved", z.object({ context: z.string() }))
+	async caseResolvedRequest({ context }: { context: string }): Promise<string> {
 		const response = caseResolved();
-		console.log("🚀 ~ FlightCancelAgent ~ response:", response);
+		// console.log("🚀 ~ FlightCancelAgent ~ response:", response);
 		return response;
 	}
 }

@@ -1,8 +1,11 @@
 import { z } from "zod";
 import { output, systemPrompt, Agent, model, tool } from "../../../agent";
 import { property, schema } from "../../../schema";
-import { FlightModificationAgent } from "./flight-modification-agent";
-import { LostBaggageAgent } from "./lost-baggage-agent";
+import {
+	FlightModificationAgent,
+	FlightModificationResponse,
+} from "./flight-modification-agent";
+import { LostBaggageAgent, LostBaggageResponse } from "./lost-baggage-agent";
 
 @schema()
 export class TriggerResponse {
@@ -14,11 +17,9 @@ export class TriggerResponse {
 }
 
 @model("gpt-4o-mini")
-@systemPrompt(`You are to triage a users request, and call a tool to transfer to the right intent.
-    Once you are ready to transfer to the right intent, call the tool to transfer to the right intent.
-    You dont need to know specifics, just the topic of the request.
-    When you need more information to triage the request to an agent, ask a direct question without explaining why you're asking it.
-    Do not share your thought process with the user! Do not make unreasonable assumptions on behalf of user.`)
+@systemPrompt(
+	`You are to decide if the customer wants to initiate a flight modification or lost baggage claim. If the customer wants to initiate a flight modification, respond with "Flight Modification". If the customer wants to initiate a lost baggage claim, respond with "Lost Baggage".`
+)
 @output(TriggerResponse)
 export class TriggerAgent extends Agent<string, TriggerResponse> {
 	constructor(
@@ -58,32 +59,63 @@ export class TriggerAgent extends Agent<string, TriggerResponse> {
 	}
 
 	@tool(
-		"Decide if the user wants to modify their flight or report lost baggage, call the customer and flight context and then call the flight modification agent or the lost baggage agent with this context({query}) to transfer to the right intent modyfy or report .",
-		z.object({
-			query: z.string(), // Wrap the string in an object
-		})
+		"Add this customer and flight context to the request({query}) to transfer to the right intent.",
+		z.object({ query: z.string() })
 	)
-	async decideIntent(params: { query: string }): Promise<any> {
-		const { query } = params;
-
-		// Let LLM decide if the user wants to modify or report lost baggage
-		let intent: "modify" | "report" | "unknown" = "unknown";
-
-		if (query.toLowerCase().includes("modify")) {
-			intent = "modify";
-		} else if (query.toLowerCase().includes("report")) {
-			intent = "report";
-		}
-
-		switch (intent) {
-			case "report":
-				// Call the lost baggage agent
-				return this.lostBaggageAgent.run(query);
-			case "modify":
-				// Call the flight modification agent
-				return this.flightModificationAgent.run(query);
-			default:
-				return { intent: "unknown" };
-		}
+	async addCustomerAndFlightContext(params: {
+		query: string;
+	}): Promise<string> {
+		const customerAndFlightContext = await this.getCustomerAndFlightContext();
+		return `${customerAndFlightContext} ${params.query}`;
 	}
+
+	@tool(
+		"For cancel or change flight, call the flight modification agent with this context to transfer to the right intent. Call addCustomerAndFlightContext to add the customer and flight context and pass it as a parameter to the flight modification agent.",
+		z.object({ query: z.string() })
+	)
+	async decideToChangeOrCancelFlight(params: {
+		query: string;
+	}): Promise<FlightModificationResponse> {
+		return this.flightModificationAgent.run(params.query);
+	}
+
+	@tool(
+		"Call the lost baggage agent with this context({query}) to transfer to the right intent. Call addCustomerAndFlightContext to add the customer and flight context and pass it as a parameter to the lost baggage agent.",
+		z.object({ query: z.string() })
+	)
+	async reportLostBaggage(params: {
+		query: string;
+	}): Promise<LostBaggageResponse> {
+		return this.lostBaggageAgent.run(params.query);
+	}
+
+	// @tool(
+	// 	"Decide if the user wants to modify their flight or report lost baggage, call the customer and flight context and then call the flight modification agent or the lost baggage agent with this context({query}) to transfer to the right intent modyfy or report .",
+	// 	z.object({
+	// 		query: z.string(), // Wrap the string in an object
+	// 	})
+	// )
+	// async decideIntent(params: { query: string }): Promise<any> {
+	// 	const { query } = params;
+
+	// 	// Let LLM decide if the user wants to modify or report lost baggage
+	// 	let intent: "modify" | "report" | "unknown" = "unknown";
+
+	// 	if (query.toLowerCase().includes("modify")) {
+	// 		intent = "modify";
+	// 	} else if (query.toLowerCase().includes("report")) {
+	// 		intent = "report";
+	// 	}
+
+	// 	switch (intent) {
+	// 		case "report":
+	// 			// Call the lost baggage agent
+	// 			return this.lostBaggageAgent.run(query);
+	// 		case "modify":
+	// 			// Call the flight modification agent
+	// 			return this.flightModificationAgent.run(query);
+	// 		default:
+	// 			return { intent: "unknown" };
+	// 	}
+	// }
 }
