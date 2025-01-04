@@ -1,14 +1,14 @@
-import { z, ZodSchema } from "zod";
+import { z, ZodSchema } from 'zod';
 import {
   generateText,
   LanguageModelV1,
   CoreMessage,
   CoreTool,
   Output,
-} from "ai";
-import { openai } from "@ai-sdk/openai";
-import { META_KEYS } from "./meta-keys";
-import { ToolMetadata } from "./types";
+} from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { META_KEYS } from './meta-keys';
+import { ToolMetadata } from './types';
 
 // Base agent that handles core functionality
 export abstract class Agent<TInput = string, TOutput = any> {
@@ -19,11 +19,11 @@ export abstract class Agent<TInput = string, TOutput = any> {
   protected getModel(): LanguageModelV1 {
     const modelName = Agent.getMetadata<string>(
       META_KEYS.MODEL,
-      this.constructor
+      this.constructor,
     );
     if (!modelName) {
       throw new Error(
-        "Model metadata not found. Please apply @model decorator."
+        'Model metadata not found. Please apply @model decorator.',
       );
     }
     return openai(modelName);
@@ -32,7 +32,7 @@ export abstract class Agent<TInput = string, TOutput = any> {
   protected getTools(): Record<string, CoreTool> {
     const tools = Agent.getMetadata<ToolMetadata[]>(
       META_KEYS.TOOLS,
-      this.constructor
+      this.constructor,
     );
 
     const toolsFormatted = Object.fromEntries(
@@ -43,7 +43,7 @@ export abstract class Agent<TInput = string, TOutput = any> {
           parameters: tool.parameters,
           execute: (...args: any[]) => (this as any)[tool.method](...args),
         },
-      ])
+      ]),
     );
 
     return toolsFormatted as Record<string, CoreTool>;
@@ -52,7 +52,7 @@ export abstract class Agent<TInput = string, TOutput = any> {
   protected getSystemPrompts(): Array<() => Promise<string>> {
     return Agent.getMetadata<Array<() => Promise<string>>>(
       META_KEYS.SYSTEM_PROMPTS,
-      this.constructor
+      this.constructor,
     );
   }
 
@@ -60,14 +60,14 @@ export abstract class Agent<TInput = string, TOutput = any> {
     // Retrieve the ZodSchema from metadata
     const schema: ZodSchema<TOutput> = Reflect.getMetadata(
       META_KEYS.OUTPUT,
-      this.constructor
+      this.constructor,
     );
 
     if (!schema) {
       console.warn(
         `No output schema found for ${this.constructor.name}. ` +
           `Did you forget to apply @output decorator? ` +
-          `Falling back to string schema.`
+          `Falling back to string schema.`,
       );
       return z.string();
     }
@@ -79,15 +79,15 @@ export abstract class Agent<TInput = string, TOutput = any> {
     const model = this.getModel();
     const tools = this.getTools();
     const schema = this.getOutputSchema();
-    console.log("schema: ", schema);
+    console.log('schema: ', schema);
 
     const systemPrompts = await Promise.all(
-      this.getSystemPrompts().map((fn) => fn.call(this))
+      this.getSystemPrompts().map((fn) => fn.call(this)),
     );
 
     const messages = [
-      { role: "system", content: systemPrompts.join("\n\n") },
-      { role: "user", content: String(input) },
+      { role: 'system', content: systemPrompts.join('\n\n') },
+      { role: 'user', content: String(input) },
     ] as CoreMessage[];
 
     const baseConfig = {

@@ -1,8 +1,8 @@
-import "reflect-metadata";
-import { z, ZodSchema, ZodObject } from "zod";
-import { META_KEYS } from "./meta-keys";
-import { ClassConstructor, ToolMetadata, OutputType } from "./types";
-import { hasSchemaDef, getSchemaDef } from "../schema";
+import 'reflect-metadata';
+import { z, ZodSchema, ZodObject } from 'zod';
+import { META_KEYS } from './meta-keys';
+import { ClassConstructor, ToolMetadata, OutputType } from './types';
+import { hasSchemaDef, getSchemaDef } from '../schema';
 
 /**
  * `model` decorator to associate a model identifier with a class.
@@ -56,7 +56,7 @@ export function output(type: OutputType): ClassDecorator {
       schema = getSchemaDef(type);
     } else {
       throw new Error(
-        `Output must be a Zod schema, a class with @schema, or a primitive constructor`
+        `Output must be a Zod schema, a class with @schema, or a primitive constructor`,
       );
     }
 
@@ -85,10 +85,10 @@ export function systemPrompt(): MethodDecorator;
 
 // Implementation
 export function systemPrompt(
-  prompt?: string
+  prompt?: string,
 ): ClassDecorator | MethodDecorator {
   // Class Decorator
-  if (typeof prompt === "string") {
+  if (typeof prompt === 'string') {
     return function <T extends Function>(target: T): T {
       const systemPrompts =
         Reflect.getMetadata(META_KEYS.SYSTEM_PROMPTS, target) || [];
@@ -104,13 +104,13 @@ export function systemPrompt(
     return function (
       target: Object,
       propertyKey: string | symbol,
-      descriptor: PropertyDescriptor
+      descriptor: PropertyDescriptor,
     ): void | PropertyDescriptor {
-      if (typeof descriptor.value !== "function") {
+      if (typeof descriptor.value !== 'function') {
         throw new Error(
           `@systemPrompt can only be applied to methods, not to property '${String(
-            propertyKey
-          )}'.`
+            propertyKey,
+          )}'.`,
         );
       }
 
@@ -119,11 +119,11 @@ export function systemPrompt(
         Reflect.getMetadata(META_KEYS.SYSTEM_PROMPTS, target.constructor) || [];
       systemPrompts.push(async function (this: any) {
         const result = await descriptor.value.apply(this); // Use the actual instance's `this`
-        if (typeof result !== "string") {
+        if (typeof result !== 'string') {
           throw new Error(
             `Method '${String(
-              propertyKey
-            )}' decorated with @systemPrompt must return a string.`
+              propertyKey,
+            )}' decorated with @systemPrompt must return a string.`,
           );
         }
         return result;
@@ -132,7 +132,7 @@ export function systemPrompt(
       Reflect.defineMetadata(
         META_KEYS.SYSTEM_PROMPTS,
         systemPrompts,
-        target.constructor
+        target.constructor,
       );
 
       return descriptor;
@@ -157,12 +157,12 @@ export function systemPrompt(
  */
 export function tool(
   description: string,
-  schemaOrClass?: ZodSchema<any> | ClassConstructor
+  schemaOrClass?: ZodSchema<any> | ClassConstructor,
 ): MethodDecorator {
   return function (
     target: Object,
     propertyKey: string | symbol,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ): PropertyDescriptor {
     let schema: ZodSchema<any>;
 
@@ -174,22 +174,22 @@ export function tool(
         schema = getSchemaDef(schemaOrClass);
       } else {
         throw new Error(
-          `${schemaOrClass.name} must be either a Zod schema or a class decorated with @schema`
+          `${schemaOrClass.name} must be either a Zod schema or a class decorated with @schema`,
         );
       }
     } else {
       // No schema provided, derive via reflection
       const paramTypes: any[] = Reflect.getMetadata(
-        "design:paramtypes",
+        'design:paramtypes',
         target,
-        propertyKey
+        propertyKey,
       );
 
       if (!paramTypes || paramTypes.length === 0) {
         throw new Error(
           `@tool decorator on ${String(
-            propertyKey
-          )} requires at least one parameter or an explicit schema.`
+            propertyKey,
+          )} requires at least one parameter or an explicit schema.`,
         );
       }
 
@@ -199,8 +199,8 @@ export function tool(
       if (!hasSchemaDef(paramType)) {
         throw new Error(
           `@tool decorator on ${String(
-            propertyKey
-          )} requires an explicit Zod schema or a parameter class decorated with @schema.`
+            propertyKey,
+          )} requires an explicit Zod schema or a parameter class decorated with @schema.`,
         );
       }
 
