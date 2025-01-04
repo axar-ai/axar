@@ -1,3 +1,186 @@
-node_modules
-dist
+# macOS
+.DS_Store
+
+# Logs and temporary files
+junit.xml
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environments
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Node.js / TypeScript
+node_modules/
+package-lock.json
+yarn.lock
+.pnp.*
+.pnp.js
+.npm/
+*.tsbuildinfo
+*.d.ts
+*.map
+
+# TypeScript compiled files
+*.js
+*.js.map
+*.jsx
+
+# Next.js
+.next/
+
+# React Native
+ios/Pods/
+*.xcodeproj/*
+*.xcworkspace/*
+*.xcuserdatad/
+*.expo/
+
+# Webpack
+dist/
+out/
+public/
+webpack-assets.json
+webpack.config.js.map
+
+# Build directories
+build/
+temp/
+tmp/
+bin/
+obj/
+lib/
+target/
+out/
+
+# Coverage and test reports
+coverage/
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+jest-report.xml
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# IPython
+profile_default/
+ipython_config.py
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# Flask
+instance/
+.webassets-cache
+
+# Scrapy
+.scrapy/
+
+# mkdocs documentation
+/site/
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# IDE and editor settings
+.idea/               # JetBrains
+.vscode/             # Visual Studio Code
+*.swp                # Vim
+*.swo                # Vim
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+*.lnk
+
+# System-specific files
+.Python
+*.plist
+
+# Temporary files
+*.bak
+*.tmp
+*.temp
+*.orig
+*.save
+
+# Lock files
+*.lock
+
+# Logs
+*.log
+*.log.*
+
+# Dependency directories
+node_modules/
+bower_components/
+
+# Environment files
 .env
+.env.*
+.venv
+*.envrc
+.envrc
+
+# npm debugging files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Miscellaneous
+*.log
+*.gz
+*.bz2
+*.7z
+*.swp
+*.swo
+
+# Editor backup files
+*~
