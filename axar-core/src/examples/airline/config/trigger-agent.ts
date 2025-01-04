@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { output, systemPrompt, Agent, model, tool } from "../../../agent";
 import { property, schema } from "../../../schema";
 import {
@@ -16,6 +15,59 @@ export class TriggerResponse {
 	details?: string;
 }
 
+@schema()
+class CustomerContext {
+	@property("Customer ID")
+	CUSTOMER_ID!: string;
+	@property("Customer name")
+	NAME!: string;
+	@property("Customer phone number")
+	PHONE_NUMBER!: string;
+	@property("Customer email")
+	EMAIL!: string;
+	@property("Customer status")
+	STATUS!: string;
+	@property("Customer account status")
+	ACCOUNT_STATUS!: string;
+	@property("Customer balance")
+	BALANCE!: string;
+	@property("Customer location")
+	LOCATION!: string;
+}
+
+@schema()
+class FlightContext {
+	@property("Flight number")
+	FLIGHT_NUMBER!: string;
+	@property("Departure airport")
+	DEPARTURE_AIRPORT!: string;
+	@property("Arrival airport")
+	ARRIVAL_AIRPORT!: string;
+	@property("Departure time")
+	DEPARTURE_TIME!: string;
+	@property("Arrival time")
+	ARRIVAL_TIME!: string;
+	@property("Flight status")
+	FLIGHT_STATUS!: string;
+}
+
+@schema()
+class CustomerContextAndFlightContext {
+	@property("Customer context")
+	customer_context!: CustomerContext;
+	@property("Flight context")
+	flight_context!: FlightContext;
+}
+
+@schema()
+export class TriggerRequest {
+	@property("Customer query")
+	query!: string;
+
+	@property("Customer and flight context")
+	context!: CustomerContextAndFlightContext;
+}
+
 @model("gpt-4o-mini")
 @systemPrompt(
 	`You are to decide if the customer wants to initiate a flight modification or lost baggage claim. If the customer wants to initiate a flight modification, respond with "Flight Modification". If the customer wants to initiate a lost baggage claim, respond with "Lost Baggage".`
@@ -29,93 +81,23 @@ export class TriggerAgent extends Agent<string, TriggerResponse> {
 		super();
 	}
 
-	@systemPrompt()
-	private async getCustomerAndFlightContext(): Promise<string> {
-		// Get the customer and flight context
-
-		const context = {
-			customer_context: {
-				CUSTOMER_ID: "customer_12345",
-				NAME: "John Doe",
-				PHONE_NUMBER: "(123) 456-7890",
-				EMAIL: "johndoe@example.com",
-				STATUS: "Premium",
-				ACCOUNT_STATUS: "Active",
-				BALANCE: "$0.00",
-				LOCATION: "1234 Main St, San Francisco, CA 94123, USA",
-			},
-			flight_context: {
-				FLIGHT_NUMBER: "1919",
-				DEPARTURE_AIRPORT: "LGA",
-				ARRIVAL_AIRPORT: "LAX",
-				DEPARTURE_TIME: "3pm ET",
-				DEPARTURE_DATE: "5/21/2024",
-			},
-		};
-
-		return `The customer context is here: ${JSON.stringify(
-			context.customer_context
-		)}, and flight context is here: ${JSON.stringify(context.flight_context)}`;
+	@tool(
+		"For canceling or changing a flight, invoke the flight modification agent using the provided query and context.",
+		TriggerRequest
+	)
+	async decideToChangeOrCancelFlight(
+		params: TriggerRequest
+	): Promise<FlightModificationResponse> {
+		return this.flightModificationAgent.run(JSON.stringify(params));
 	}
 
 	@tool(
-		"Add this customer and flight context to the request({query}) to transfer to the right intent.",
-		z.object({ query: z.string() })
+		"To report lost baggage, call the lost baggage agent using the provided query and context.",
+		TriggerRequest
 	)
-	async addCustomerAndFlightContext(params: {
-		query: string;
-	}): Promise<string> {
-		const customerAndFlightContext = await this.getCustomerAndFlightContext();
-		return `${customerAndFlightContext} ${params.query}`;
+	async reportLostBaggage(
+		params: TriggerRequest
+	): Promise<LostBaggageResponse> {
+		return this.lostBaggageAgent.run(JSON.stringify(params));
 	}
-
-	@tool(
-		"For cancel or change flight, call the flight modification agent with this context to transfer to the right intent. Call addCustomerAndFlightContext to add the customer and flight context and pass it as a parameter to the flight modification agent.",
-		z.object({ query: z.string() })
-	)
-	async decideToChangeOrCancelFlight(params: {
-		query: string;
-	}): Promise<FlightModificationResponse> {
-		return this.flightModificationAgent.run(params.query);
-	}
-
-	@tool(
-		"Call the lost baggage agent with this context({query}) to transfer to the right intent. Call addCustomerAndFlightContext to add the customer and flight context and pass it as a parameter to the lost baggage agent.",
-		z.object({ query: z.string() })
-	)
-	async reportLostBaggage(params: {
-		query: string;
-	}): Promise<LostBaggageResponse> {
-		return this.lostBaggageAgent.run(params.query);
-	}
-
-	// @tool(
-	// 	"Decide if the user wants to modify their flight or report lost baggage, call the customer and flight context and then call the flight modification agent or the lost baggage agent with this context({query}) to transfer to the right intent modyfy or report .",
-	// 	z.object({
-	// 		query: z.string(), // Wrap the string in an object
-	// 	})
-	// )
-	// async decideIntent(params: { query: string }): Promise<any> {
-	// 	const { query } = params;
-
-	// 	// Let LLM decide if the user wants to modify or report lost baggage
-	// 	let intent: "modify" | "report" | "unknown" = "unknown";
-
-	// 	if (query.toLowerCase().includes("modify")) {
-	// 		intent = "modify";
-	// 	} else if (query.toLowerCase().includes("report")) {
-	// 		intent = "report";
-	// 	}
-
-	// 	switch (intent) {
-	// 		case "report":
-	// 			// Call the lost baggage agent
-	// 			return this.lostBaggageAgent.run(query);
-	// 		case "modify":
-	// 			// Call the flight modification agent
-	// 			return this.flightModificationAgent.run(query);
-	// 		default:
-	// 			return { intent: "unknown" };
-	// 	}
-	// }
 }

@@ -15,6 +15,7 @@ import {
 	STARTER_PROMPT,
 } from "./policies";
 import { z } from "zod";
+import { TriggerRequest } from "./trigger-agent";
 
 @schema()
 export class FlightModificationResponse {
@@ -61,7 +62,6 @@ export class FlightCancelAgent extends Agent<string, FlightCancelResponse> {
 		context: string;
 	}): Promise<string> {
 		const response = initiateRefund(context);
-		// console.log("🚀 ~ FlightCancelAgent ~ response:", response);
 		return response;
 	}
 
@@ -72,7 +72,6 @@ export class FlightCancelAgent extends Agent<string, FlightCancelResponse> {
 		context: string;
 	}): Promise<string> {
 		const response = initiateFlightCredits();
-		// console.log("🚀 ~ FlightCancelAgent ~ response:", response);
 		return response;
 	}
 
@@ -112,14 +111,12 @@ export class FlightChangeAgent extends Agent<string, FlightChangeResponse> {
 
 	@tool("Change flight", z.object({ context: z.string() }))
 	async changeFlightRequest({ context }: { context: string }): Promise<string> {
-		// console.log("🚀 ~ FlightChangeAgent ~ context:", context);
 		try {
 			const response = changeFlight();
-			// console.log("🚀 ~ FlightChangeAgent ~ response:", response);
 			return response;
 		} catch (error) {
 			console.error("Error creating task in collection:", error);
-			throw error; // Rethrow error for caller to handle
+			throw error;
 		}
 	}
 
@@ -136,7 +133,6 @@ export class FlightChangeAgent extends Agent<string, FlightChangeResponse> {
 	@tool("case resolved", z.object({ context: z.string() }))
 	async caseResolvedRequest({ context }: { context: string }): Promise<string> {
 		const response = caseResolved();
-		// console.log("🚀 ~ FlightChangeAgent ~ response:", response);
 		return response;
 	}
 }
@@ -161,73 +157,21 @@ export class FlightModificationAgent extends Agent<
 
 	@tool(
 		"For cancel flight, call the cancel agent with this context to transfer to the right intent.",
-		z.object({ query: z.string() })
+		TriggerRequest
 	)
-	async cancelFlightRequest(params: {
-		query: string;
-	}): Promise<FlightCancelResponse> {
-		return this.cancelAgent.run(params.query);
+	async cancelFlightRequest(
+		params: TriggerRequest
+	): Promise<FlightCancelResponse> {
+		return this.cancelAgent.run(JSON.stringify(params));
 	}
 
 	@tool(
 		"For change flight, call the change agent with this context to transfer to the right intent.",
-		z.object({ query: z.string() })
+		TriggerRequest
 	)
-	async changeFlightRequest(params: {
-		query: string;
-	}): Promise<FlightChangeResponse> {
-		return this.changeAgent.run(params.query);
+	async changeFlightRequest(
+		params: TriggerRequest
+	): Promise<FlightChangeResponse> {
+		return this.changeAgent.run(JSON.stringify(params));
 	}
-
-	// @tool(
-	// 	"Flight modification decision",
-	// 	z.object({
-	// 		query: z.string(),
-	// 	})
-	// )
-	// async handleFlightModificationRequest(params: {
-	// 	query: string;
-	// }): Promise<FlightModificationResponse> {
-	// 	const { query: userQuery } = params; // This is the flight request from the user
-	// 	console.log("🚀 ~ userQuery======>>>:", userQuery);
-
-	// 	// Let LLM decide if the user wants to cancel or change their flight
-	// 	let intent: "cancel" | "change" | "unknown" = "unknown";
-
-	// 	// Let LLM analyze the user query and decide on the action
-	// 	// This logic can be more sophisticated based on LLM's understanding.
-	// 	if (userQuery.toLowerCase().includes("cancel")) {
-	// 		intent = "cancel";
-	// 	} else if (
-	// 		userQuery.toLowerCase().includes("change") ||
-	// 		userQuery.toLowerCase().includes("reschedule")
-	// 	) {
-	// 		intent = "change";
-	// 	}
-
-	// 	// Invoke the appropriate agent based on the detected intent
-	// 	switch (intent) {
-	// 		case "cancel":
-	// 			// Delegate the flight cancellation to the cancel agent
-	// 			const cancelResponse = await this.cancelAgent.run(userQuery);
-	// 			return {
-	// 				confirmation: cancelResponse.confirmation,
-	// 				details: cancelResponse.details,
-	// 			};
-	// 		case "change":
-	// 			// Delegate the flight change to the change agent
-	// 			const changeResponse = await this.changeAgent.run(userQuery);
-	// 			return {
-	// 				confirmation: changeResponse.confirmation,
-	// 				details: changeResponse.details,
-	// 			};
-	// 		default:
-	// 			// If intent is unclear, ask for more information
-	// 			return {
-	// 				confirmation: "Intent not recognized.",
-	// 				details:
-	// 					"Please specify if you want to cancel or change your flight.",
-	// 			};
-	// 	}
-	// }
 }
