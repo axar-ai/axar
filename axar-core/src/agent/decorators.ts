@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { z, ZodSchema, ZodObject } from "zod";
 import { META_KEYS } from "./meta-keys";
-import { ClassConstructor, ToolMetadata } from "./types";
+import { ClassConstructor, ToolMetadata, OutputType } from "./types";
 import { hasSchemaDef, getSchemaDef } from "../schema";
 
 /**
@@ -11,42 +11,60 @@ import { hasSchemaDef, getSchemaDef } from "../schema";
  * @returns A class decorator function.
  */
 export function model(modelIdentifier: string): ClassDecorator {
-  // Define the class decorator with the correct signature
-  const classDecorator: ClassDecorator = function (
-    constructor: Function
-  ): void {
-    Reflect.defineMetadata(META_KEYS.MODEL, modelIdentifier, constructor);
+  return function <T extends Function>(target: T): T {
+    Reflect.defineMetadata(META_KEYS.MODEL, modelIdentifier, target);
+    return target;
   };
-
-  return classDecorator;
 }
 
 /**
- * `@output` decorator to define the output schema for an agent.
- * Supports both ZodSchema and class-based schemas.
+ * Specifies the output schema for a class.
  *
- * @param schemaOrClass - A ZodSchema instance or a class constructor decorated with @schema.
- * @returns A class decorator function.
+ * @param type - The output type specification, which can be:
+ *   - A Zod schema
+ *   - A class decorated with @schema
+ *   - A primitive type (String, Number, Boolean)
+ *
+ * @example
+ * ```typescript
+ * // Using primitive
+ * @output(String)
+ * class StringAgent extends Agent<string, string> {}
+ *
+ * // Using schema-decorated class
+ * @output(UserProfile)
+ * class UserAgent extends Agent<string, UserProfile> {}
+ *
+ * // Using Zod schema directly
+ * @output(z.boolean())
+ * class BooleanAgent extends Agent<string, boolean> {}
+ * ```
  */
-export function output(
-  schemaOrClass: ZodSchema | ClassConstructor
-): ClassDecorator {
-  return function (target: Function): void {
-    let zodSchema: ZodSchema;
+export function output(type: OutputType): ClassDecorator {
+  return function <T extends Function>(target: T): T {
+    let schema: ZodSchema;
 
-    if (schemaOrClass instanceof ZodSchema) {
-      zodSchema = schemaOrClass;
-    } else if (hasSchemaDef(schemaOrClass)) {
-      zodSchema = getSchemaDef(schemaOrClass);
+    if (type instanceof ZodSchema) {
+      schema = type;
+    } else if (type === String) {
+      schema = z.string();
+    } else if (type === Number) {
+      schema = z.number();
+    } else if (type === Boolean) {
+      schema = z.boolean();
+    } else if (hasSchemaDef(type)) {
+      schema = getSchemaDef(type);
     } else {
       throw new Error(
-        `${schemaOrClass.name} must be either a Zod schema or a class decorated with @schema`
+        `Output must be a Zod schema, a class with @schema, or a primitive constructor`
       );
     }
 
-    Reflect.defineMetadata(META_KEYS.OUTPUT, zodSchema, target);
+    Reflect.defineMetadata(META_KEYS.OUTPUT, schema, target);
+    return target;
   };
 }
+
 /**
  * `systemPrompt` decorator to set system prompts for classes and methods.
  *
@@ -71,25 +89,19 @@ export function systemPrompt(
 ): ClassDecorator | MethodDecorator {
   // Class Decorator
   if (typeof prompt === "string") {
-    const classDecorator: ClassDecorator = function (
-      constructor: Function
-    ): void {
+    return function <T extends Function>(target: T): T {
       const systemPrompts =
-        Reflect.getMetadata(META_KEYS.SYSTEM_PROMPTS, constructor) || [];
+        Reflect.getMetadata(META_KEYS.SYSTEM_PROMPTS, target) || [];
 
       // Add class prompt to the beginning
       systemPrompts.unshift(async () => prompt);
 
-      Reflect.defineMetadata(
-        META_KEYS.SYSTEM_PROMPTS,
-        systemPrompts,
-        constructor
-      );
+      Reflect.defineMetadata(META_KEYS.SYSTEM_PROMPTS, systemPrompts, target);
+      return target;
     };
-    return classDecorator;
   } else {
     // Method Decorator
-    const methodDecorator: MethodDecorator = function (
+    return function (
       target: Object,
       propertyKey: string | symbol,
       descriptor: PropertyDescriptor
@@ -125,7 +137,6 @@ export function systemPrompt(
 
       return descriptor;
     };
-    return methodDecorator;
   }
 }
 

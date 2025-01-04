@@ -1,15 +1,16 @@
-import { model, systemPrompt, Agent } from "../agent";
+import { model, systemPrompt } from "../agent/decorators";
+import { Agent } from "../agent";
 
 // FIXME: Support boolean output
 @model("gpt-4o-mini")
 // @validateOutput(SupportResponseSchema)
 @systemPrompt(`Respond in one line`)
-export class ConversationAgent extends Agent<string, string> {}
+class ConversationAgent extends Agent<string, string> {}
 
 @model("gpt-4o-mini")
 // @validateOutput(SupportResponseSchema)
 @systemPrompt(`Respond with a joke`)
-export class JokeAgent extends Agent<string, string> {}
+class JokeAgent extends Agent<string, string> {}
 
 async function main() {
   const cAgent = new ConversationAgent();

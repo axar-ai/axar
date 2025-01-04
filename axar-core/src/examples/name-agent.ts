@@ -1,28 +1,27 @@
-import { model, systemPrompt } from "../agent/decorators";
-import { Agent } from "./../agent";
+import { model, systemPrompt, Agent } from "../agent";
 
 type User = {
-	name: string;
+  name: string;
 };
 
 @model("gpt-4o-mini")
 @systemPrompt("Be concise, reply with one sentence")
 export class NameAgent extends Agent<string, string> {
-	constructor(private user: User) {
-		super();
-	}
+  constructor(private user: User) {
+    super();
+  }
 
-	@systemPrompt()
-	async addUserName(): Promise<string> {
-		return `The user's name is '${this.user.name}'`;
-	}
+  @systemPrompt()
+  async addUserName(): Promise<string> {
+    return `The user's name is '${this.user.name}'`;
+  }
 }
 
 async function main() {
-	const response = await new NameAgent({ name: "Annie" }).run(
-		"Does their name start with 'A'?"
-	);
-	console.log(response);
+  const response = await new NameAgent({ name: "Annie" }).run(
+    "Does their name start with 'A'?"
+  );
+  console.log(response);
 }
 
 main().catch(console.error);

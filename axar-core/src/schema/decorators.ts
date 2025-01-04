@@ -39,7 +39,7 @@ import {
 export function schema(
   descriptionOrOptions: string | SchemaOptions = {}
 ): ClassDecorator {
-  return function (target: Function): void {
+  return function <T extends Function>(target: T): T {
     let options: SchemaOptions;
     if (typeof descriptionOrOptions === "string") {
       options = { description: descriptionOrOptions };
@@ -51,6 +51,7 @@ export function schema(
     // Generate and store the Zod schema
     const zodSchema: ZodSchema<any> = toZodSchema(target as any);
     Reflect.defineMetadata(META_KEYS.SCHEMA_DEF, zodSchema, target);
+    return target;
   };
 }
 

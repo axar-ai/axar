@@ -1,11 +1,10 @@
-// src/agent/Agent.ts
-import { ZodSchema } from "zod";
+import { z, ZodSchema } from "zod";
 import {
-	generateText,
-	LanguageModelV1,
-	CoreMessage,
-	CoreTool,
-	Output,
+  generateText,
+  LanguageModelV1,
+  CoreMessage,
+  CoreTool,
+  Output,
 } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { META_KEYS } from "./meta-keys";
@@ -13,130 +12,120 @@ import { ToolMetadata } from "./types";
 
 // Base agent that handles core functionality
 export abstract class Agent<TInput = string, TOutput = any> {
-	private static getMetadata<T>(key: symbol, target: any): T {
-		return Reflect.getMetadata(key, target) || null;
-	}
+  private static getMetadata<T>(key: symbol, target: any): T {
+    return Reflect.getMetadata(key, target) || ([] as unknown as T);
+  }
 
-	protected getModel(): LanguageModelV1 {
-		const modelName = Agent.getMetadata<string>(
-			META_KEYS.MODEL,
-			this.constructor
-		);
-		if (!modelName) {
-			throw new Error(
-				"Model metadata not found. Please apply @model decorator."
-			);
-		}
-		return openai(modelName);
-	}
+  protected getModel(): LanguageModelV1 {
+    const modelName = Agent.getMetadata<string>(
+      META_KEYS.MODEL,
+      this.constructor
+    );
+    if (!modelName) {
+      throw new Error(
+        "Model metadata not found. Please apply @model decorator."
+      );
+    }
+    return openai(modelName);
+  }
 
-	protected getTools(): Record<string, CoreTool> {
-		const tools = Agent.getMetadata<ToolMetadata[]>(
-			META_KEYS.TOOLS,
-			this.constructor
-		);
+  protected getTools(): Record<string, CoreTool> {
+    const tools = Agent.getMetadata<ToolMetadata[]>(
+      META_KEYS.TOOLS,
+      this.constructor
+    );
 
-		if (!tools) {
-			throw new Error(
-				"Tools metadata not found. Please apply @tool decorator."
-			);
-		}
+    const toolsFormatted = Object.fromEntries(
+      tools.map((tool) => [
+        tool.name,
+        {
+          description: tool.description,
+          parameters: tool.parameters,
+          execute: (...args: any[]) => (this as any)[tool.method](...args),
+        },
+      ])
+    );
 
-		const toolsFormatted = Object.fromEntries(
-			tools.map((tool) => [
-				tool.name,
-				{
-					description: tool.description,
-					parameters: tool.parameters,
-					execute: (...args: any[]) => (this as any)[tool.method](...args),
-				},
-			])
-		);
+    return toolsFormatted as Record<string, CoreTool>;
+  }
 
-		// console.log(toolsFormatted);
-		// throw new Error("Method not implemented.");
+  protected getSystemPrompts(): Array<() => Promise<string>> {
+    return Agent.getMetadata<Array<() => Promise<string>>>(
+      META_KEYS.SYSTEM_PROMPTS,
+      this.constructor
+    );
+  }
 
-		return toolsFormatted as Record<string, CoreTool>;
-	}
+  protected getOutputSchema(): ZodSchema<any> {
+    // Retrieve the ZodSchema from metadata
+    const schema: ZodSchema<TOutput> = Reflect.getMetadata(
+      META_KEYS.OUTPUT,
+      this.constructor
+    );
 
-	protected getSystemPrompts(): Array<() => Promise<string>> {
-		return Agent.getMetadata<Array<() => Promise<string>>>(
-			META_KEYS.SYSTEM_PROMPTS,
-			this.constructor
-		);
-	}
+    if (!schema) {
+      console.warn(
+        `No output schema found for ${this.constructor.name}. ` +
+          `Did you forget to apply @output decorator? ` +
+          `Falling back to string schema.`
+      );
+      return z.string();
+    }
 
-	protected getValidationSchema(): ZodSchema<any> {
-		// Retrieve the ZodSchema from metadata
-		const schema: ZodSchema<TOutput> = Reflect.getMetadata(
-			META_KEYS.OUTPUT,
-			this.constructor
-		);
+    return schema;
+  }
 
-		if (!schema) {
-			throw new Error(
-				`Validation schema for ${this.constructor.name} not found. Ensure the class is decorated with @output.`
-			);
-		}
+  async run(input: TInput): Promise<TOutput> {
+    const model = this.getModel();
+    const tools = this.getTools();
+    const schema = this.getOutputSchema();
+    console.log("schema: ", schema);
 
-		return schema;
-	}
+    const systemPrompts = await Promise.all(
+      this.getSystemPrompts().map((fn) => fn.call(this))
+    );
 
-	async run(input: TInput): Promise<TOutput> {
-		const model = this.getModel();
-		const tools = this.getTools();
-		const schema = this.getValidationSchema();
+    const messages = [
+      { role: "system", content: systemPrompts.join("\n\n") },
+      { role: "user", content: String(input) },
+    ] as CoreMessage[];
 
-		const systemPrompts = await Promise.all(
-			this.getSystemPrompts().map((fn) => fn.call(this))
-		);
+    const baseConfig = {
+      model: model,
+      messages: messages,
+      tools: tools,
+      // FIXME: this needs to be configurable
+      maxSteps: 3,
+    };
 
-		const messages = [
-			{ role: "system", content: systemPrompts.join("\n\n") },
-			{ role: "user", content: String(input) },
-		] as CoreMessage[];
+    // Check if schema is for string then use plain text result
+    if (schema instanceof z.ZodString) {
+      const result = await generateText(baseConfig);
+      return result.text as TOutput;
+    }
 
-		//console.log("schema 🚀 ~ run ~ schema:", schema);
-		//console.log(model);
-		//console.log(messages);
+    // For all other cases (including primitives and complex types)
+    const result = await generateText({
+      ...baseConfig,
+      experimental_output: Output.object({
+        schema: schema,
+      }),
+    });
 
-		const hasSchema =
-			schema && schema.parse && typeof schema.parse === "function";
+    // For primitive types (boolean, number), return .value
+    if (schema instanceof z.ZodBoolean || schema instanceof z.ZodNumber) {
+      console.log(result);
+      return result.experimental_output.value as TOutput;
+    }
 
-		if (hasSchema) {
-			const result = await generateText({
-				model: model,
-				//schema: schema || undefined, // Pass schema if present, otherwise undefined
-				//output: schema ? "object" : "no-schema", // Use 'no-schema' if no schema is present
-				messages: messages,
-				tools: tools,
-				experimental_output: Output.object({
-					schema: schema,
-				}),
-				maxSteps: 3,
-			});
+    // For complex types, return the whole object
+    return result.experimental_output as TOutput;
+  }
 
-			return result.experimental_output as TOutput;
-			//return schema.parse(output) as TOutput;
-		}
-
-		console.log("hello");
-		console.log(messages);
-		console.log(tools);
-		const result = await generateText({
-			model: model,
-			messages: messages as CoreMessage[],
-			tools: tools,
-			maxSteps: 3,
-		});
-
-		return result.text as TOutput;
-	}
-
-	// Stream method for streaming responses
-	// async stream(input: TInput): Promise<StreamingTextResponse> {
-	//   // Similar to run() but uses streamText from AI SDK
-	//   // Implementation would follow AI SDK streaming patterns
-	//   throw new Error("Streaming not yet implemented");
-	// }
+  // Stream method for streaming responses
+  // async stream(input: TInput): Promise<StreamingTextResponse> {
+  //   // Similar to run() but uses streamText from AI SDK
+  //   // Implementation would follow AI SDK streaming patterns
+  //   throw new Error("Streaming not yet implemented");
+  // }
 }
