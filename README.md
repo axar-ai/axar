@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://axar.ai/assets/images/image01.svg?v=0cac29f0" alt="AXAR Logo" width="200">
+  <img src="https://axar.ai/assets/images/image01.svg?v=0cac29f0" alt="AXAR Logo" width="360">
 </p>
 
 Most agent frameworks today miss the mark: they’re designed to impress on stage, not deliver in production. Flashy demos and overengineered complexity have overshadowed what truly matters—giving developers the tools they need to build reliable, robust applications.
@@ -175,6 +175,9 @@ More examples can be found in the [examples](src/examples) directory.
 
 [Coming soon]
 
+> [!WARNING]
+> AXAR AI (axar-core) is currently in early alpha. It is not intended to be used in production as of yet. But we're working hard to get there and we would love your help!
+
 ## Documentation
 
 [Coming soon]
@@ -201,7 +204,7 @@ npx jest
 
 ## Inspirations
 
-AXAR is built on ideas from some of the best tools and frameworks out there. We use Vercel's AI SDK and take inspiration from [Pydantic AI](https://github.com/pydantic/pydantic-ai), OpenAI’s [Swarm](https://github.com/openai/swarm), and [LangGraph](https://github.com/langchain-ai/langgraph) by LangChain. These projects have set the standard for developer-friendly AI tooling, and AXAR builds on that foundation.
+AXAR is built on ideas from some of the best tools and frameworks out there. We use Vercel's AI SDK and take inspiration from [Pydantic AI](https://github.com/pydantic/pydantic-ai)and OpenAI’s [Swarm](https://github.com/openai/swarm). These projects have set the standard for developer-friendly AI tooling, and AXAR builds on that foundation.
 
 ## Resources
 
