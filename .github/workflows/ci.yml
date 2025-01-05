@@ -31,4 +31,4 @@ jobs:
 
       - name: Upload coverage to Coveralls
         run: |
-          npx coveralls < coverage/lcov-report/lcov-report.json
+          npx coveralls < coverage/coverage-final.json
