@@ -33,9 +33,10 @@ jobs:
         env:
           CI: true
           DISABLE_MOCKED_WARNING: true
-      - name: Coveralls parallel
-        uses: coverallsapp/github-action@master
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v2.3.4
+
         with:
-          github-token: ${{ secrets.github_token }}
+          # github-token: ${{ secrets.github_token }}
           flag-name: run-${{ matrix.node-version }}
           parallel: true
