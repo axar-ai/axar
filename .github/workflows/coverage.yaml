@@ -27,7 +27,8 @@ jobs:
       - name: Download coverage artifact
         uses: dawidd6/action-download-artifact@v6
         with:
-          workflow: CI # Use exact name or workflow ID
+          workflow: CI # Use the workflow name (or ID) here
+          name: coverage-html
           commit: ${{ github.event.workflow_run.head_sha }}
 
       - name: List downloaded artifacts

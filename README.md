@@ -2,6 +2,12 @@
   <img src="https://axar.ai/assets/images/image01.svg?v=0cac29f0" alt="AXAR Logo" width="360">
 </p>
 
+<div align="center">
+  <a href="https://github.com/axar-ai/axar-core/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://github.com/axar-ai/axar-core/actions/workflows/ci.yml/badge.svg?event=push" alt="CI"></a>
+<a href="https://github.com/axar-ai/axar-core/blob/main/LICENSE"><img src="https://img.shields.io/github/license/axar-ai/axar-core" alt="license"></a>
+
+</div>
+
 Most agent frameworks today miss the mark: they’re designed to impress on stage, not deliver in production. Flashy demos and overengineered complexity have overshadowed what truly matters—giving developers the tools they need to build reliable, robust applications.
 
 ## What developers really need
