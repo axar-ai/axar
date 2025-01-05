@@ -32,5 +32,5 @@ jobs:
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v3
         with:
-          name: coverage-html
-          path: coverage/
+          name: coverage-final-json # Artifact name
+          path: coverage/coverage-final.json # Path to the coverage file
