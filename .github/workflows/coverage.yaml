@@ -6,6 +6,8 @@ on:
     types: [completed]
 
 permissions:
+  actions: read
+  contents: read
   statuses: write
 
 jobs:
@@ -14,25 +16,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository to access codebase
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      # Download coverage artifact
       - name: Download coverage artifact
         uses: dawidd6/action-download-artifact@v6
         with:
-          workflow: CI
-          name: coverage-html
+          workflow: CI # Use exact name or workflow ID
           commit: ${{ github.event.workflow_run.head_sha }}
 
-      # Upload coverage to Smokeshow
+      - name: List downloaded artifacts
+        run: ls -R coverage-html || echo "No artifacts found"
+
       - name: Upload coverage to Smokeshow
         run: |
           npx smokeshow upload coverage-html
