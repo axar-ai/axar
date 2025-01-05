@@ -1,12 +1,12 @@
-import z from "zod";
-import { model, output, systemPrompt, tool, Agent } from "../agent";
+import z from 'zod';
+import { model, output, systemPrompt, tool, Agent } from '../agent';
 
 // FIXME: Support boolean output
 
 export const SupportResponseSchema = z.boolean();
 
 type SupportResponse = z.infer<typeof SupportResponseSchema>;
-@model("gpt-4o-mini")
+@model('openai:gpt-4o-mini')
 @output(SupportResponseSchema)
 @systemPrompt(`
   See if the customer has won the game based on the number they provide
@@ -17,8 +17,8 @@ export class RouletteAgent extends Agent<string, SupportResponse> {
   }
 
   @tool(
-    "Check if the customer number is a winner",
-    z.object({ customerNumber: z.number() })
+    'Check if the customer number is a winner',
+    z.object({ customerNumber: z.number() }),
   )
   checkWinner({ customerNumber }: { customerNumber: number }): boolean {
     console.log(`Checking if ${customerNumber} is a winner`);
@@ -29,10 +29,10 @@ export class RouletteAgent extends Agent<string, SupportResponse> {
 async function main() {
   const agent = new RouletteAgent(18);
 
-  let result = await agent.run("Put my money on square eighteen");
+  let result = await agent.run('Put my money on square eighteen');
   console.log(result);
 
-  result = await agent.run("I bet five is the winner");
+  result = await agent.run('I bet five is the winner');
   console.log(result);
 }
 

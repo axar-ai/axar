@@ -1,11 +1,11 @@
-import { model, systemPrompt, Agent } from "../agent";
+import { model, systemPrompt, Agent } from '../agent';
 
 type User = {
   name: string;
 };
 
-@model("gpt-4o-mini")
-@systemPrompt("Be concise, reply with one sentence")
+@model('openai:gpt-4o-mini')
+@systemPrompt('Be concise, reply with one sentence')
 export class NameAgent extends Agent<string, string> {
   constructor(private user: User) {
     super();
@@ -18,8 +18,8 @@ export class NameAgent extends Agent<string, string> {
 }
 
 async function main() {
-  const response = await new NameAgent({ name: "Annie" }).run(
-    "Does their name start with 'A'?"
+  const response = await new NameAgent({ name: 'Annie' }).run(
+    "Do their name start with 'A'?",
   );
   console.log(response);
 }

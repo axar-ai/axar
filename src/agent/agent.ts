@@ -6,9 +6,9 @@ import {
   CoreTool,
   Output,
 } from 'ai';
-import { openai } from '@ai-sdk/openai';
 import { META_KEYS } from './meta-keys';
 import { ToolMetadata } from './types';
+import { getModel } from '../llm';
 
 // Base agent that handles core functionality
 export abstract class Agent<TInput = string, TOutput = any> {
@@ -16,17 +16,18 @@ export abstract class Agent<TInput = string, TOutput = any> {
     return Reflect.getMetadata(key, target) || ([] as unknown as T);
   }
 
-  protected getModel(): LanguageModelV1 {
-    const modelName = Agent.getMetadata<string>(
+  protected async getModel(): Promise<LanguageModelV1> {
+    const providerModelName = Agent.getMetadata<string>(
       META_KEYS.MODEL,
       this.constructor,
     );
-    if (!modelName) {
+    if (!providerModelName) {
       throw new Error(
         'Model metadata not found. Please apply @model decorator.',
       );
     }
-    return openai(modelName);
+
+    return await getModel(providerModelName);
   }
 
   protected getTools(): Record<string, CoreTool> {
@@ -76,10 +77,9 @@ export abstract class Agent<TInput = string, TOutput = any> {
   }
 
   async run(input: TInput): Promise<TOutput> {
-    const model = this.getModel();
+    const model = await this.getModel();
     const tools = this.getTools();
     const schema = this.getOutputSchema();
-    console.log('schema: ', schema);
 
     const systemPrompts = await Promise.all(
       this.getSystemPrompts().map((fn) => fn.call(this)),
@@ -114,7 +114,6 @@ export abstract class Agent<TInput = string, TOutput = any> {
 
     // For primitive types (boolean, number), return .value
     if (schema instanceof z.ZodBoolean || schema instanceof z.ZodNumber) {
-      console.log(result);
       return result.experimental_output.value as TOutput;
     }
 

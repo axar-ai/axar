@@ -1,6 +1,6 @@
-import { model, systemPrompt, Agent } from "../agent";
+import { model, systemPrompt, Agent } from '../agent';
 
-@model("gpt-4o-mini")
+@model('openai:gpt-4o-mini')
 @systemPrompt("Use the customer's name while replying.")
 export class PromptAgent extends Agent<string, string> {
   constructor(private userName: string) {
@@ -19,7 +19,7 @@ export class PromptAgent extends Agent<string, string> {
 }
 
 async function main() {
-  const response = await new PromptAgent("Frank").run("What is the date?");
+  const response = await new PromptAgent('Frank').run('What is the date?');
   console.log(response);
 }
 
