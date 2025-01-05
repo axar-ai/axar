@@ -25,6 +25,12 @@ jobs:
         run: |
           npm install
 
-      - name: CI
+      - name: Run tests with coverage
         run: |
-          npm test
+          npm test -- --coverage
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-html
+          path: coverage/
