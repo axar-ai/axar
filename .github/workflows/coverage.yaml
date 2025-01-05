@@ -1,0 +1,44 @@
+name: Smokeshow
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  statuses: write
+
+jobs:
+  smokeshow:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository to access codebase
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Download coverage artifact
+      - name: Download coverage artifact
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: CI
+          name: coverage-html
+          commit: ${{ github.event.workflow_run.head_sha }}
+
+      # Upload coverage to Smokeshow
+      - name: Upload coverage to Smokeshow
+        run: |
+          npx smokeshow upload coverage-html
+        env:
+          SMOKESHOW_GITHUB_STATUS_DESCRIPTION: Coverage {coverage-percentage}
+          SMOKESHOW_GITHUB_COVERAGE_THRESHOLD: 95
+          SMOKESHOW_GITHUB_CONTEXT: coverage
+          SMOKESHOW_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SMOKESHOW_AUTH_KEY: ${{ secrets.SMOKESHOW_AUTH_KEY }}
