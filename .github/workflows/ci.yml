@@ -34,3 +34,31 @@ jobs:
         with:
           name: coverage-final-json # Artifact name
           path: coverage/coverage-final.json # Path to the coverage file
+
+  smokeshow:
+    needs: test # Ensure this job runs after the test job is successful
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-final-json # Match the artifact name with the upload name
+
+      - name: Upload coverage to Smokeshow
+        run: |
+          npx smokeshow upload coverage-final-json
+        env:
+          SMOKESHOW_GITHUB_STATUS_DESCRIPTION: Coverage {coverage-percentage}
+          SMOKESHOW_GITHUB_COVERAGE_THRESHOLD: 95
+          SMOKESHOW_GITHUB_CONTEXT: coverage
+          SMOKESHOW_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SMOKESHOW_AUTH_KEY: ${{ secrets.SMOKESHOW_AUTH_KEY }}
