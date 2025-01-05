@@ -37,6 +37,6 @@ jobs:
         uses: coverallsapp/github-action@v2.3.4
 
         with:
-          # github-token: ${{ secrets.github_token }}
+          github-token: ${{ secrets.github_token }}
           flag-name: run-${{ matrix.node-version }}
           parallel: true
