@@ -28,7 +28,3 @@ jobs:
       - name: Run tests with coverage
         run: |
           npm test -- --coverage
-
-      - name: Upload coverage to Coveralls
-        run: |
-          npx coveralls < coverage/coverage-final.json
