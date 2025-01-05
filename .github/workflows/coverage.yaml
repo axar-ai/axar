@@ -27,16 +27,16 @@ jobs:
       - name: Download coverage artifact
         uses: dawidd6/action-download-artifact@v6
         with:
-          workflow: CI # Use the workflow name (or ID) here
-          name: coverage-html
+          workflow: CI # Ensure the correct workflow name or ID
+          name: coverage-final-json
           commit: ${{ github.event.workflow_run.head_sha }}
 
       - name: List downloaded artifacts
-        run: ls -R coverage-html || echo "No artifacts found"
+        run: ls -R coverage-final.json || echo "No artifacts found"
 
       - name: Upload coverage to Smokeshow
         run: |
-          npx smokeshow upload coverage-html
+          npx smokeshow upload coverage-final.json
         env:
           SMOKESHOW_GITHUB_STATUS_DESCRIPTION: Coverage {coverage-percentage}
           SMOKESHOW_GITHUB_COVERAGE_THRESHOLD: 95
