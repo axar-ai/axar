@@ -211,7 +211,7 @@ AXAR is built on ideas from some of the best tools and frameworks out there. We 
 
 ## Contributing
 
-We welcome contributions from the community. We run regular workshops and events to help you get started. Join our [Discord](https://discord.gg/4h8fUZTWD9) to stay in the loop.
+We welcome contributions from the community. Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information. We run regular workshops and events to help you get started. Join our [Discord](https://discord.gg/4h8fUZTWD9) to stay in the loop.
 
 ## License
 
