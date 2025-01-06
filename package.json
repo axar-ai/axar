@@ -1,45 +1,60 @@
 {
-	"name": "@axar/core",
-	"version": "1.0.0",
-	"description": "",
-	"main": "dist/index.js",
-	"module": "dist/index.js",
-	"types": "dist/index.d.ts",
-	"exports": {
-		".": {
-			"import": "./dist/index.js",
-			"require": "./dist/index.js"
-		}
-	},
-	"scripts": {
-		"build": "tsc",
-		"test": "jest",
-		"test:watch": "jest --watch",
-		"test:coverage": "jest --coverage",
-		"test:report": "jest --coverage --reporters=default --reporters=jest-junit",
-		"open:coverage": "npx jest --coverage && open-cli coverage/lcov-report/index.html"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"dependencies": {
-		"@ai-sdk/anthropic": "^1.0.6",
-		"@ai-sdk/openai": "^1.0.5",
-		"@asteasolutions/zod-to-openapi": "^7.3.0",
-		"ai": "^4.0.13",
-		"reflect-metadata": "^0.2.1",
-		"zod": "^3.23.8",
-		"zod-to-ts": "^1.2.0"
-	},
-	"devDependencies": {
-		"@types/jest": "^29.5.14",
-		"@types/json-schema": "^7.0.15",
-		"@types/node": "^22.10.1",
-		"coveralls": "^3.1.1",
-		"jest": "^29.7.0",
-		"jest-junit": "^16.0.0",
-		"open-cli": "^8.0.0",
-		"ts-jest": "^29.2.5",
-		"typescript": "^5.7.2"
-	}
+  "name": "@axar/core",
+  "version": "0.0.1",
+  "description": "TypeScript-based agent framework for building agentic applications powered by LLMs",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:report": "jest --coverage --reporters=default --reporters=jest-junit",
+    "open:coverage": "npx jest --coverage && open-cli coverage/lcov-report/index.html"
+  },
+  "keywords": [
+    "typescript",
+    "agent-framework",
+    "llms",
+    "generative-ai",
+    "agent-framework-javascript",
+    "agentic-ai"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/axar-ai/axar-core.git",
+    "baseUrl": "https://github.com/axar-ai/axar-core"
+  },
+  "author": "axar-ai",
+  "license": "ISC",
+  "dependencies": {
+    "@ai-sdk/anthropic": "^1.0.6",
+    "@ai-sdk/openai": "^1.0.5",
+    "@asteasolutions/zod-to-openapi": "^7.3.0",
+    "ai": "^4.0.13",
+    "reflect-metadata": "^0.2.1",
+    "zod": "^3.23.8",
+    "zod-to-ts": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/json-schema": "^7.0.15",
+    "@types/node": "^22.10.1",
+    "coveralls": "^3.1.1",
+    "jest": "^29.7.0",
+    "jest-junit": "^16.0.0",
+    "open-cli": "^8.0.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.7.2"
+  }
 }
