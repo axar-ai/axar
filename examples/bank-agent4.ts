@@ -1,5 +1,5 @@
-import { systemPrompt, model, output, tool, Agent } from '../agent';
-import { property, min, max, schema, optional } from '../schema';
+import { systemPrompt, model, output, tool, Agent } from 'agent';
+import { property, min, max, schema, optional } from 'schema';
 
 export interface DatabaseConn {
   customerName(id: number): Promise<string>;
@@ -43,7 +43,10 @@ class ToolParams {
 `)
 @output(SupportResponse)
 export class SupportAgent extends Agent<string, SupportResponse> {
-  constructor(private customerId: number, private db: DatabaseConn) {
+  constructor(
+    private customerId: number,
+    private db: DatabaseConn,
+  ) {
     super();
   }
 

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { output, Agent, tool, model, systemPrompt } from '../../../agent';
-import { property, schema, optional } from '../../../schema';
+import { output, Agent, tool, model, systemPrompt } from 'agent';
+import { property, schema, optional } from 'schema';
 import { LOST_BAGGAGE_POLICY, STARTER_PROMPT } from './policies';
 import { caseResolved, escalateToAgent, initiateBaggageSearch } from './tools';
 

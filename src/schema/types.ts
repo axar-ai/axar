@@ -21,33 +21,33 @@ export type PropertyOptions = Readonly<{
  * String validation rule types
  */
 type StringValidation =
-  | "email"
-  | "url"
-  | "pattern"
-  | "min"
-  | "max"
-  | "uuid"
-  | "cuid"
-  | "datetime"
-  | "ip";
+  | 'email'
+  | 'url'
+  | 'pattern'
+  | 'min'
+  | 'max'
+  | 'uuid'
+  | 'cuid'
+  | 'datetime'
+  | 'ip';
 
 /**
  * Number validation rule types
  */
 type NumberValidation =
-  | "minimum"
-  | "maximum"
-  | "exclusiveMinimum"
-  | "exclusiveMaximum"
-  | "multipleOf"
-  | "integer";
+  | 'minimum'
+  | 'maximum'
+  | 'exclusiveMinimum'
+  | 'exclusiveMaximum'
+  | 'multipleOf'
+  | 'integer';
 
 /**
  * Array validation rule types
  */
-type ArrayValidation = "minItems" | "maxItems" | "uniqueItems";
+type ArrayValidation = 'minItems' | 'maxItems' | 'uniqueItems';
 
 export type ValidationRule = {
-  type: StringValidation | NumberValidation | ArrayValidation | "enum";
+  type: StringValidation | NumberValidation | ArrayValidation | 'enum';
   params?: any[];
 };

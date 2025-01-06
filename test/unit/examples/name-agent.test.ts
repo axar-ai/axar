@@ -1,11 +1,11 @@
-import { NameAgent } from "./../../../src/examples/name-agent"; // Adjust the import path as needed
+import { NameAgent } from './../../../examples/name-agent'; // Adjust the import path as needed
 
-describe.skip("NameAgent", () => {
+describe.skip('NameAgent', () => {
   let nameAgent: NameAgent;
 
   beforeEach(() => {
     // Initialize the agent with a mock user
-    nameAgent = new NameAgent({ name: "Annie" });
+    nameAgent = new NameAgent({ name: 'Annie' });
   });
 
   it("should return the correct user's name", async () => {
@@ -24,11 +24,11 @@ describe.skip("NameAgent", () => {
     expect(result).toBe("The user's name is 'Annie'");
   });
 
-  it("should return a string when run is called", async () => {
+  it('should return a string when run is called', async () => {
     // Simulate the behavior of `run` method
     const result = await nameAgent.run("Does their name start with 'A'?");
 
     // Check if the result is a string
-    expect(typeof result).toBe("string");
+    expect(typeof result).toBe('string');
   });
 });

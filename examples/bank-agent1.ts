@@ -1,7 +1,7 @@
-import { tool, systemPrompt, model, output, Agent } from '../agent';
-import { schema, property, min, max, optional } from '../schema';
-
+import {} from '../';
 import z from 'zod';
+import { optional, property, schema } from 'schema';
+import { model, output, systemPrompt, tool, Agent } from 'agent';
 
 export interface DatabaseConn {
   customerName(id: number): Promise<string>;
@@ -13,19 +13,28 @@ export interface DatabaseConn {
 }
 
 @schema()
-export class SupportResponse {
-  @property('Human-readable advice to give to the customer.')
-  support_advice!: string;
-  @property("Whether to block customer's card.")
-  block_card!: boolean;
-  @property('Risk level of query')
-  @min(0)
-  @max(1)
-  risk!: number;
-  @property("Customer's emotional state")
+class ToolParams {
+  @property("Customer's name")
+  customerName!: string;
+
+  @property('Whether to include pending transactions')
   @optional()
-  status?: 'Happy' | 'Sad' | 'Neutral';
+  includePending?: boolean;
 }
+
+export const SupportResponseSchema = z.object({
+  support_advice: z
+    .string()
+    .describe('Human-readable advice to give to the customer.'),
+  block_card: z.boolean().describe("Whether to block customer's card."),
+  risk: z.number().min(0).max(1).describe('Risk level of query'),
+  status: z
+    .enum(['Happy', 'Sad', 'Neutral'])
+    .optional()
+    .describe("Customer's emotional state"),
+});
+
+type SupportResponse = z.infer<typeof SupportResponseSchema>;
 
 @model('openai:gpt-4o-mini')
 @systemPrompt(`
@@ -33,9 +42,12 @@ export class SupportResponse {
   Give the customer support and judge the risk level of their query.
   Reply using the customer's name.
 `)
-@output(SupportResponse)
+@output(SupportResponseSchema)
 export class SupportAgent extends Agent<string, SupportResponse> {
-  constructor(private customerId: number, private db: DatabaseConn) {
+  constructor(
+    private customerId: number,
+    private db: DatabaseConn,
+  ) {
     super();
   }
 
@@ -45,24 +57,12 @@ export class SupportAgent extends Agent<string, SupportResponse> {
     return `The customer's name is '${name}'`;
   }
 
-  @tool(
-    "Get customer's current balance",
-    z.object({
-      includePending: z.boolean().optional(),
-      customerName: z.string(),
-    }),
-  )
-  async customerBalance({
-    customerName,
-    includePending = true,
-  }: {
-    customerName: string;
-    includePending?: boolean;
-  }): Promise<number> {
+  @tool("Get customer's current balance")
+  async getCustomerBalance(params: ToolParams): Promise<number> {
     return this.db.customerBalance(
       this.customerId,
-      customerName,
-      includePending ?? false,
+      params.customerName,
+      params.includePending ?? true,
     );
   }
 }
@@ -88,10 +88,8 @@ async function main() {
   // Simple query
   const balanceResult = await agent.run('What is my balance?');
   console.log(balanceResult);
-
   // Lost card scenario
-  const cardResult = await agent.run('I just lost my card!');
-  console.log(cardResult);
+  // const cardResult = await agent.run("I just lost my card!");
 }
 
 if (require.main === module) {

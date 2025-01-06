@@ -5,6 +5,10 @@ module.exports = {
   coverageDirectory: 'coverage', // Directory to output coverage files
   coverageReporters: ['json', 'text', 'lcov', 'clover'], // Coverage formats
   collectCoverageFrom: ['src/**/*.{ts,tsx,js,jsx}'],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    'src/index.ts', // Exclude src/index.ts from coverage
+  ],
   reporters: [
     'default',
     [

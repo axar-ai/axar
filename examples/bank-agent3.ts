@@ -1,5 +1,7 @@
+import { tool, systemPrompt, model, output, Agent } from 'agent';
+import { schema, property, min, max, optional } from 'schema';
+
 import z from 'zod';
-import { model, systemPrompt, output, tool, Agent } from '../agent';
 
 export interface DatabaseConn {
   customerName(id: number): Promise<string>;
@@ -10,34 +12,38 @@ export interface DatabaseConn {
   ): Promise<number>;
 }
 
-export const SupportResponseSchema = z.object({
-  support_advice: z
-    .string()
-    .describe('Human-readable advice to give to the customer.'),
-  block_card: z.boolean().describe("Whether to block customer's card."),
-  risk: z.number().min(0).max(1).describe('Risk level of query'),
-  status: z
-    .enum(['Happy', 'Sad', 'Neutral'])
-    .optional()
-    .describe("Customer's emotional state"),
-});
-
-type SupportResponse = z.infer<typeof SupportResponseSchema>;
+@schema()
+export class SupportResponse {
+  @property('Human-readable advice to give to the customer.')
+  support_advice!: string;
+  @property("Whether to block customer's card.")
+  block_card!: boolean;
+  @property('Risk level of query')
+  @min(0)
+  @max(1)
+  risk!: number;
+  @property("Customer's emotional state")
+  @optional()
+  status?: 'Happy' | 'Sad' | 'Neutral';
+}
 
 @model('openai:gpt-4o-mini')
-@output(SupportResponseSchema)
 @systemPrompt(`
   You are a support agent in our bank. 
   Give the customer support and judge the risk level of their query.
   Reply using the customer's name.
 `)
+@output(SupportResponse)
 export class SupportAgent extends Agent<string, SupportResponse> {
-  constructor(private customerId: number, private db: DatabaseConn) {
+  constructor(
+    private customerId: number,
+    private db: DatabaseConn,
+  ) {
     super();
   }
 
   @systemPrompt()
-  private async getCustomerContext(): Promise<string> {
+  async getCustomerContext(): Promise<string> {
     const name = await this.db.customerName(this.customerId);
     return `The customer's name is '${name}'`;
   }
@@ -56,12 +62,11 @@ export class SupportAgent extends Agent<string, SupportResponse> {
     customerName: string;
     includePending?: boolean;
   }): Promise<number> {
-    const balance = await this.db.customerBalance(
+    return this.db.customerBalance(
       this.customerId,
       customerName,
-      includePending,
+      includePending ?? false,
     );
-    return balance;
   }
 }
 

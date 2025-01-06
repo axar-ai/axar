@@ -1,13 +1,13 @@
-import { ZodSchema } from "zod";
-import { META_KEYS } from "./meta-keys";
-import { registerProperty, addValidationRule } from "./utils";
-import { toZodSchema } from "./generator";
+import { ZodSchema } from 'zod';
+import { META_KEYS } from './meta-keys';
+import { registerProperty, addValidationRule } from './utils';
+import { toZodSchema } from './generator';
 import {
   SchemaOptions,
   PropertyOptions,
   ValidationRule,
   ClassConstructor,
-} from "./types";
+} from './types';
 
 /**
  * Decorates a class for automatic schema generation using Zod.
@@ -37,11 +37,11 @@ import {
  * ```
  */
 export function schema(
-  descriptionOrOptions: string | SchemaOptions = {}
+  descriptionOrOptions: string | SchemaOptions = {},
 ): ClassDecorator {
   return function <T extends Function>(target: T): T {
     let options: SchemaOptions;
-    if (typeof descriptionOrOptions === "string") {
+    if (typeof descriptionOrOptions === 'string') {
       options = { description: descriptionOrOptions };
     } else {
       options = descriptionOrOptions;
@@ -82,13 +82,13 @@ export const zodify = schema;
  * ```
  */
 export function property(
-  descriptionOrOptions: string | PropertyOptions
+  descriptionOrOptions: string | PropertyOptions,
 ): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol): void {
     registerProperty(target, propertyKey);
 
     let options: PropertyOptions;
-    if (typeof descriptionOrOptions === "string") {
+    if (typeof descriptionOrOptions === 'string') {
       options = { description: descriptionOrOptions };
     } else {
       options = descriptionOrOptions;
@@ -130,8 +130,8 @@ export function optional(): PropertyDecorator {
  * @param params - Optional parameters for the validation rule
  */
 function createValidationDecorator(
-  type: ValidationRule["type"],
-  params?: any[]
+  type: ValidationRule['type'],
+  params?: any[],
 ): PropertyDecorator {
   return function (target: Object, propertyKey: string | symbol): void {
     registerProperty(target, propertyKey);
@@ -155,16 +155,16 @@ function createValidationDecorator(
  * ```
  */
 export function enumValues<T extends string | number>(
-  values: readonly T[]
+  values: readonly T[],
 ): PropertyDecorator {
   return function (target: Object, propertyKey: string | symbol): void {
     if (!Array.isArray(values) || values.length === 0) {
-      throw new Error("Enum values must be a non-empty array");
+      throw new Error('Enum values must be a non-empty array');
     }
     registerProperty(target, propertyKey);
     Reflect.defineMetadata(META_KEYS.ENUM_VALUES, values, target, propertyKey);
     addValidationRule(target, propertyKey, {
-      type: "enum",
+      type: 'enum',
       params: [values],
     });
   };
@@ -183,50 +183,50 @@ export function enumValues<T extends string | number>(
  * ```
  */
 export function arrayItems(
-  itemType: () => ClassConstructor
+  itemType: () => ClassConstructor,
 ): PropertyDecorator {
   return function (target: Object, propertyKey: string | symbol): void {
-    if (typeof itemType !== "function") {
-      throw new Error("Item type must be a function returning a constructor");
+    if (typeof itemType !== 'function') {
+      throw new Error('Item type must be a function returning a constructor');
     }
     registerProperty(target, propertyKey);
     Reflect.defineMetadata(
       META_KEYS.ARRAY_ITEM_TYPE,
       itemType,
       target,
-      propertyKey
+      propertyKey,
     );
   };
 }
 
 // String validation decorators
-export const email = () => createValidationDecorator("email");
-export const url = () => createValidationDecorator("url");
+export const email = () => createValidationDecorator('email');
+export const url = () => createValidationDecorator('url');
 export const pattern = (regex: RegExp) =>
-  createValidationDecorator("pattern", [regex]);
-export const uuid = () => createValidationDecorator("uuid");
-export const cuid = () => createValidationDecorator("cuid");
-export const datetime = () => createValidationDecorator("datetime");
-export const ip = () => createValidationDecorator("ip");
-export const max = (value: number) => createValidationDecorator("max", [value]);
-export const min = (value: number) => createValidationDecorator("min", [value]);
+  createValidationDecorator('pattern', [regex]);
+export const uuid = () => createValidationDecorator('uuid');
+export const cuid = () => createValidationDecorator('cuid');
+export const datetime = () => createValidationDecorator('datetime');
+export const ip = () => createValidationDecorator('ip');
+export const max = (value: number) => createValidationDecorator('max', [value]);
+export const min = (value: number) => createValidationDecorator('min', [value]);
 
 // Number validation decorators
 export const minimum = (value: number) =>
-  createValidationDecorator("minimum", [value]);
+  createValidationDecorator('minimum', [value]);
 export const maximum = (value: number) =>
-  createValidationDecorator("maximum", [value]);
+  createValidationDecorator('maximum', [value]);
 export const multipleOf = (value: number) =>
-  createValidationDecorator("multipleOf", [value]);
+  createValidationDecorator('multipleOf', [value]);
 export const exclusiveMinimum = (value: number) =>
-  createValidationDecorator("exclusiveMinimum", [value]);
+  createValidationDecorator('exclusiveMinimum', [value]);
 export const exclusiveMaximum = (value: number) =>
-  createValidationDecorator("exclusiveMaximum", [value]);
-export const integer = () => createValidationDecorator("integer");
+  createValidationDecorator('exclusiveMaximum', [value]);
+export const integer = () => createValidationDecorator('integer');
 
 // Array validation decorators
 export const minItems = (min: number) =>
-  createValidationDecorator("minItems", [min]);
+  createValidationDecorator('minItems', [min]);
 export const maxItems = (max: number) =>
-  createValidationDecorator("maxItems", [max]);
-export const uniqueItems = () => createValidationDecorator("uniqueItems");
+  createValidationDecorator('maxItems', [max]);
+export const uniqueItems = () => createValidationDecorator('uniqueItems');

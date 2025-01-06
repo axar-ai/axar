@@ -28,6 +28,11 @@ jobs:
         run: |
           npm install
 
+      # Prettier check step
+      - name: Run Prettier check
+        run: |
+          npm run prettier:check
+
       - name: Run tests with coverage
         run: npm run test -- --coverage
         env:

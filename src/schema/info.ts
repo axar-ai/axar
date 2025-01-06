@@ -1,6 +1,6 @@
-import { ClassConstructor } from "./types";
-import { META_KEYS } from "./meta-keys";
-import { ZodSchema } from "zod";
+import { ClassConstructor } from './types';
+import { META_KEYS } from './meta-keys';
+import { ZodSchema } from 'zod';
 /**
  * Checks if a class has an associated Zod schema.
  *
@@ -26,7 +26,7 @@ export function getSchemaDef(target: ClassConstructor): ZodSchema {
   const schema = Reflect.getMetadata(META_KEYS.SCHEMA_DEF, target);
   if (!schema) {
     throw new Error(
-      `No schema found for ${target.name}. Did you apply @schema decorator?`
+      `No schema found for ${target.name}. Did you apply @schema decorator?`,
     );
   }
   return schema;

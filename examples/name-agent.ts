@@ -1,4 +1,4 @@
-import { model, systemPrompt, Agent } from '../agent';
+import { model, systemPrompt, Agent } from 'agent';
 
 type User = {
   name: string;

@@ -1,5 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { DatabaseConn, SupportAgent } from '../../../src/examples/bank-agent4';
+import { DatabaseConn, SupportAgent } from '../../../examples/bank-agent4';
 import 'reflect-metadata';
 
 const mockDatabaseConn: jest.Mocked<DatabaseConn> = {

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { model, output, systemPrompt, tool, Agent } from '../agent';
-import { property, schema } from '../schema';
+import { model, output, systemPrompt, tool, Agent } from 'agent';
+import { property, schema } from 'schema';
 
 export interface DatabaseConn {
   refundItem(userId: number, itemId: number): Promise<string>;

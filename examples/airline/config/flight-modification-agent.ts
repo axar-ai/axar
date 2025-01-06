@@ -1,5 +1,5 @@
-import { output, systemPrompt, Agent, model, tool } from '../../../agent';
-import { property, schema, optional } from '../../../schema';
+import { output, systemPrompt, Agent, model, tool } from 'agent';
+import { property, schema, optional } from 'schema';
 import {
   caseResolved,
   changeFlight,

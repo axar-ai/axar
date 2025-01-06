@@ -1,15 +1,15 @@
-import { TriggerAgent } from "./../../../src/examples/airline/config/trigger-agent";
+import { TriggerAgent } from './../../../examples/airline/config/trigger-agent';
 import {
   FlightCancelAgent,
   FlightChangeAgent,
   FlightModificationAgent,
-} from "./../../../src/examples/airline/config/flight-modification-agent";
-import { LostBaggageAgent } from "./../../../src/examples/airline/config/lost-baggage-agent";
+} from './../../../examples/airline/config/flight-modification-agent';
+import { LostBaggageAgent } from './../../../examples/airline/config/lost-baggage-agent';
 
-jest.mock("./../../../src/examples/airline/config/flight-modification-agent");
-jest.mock("./../../../src/examples/airline/config/lost-baggage-agent");
+jest.mock('./../../../examples/airline/config/flight-modification-agent');
+jest.mock('./../../../examples/airline/config/lost-baggage-agent');
 
-describe.skip("TriggerAgent", () => {
+describe.skip('TriggerAgent', () => {
   let cancelAgent: jest.Mocked<FlightCancelAgent>;
   let changeAgent: jest.Mocked<FlightChangeAgent>;
   let lostBaggageAgent: jest.Mocked<LostBaggageAgent>;
@@ -29,109 +29,109 @@ describe.skip("TriggerAgent", () => {
     triggerAgent = new TriggerAgent(modificationAgent, lostBaggageAgent);
   });
 
-  it("should call the flight modification agent when the query is related to flight cancellation", async () => {
-    const cancelQuery = "I want to cancel my flight.";
+  it('should call the flight modification agent when the query is related to flight cancellation', async () => {
+    const cancelQuery = 'I want to cancel my flight.';
 
     const mockRun = jest
-      .spyOn(FlightCancelAgent.prototype, "run")
+      .spyOn(FlightCancelAgent.prototype, 'run')
       .mockResolvedValue({
-        confirmation: "Cancellation processed",
-        details: "Cancellation processed",
+        confirmation: 'Cancellation processed',
+        details: 'Cancellation processed',
       });
 
     const result = await triggerAgent.run(cancelQuery);
 
     expect(result).toEqual({
-      confirmation: "Cancellation processed",
-      details: "Cancellation processed",
+      confirmation: 'Cancellation processed',
+      details: 'Cancellation processed',
     });
 
     mockRun.mockRestore();
   });
 
-  it("should call the flight change agent when the query is related to rescheduling", async () => {
-    const changeQuery = "Can I reschedule my flight to next week?";
+  it('should call the flight change agent when the query is related to rescheduling', async () => {
+    const changeQuery = 'Can I reschedule my flight to next week?';
 
     const mockRun = jest
-      .spyOn(FlightChangeAgent.prototype, "run")
+      .spyOn(FlightChangeAgent.prototype, 'run')
       .mockResolvedValue({
-        confirmation: "Flight rescheduled",
-        details: "Flight rescheduled",
+        confirmation: 'Flight rescheduled',
+        details: 'Flight rescheduled',
       });
 
     const result = await triggerAgent.run(changeQuery);
 
     expect(result).toEqual({
-      confirmation: "Flight rescheduled",
-      details: "Flight rescheduled",
+      confirmation: 'Flight rescheduled',
+      details: 'Flight rescheduled',
     });
 
     mockRun.mockRestore();
   });
 
-  it("should call the lost baggage agent when the query is related to lost baggage", async () => {
-    const lostBaggageQuery = "My bag is missing";
+  it('should call the lost baggage agent when the query is related to lost baggage', async () => {
+    const lostBaggageQuery = 'My bag is missing';
 
     const mockRun = jest
-      .spyOn(LostBaggageAgent.prototype, "run")
+      .spyOn(LostBaggageAgent.prototype, 'run')
       .mockResolvedValue({
-        confirmation: "Baggage search initiated",
-        details: "Baggage search initiated",
+        confirmation: 'Baggage search initiated',
+        details: 'Baggage search initiated',
       });
 
     const result = await triggerAgent.run(lostBaggageQuery);
 
     expect(result).toEqual({
-      confirmation: "Baggage search initiated",
-      details: "Baggage search initiated",
+      confirmation: 'Baggage search initiated',
+      details: 'Baggage search initiated',
     });
 
     mockRun.mockRestore();
   });
 
   it("should return unknown intent if the query doesn't match modify or report", async () => {
-    const unclearQuery = "What options do I have?";
+    const unclearQuery = 'What options do I have?';
 
     const TriggerMockRun = jest
-      .spyOn(TriggerAgent.prototype, "run")
+      .spyOn(TriggerAgent.prototype, 'run')
       .mockResolvedValue({
-        confirmation: "Unknown query",
-        details: "Unknown query",
+        confirmation: 'Unknown query',
+        details: 'Unknown query',
       });
 
     const modificationMockRun = jest
-      .spyOn(FlightModificationAgent.prototype, "run")
+      .spyOn(FlightModificationAgent.prototype, 'run')
       .mockResolvedValue({
-        confirmation: "Unknown query",
-        details: "Unknown query",
+        confirmation: 'Unknown query',
+        details: 'Unknown query',
       });
 
     const cancelMockRun = jest
-      .spyOn(FlightCancelAgent.prototype, "run")
+      .spyOn(FlightCancelAgent.prototype, 'run')
       .mockResolvedValue({
-        confirmation: "Unknown query",
-        details: "Unknown query",
+        confirmation: 'Unknown query',
+        details: 'Unknown query',
       });
 
     const changeMockRun = jest
-      .spyOn(FlightChangeAgent.prototype, "run")
+      .spyOn(FlightChangeAgent.prototype, 'run')
       .mockResolvedValue({
-        confirmation: "Unknown query",
-        details: "Unknown query",
+        confirmation: 'Unknown query',
+        details: 'Unknown query',
       });
 
     const lostMockRun = jest
-      .spyOn(LostBaggageAgent.prototype, "run")
+      .spyOn(LostBaggageAgent.prototype, 'run')
       .mockResolvedValue({
-        confirmation: "Unknown query",
-        details: "Unknown query",
+        confirmation: 'Unknown query',
+        details: 'Unknown query',
       });
 
     const result = await triggerAgent.run(unclearQuery);
 
     expect(result).toEqual({
-      confirmation: "Unknown query",
-      details: "Unknown query",
+      confirmation: 'Unknown query',
+      details: 'Unknown query',
     });
 
     TriggerMockRun.mockRestore();

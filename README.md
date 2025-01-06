@@ -117,7 +117,10 @@ class ToolParams {
 @output(SupportResponse)
 export class SupportAgent extends Agent<string, SupportResponse> {
   // Initialize the agent with a customer ID and a DB connection for fetching customer-specific data.
-  constructor(private customerId: number, private db: DatabaseConn) {
+  constructor(
+    private customerId: number,
+    private db: DatabaseConn,
+  ) {
     super();
   }
 

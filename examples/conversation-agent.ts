@@ -1,4 +1,4 @@
-import { model, systemPrompt, Agent } from '../agent';
+import { model, systemPrompt, Agent } from 'agent';
 
 // FIXME: Support boolean output
 @model('openai:gpt-4o-mini')
