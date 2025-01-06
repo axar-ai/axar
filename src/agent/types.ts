@@ -1,4 +1,4 @@
-import { z, ZodSchema } from "zod";
+import { z, ZodSchema } from 'zod';
 
 /**
  * Represents a class constructor with no argument

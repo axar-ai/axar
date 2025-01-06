@@ -14,10 +14,10 @@ import {
   zodify,
   arrayItems,
   optional,
-} from "../../../src/schema";
-import { toZodSchema } from "../../../src/schema/generator";
+} from '../../../src/schema';
+import { toZodSchema } from '../../../src/schema/generator';
 
-describe("toZodSchema - Advanced Scenarios", () => {
+describe('toZodSchema - Advanced Scenarios', () => {
   // Mixed Type Arrays
   //   describe.skip("mixed type arrays", () => {
   //     @zodify()
@@ -46,7 +46,7 @@ describe("toZodSchema - Advanced Scenarios", () => {
   //     });
   //   });
   //Deep Nested Structures
-  describe.skip("deeply nested structures", () => {
+  describe.skip('deeply nested structures', () => {
     class GeoLocation {
       @minimum(-90)
       @maximum(90)
@@ -84,15 +84,15 @@ describe("toZodSchema - Advanced Scenarios", () => {
       previousCompanies?: Company[];
     }
     const schema = toZodSchema(DeepNestedUser);
-    it("validates deeply nested structures", () => {
+    it('validates deeply nested structures', () => {
       const validData = {
-        email: "test@example.com",
+        email: 'test@example.com',
         company: {
-          registrationNumber: "ABC1234567",
+          registrationNumber: 'ABC1234567',
           addresses: [
             {
-              zipCode: "12345",
-              streetLines: ["123 Main St"],
+              zipCode: '12345',
+              streetLines: ['123 Main St'],
               location: {
                 latitude: 40.7128,
                 longitude: -74.006,
@@ -103,13 +103,13 @@ describe("toZodSchema - Advanced Scenarios", () => {
       };
       expect(schema.safeParse(validData).success).toBe(true);
       const invalidData = {
-        email: "test@example.com",
+        email: 'test@example.com',
         company: {
-          registrationNumber: "invalid",
+          registrationNumber: 'invalid',
           addresses: [
             {
-              zipCode: "12345",
-              streetLines: ["123 Main St"],
+              zipCode: '12345',
+              streetLines: ['123 Main St'],
               location: {
                 latitude: 100, // Invalid latitude
                 longitude: -74.006,
@@ -150,7 +150,7 @@ describe("toZodSchema - Advanced Scenarios", () => {
   // });
 
   //Complex Validation Combinations
-  describe("complex validation combinations", () => {
+  describe('complex validation combinations', () => {
     class Tag {
       @min(2)
       @max(10)
@@ -187,15 +187,15 @@ describe("toZodSchema - Advanced Scenarios", () => {
 
     const schema = toZodSchema(ComplexValidations);
 
-    it("validates complex combinations", () => {
+    it('validates complex combinations', () => {
       // Valid case
       const validData = {
-        username: "user-123",
-        roles: ["admin", "user"],
+        username: 'user-123',
+        roles: ['admin', 'user'],
         score: 8.5,
         tags: [
-          { name: "tag1", weight: 50 },
-          { name: "tag2", weight: 75 },
+          { name: 'tag1', weight: 50 },
+          { name: 'tag2', weight: 75 },
         ],
       };
       const validResult = schema.safeParse(validData);
@@ -203,10 +203,10 @@ describe("toZodSchema - Advanced Scenarios", () => {
 
       // Invalid case
       const invalidData = {
-        username: "u",
-        roles: ["admin", "admin"],
+        username: 'u',
+        roles: ['admin', 'admin'],
         score: 8.7,
-        tags: [{ name: "t", weight: 50 }],
+        tags: [{ name: 't', weight: 50 }],
       };
       const invalidResult = schema.safeParse(invalidData);
       expect(invalidResult.success).toBe(false);
@@ -217,28 +217,28 @@ describe("toZodSchema - Advanced Scenarios", () => {
         expect(errors).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
-              path: ["username"],
+              path: ['username'],
               message: expect.any(String),
             }),
             expect.objectContaining({
-              path: ["roles"],
+              path: ['roles'],
               message: expect.any(String),
             }),
             expect.objectContaining({
-              path: ["score"],
+              path: ['score'],
               message: expect.any(String),
             }),
             expect.objectContaining({
-              path: ["tags", 0, "name"],
+              path: ['tags', 0, 'name'],
               message: expect.any(String),
             }),
-          ])
+          ]),
         );
       }
     });
   });
   // Date Validations
-  describe("date validations", () => {
+  describe('date validations', () => {
     @zodify()
     class DateValidations {
       created!: Date;
@@ -247,32 +247,32 @@ describe("toZodSchema - Advanced Scenarios", () => {
       dates!: Date[];
     }
     const schema = toZodSchema(DateValidations);
-    it("validates dates correctly", () => {
+    it('validates dates correctly', () => {
       expect(
         schema.safeParse({
           created: new Date(),
           isoString: new Date().toISOString(),
           dates: [new Date(), new Date()],
-        }).success
+        }).success,
       ).toBe(true);
       expect(
         schema.safeParse({
-          created: "invalid date",
-          isoString: "invalid iso",
+          created: 'invalid date',
+          isoString: 'invalid iso',
           dates: [new Date()],
-        }).success
+        }).success,
       ).toBe(false);
     });
   });
   // Union Types and Discriminated Unions
-  describe("union types", () => {
+  describe('union types', () => {
     enum PaymentType {
-      CreditCard = "credit_card",
-      BankTransfer = "bank_transfer",
+      CreditCard = 'credit_card',
+      BankTransfer = 'bank_transfer',
     }
     @zodify()
     class Payment {
-      @enumValues(["credit_card", "bank_transfer"] as const)
+      @enumValues(['credit_card', 'bank_transfer'] as const)
       type!: PaymentType;
       amount!: number;
       // Credit card specific fields
@@ -283,33 +283,33 @@ describe("toZodSchema - Advanced Scenarios", () => {
       routingNumber?: string;
     }
     const schema = toZodSchema(Payment);
-    it("validates union types correctly", () => {
+    it('validates union types correctly', () => {
       expect(
         schema.safeParse({
-          type: "credit_card",
+          type: 'credit_card',
           amount: 100,
-          cardNumber: "4111111111111111",
-          cvv: "123",
-        }).success
+          cardNumber: '4111111111111111',
+          cvv: '123',
+        }).success,
       ).toBe(true);
       expect(
         schema.safeParse({
-          type: "bank_transfer",
+          type: 'bank_transfer',
           amount: 100,
-          accountNumber: "12345678",
-          routingNumber: "87654321",
-        }).success
+          accountNumber: '12345678',
+          routingNumber: '87654321',
+        }).success,
       ).toBe(true);
       expect(
         schema.safeParse({
-          type: "invalid_type",
+          type: 'invalid_type',
           amount: 100,
-        }).success
+        }).success,
       ).toBe(false);
     });
   });
   // Edge Cases and Special Values
-  describe("edge cases", () => {
+  describe('edge cases', () => {
     @zodify()
     class EdgeCases {
       @min(0)
@@ -325,20 +325,20 @@ describe("toZodSchema - Advanced Scenarios", () => {
       whitespaceString!: string;
     }
     const schema = toZodSchema(EdgeCases);
-    it("handles edge cases correctly", () => {
+    it('handles edge cases correctly', () => {
       expect(
         schema.safeParse({
-          zeroLength: "",
+          zeroLength: '',
           zeroValue: 0,
           emptyArray: [],
-          emptyString: "",
-          whitespaceString: "   ",
-        }).success
+          emptyString: '',
+          whitespaceString: '   ',
+        }).success,
       ).toBe(true);
     });
   });
 
-  describe("conditional validation", () => {
+  describe('conditional validation', () => {
     @zodify()
     class ConditionalValidation {
       @min(3)
@@ -358,22 +358,22 @@ describe("toZodSchema - Advanced Scenarios", () => {
 
     const schema = toZodSchema(ConditionalValidation);
 
-    it("validates conditionally based on fieldA value", () => {
-      expect(schema.safeParse({ fieldA: "valid", fieldB: 2 }).success).toBe(
-        true
+    it('validates conditionally based on fieldA value', () => {
+      expect(schema.safeParse({ fieldA: 'valid', fieldB: 2 }).success).toBe(
+        true,
       );
 
-      expect(schema.safeParse({ fieldA: "valid", fieldB: 0 }).success).toBe(
-        false
+      expect(schema.safeParse({ fieldA: 'valid', fieldB: 0 }).success).toBe(
+        false,
       );
 
-      expect(schema.safeParse({ fieldA: "valid", fieldC: 6 }).success).toBe(
-        true
+      expect(schema.safeParse({ fieldA: 'valid', fieldC: 6 }).success).toBe(
+        true,
       );
     });
   });
 
-  describe("large data sets", () => {
+  describe('large data sets', () => {
     @zodify()
     class LargeArray {
       @minItems(1)
@@ -384,16 +384,16 @@ describe("toZodSchema - Advanced Scenarios", () => {
 
     const schema = toZodSchema(LargeArray);
 
-    it("handles large arrays", () => {
-      const validData = { largeArray: Array(10000).fill("valid") };
+    it('handles large arrays', () => {
+      const validData = { largeArray: Array(10000).fill('valid') };
       expect(schema.safeParse(validData).success).toBe(true);
 
-      const invalidData = { largeArray: Array(10001).fill("valid") };
+      const invalidData = { largeArray: Array(10001).fill('valid') };
       expect(schema.safeParse(invalidData).success).toBe(false); // Exceeds maxItems
     });
   });
 
-  describe.skip("null and undefined values", () => {
+  describe.skip('null and undefined values', () => {
     @zodify()
     class NullableValidation {
       @optional()
@@ -402,15 +402,15 @@ describe("toZodSchema - Advanced Scenarios", () => {
 
     const schema = toZodSchema(NullableValidation);
 
-    it("allows undefined values", () => {
+    it('allows undefined values', () => {
       expect(schema.safeParse({}).success).toBe(true);
     });
 
-    it("handles null values", () => {
+    it('handles null values', () => {
       expect(schema.safeParse({ value: null }).success).toBe(true);
     });
 
-    it("handles null values", () => {
+    it('handles null values', () => {
       expect(schema.safeParse(null).success).toBe(true);
     });
   });

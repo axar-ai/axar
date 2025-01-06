@@ -1,5 +1,5 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { SupportAgent, DatabaseConn } from '../../../src/examples/bank-agent3'; // Adjust import path as needed
+import { SupportAgent, DatabaseConn } from '../../../examples/bank-agent3'; // Adjust import path as needed
 import z from 'zod';
 import 'reflect-metadata';
 

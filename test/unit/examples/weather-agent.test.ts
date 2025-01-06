@@ -3,7 +3,7 @@ import {
   WeatherResponse,
   APIKeys,
   Deps,
-} from './../../../src/examples/weather-agent';
+} from './../../../examples/weather-agent';
 
 describe('WeatherAgent', () => {
   // Mock HTTP client

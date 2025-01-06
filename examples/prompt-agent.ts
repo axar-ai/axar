@@ -1,4 +1,4 @@
-import { model, systemPrompt, Agent } from '../agent';
+import { model, systemPrompt, Agent } from 'agent';
 
 @model('openai:gpt-4o-mini')
 @systemPrompt("Use the customer's name while replying.")

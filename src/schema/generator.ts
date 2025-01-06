@@ -1,8 +1,8 @@
-import "reflect-metadata";
-import { z } from "zod";
-import { ClassConstructor } from "./types";
-import { META_KEYS } from "./meta-keys";
-import { SchemaOptions, PropertyOptions, ValidationRule } from "./types";
+import 'reflect-metadata';
+import { z } from 'zod';
+import { ClassConstructor } from './types';
+import { META_KEYS } from './meta-keys';
+import { SchemaOptions, PropertyOptions, ValidationRule } from './types';
 
 /**
  * Checks if a property is marked as optional
@@ -33,13 +33,13 @@ function isZodArray(schema: z.ZodTypeAny): schema is z.ZodArray<any> {
  */
 function createBaseSchema(
   target: Object,
-  propertyKey: string | symbol
+  propertyKey: string | symbol,
 ): z.ZodTypeAny {
   // Try to create enum schema first
   const enumSchema = createEnumSchema(target, propertyKey);
   if (enumSchema) return enumSchema;
 
-  const propertyType = Reflect.getMetadata("design:type", target, propertyKey);
+  const propertyType = Reflect.getMetadata('design:type', target, propertyKey);
 
   if (propertyType === Array) {
     return createArraySchema(target, propertyKey);
@@ -50,7 +50,7 @@ function createBaseSchema(
 
 function createEnumSchema(
   target: Object,
-  propertyKey: string | symbol
+  propertyKey: string | symbol,
 ): z.ZodType | null {
   const enumValues: readonly (string | number)[] | undefined =
     Reflect.getMetadata(META_KEYS.ENUM_VALUES, target, propertyKey);
@@ -59,15 +59,15 @@ function createEnumSchema(
 
   if (!Array.isArray(enumValues) || enumValues.length === 0) {
     throw new Error(
-      `Enum values for ${String(propertyKey)} must be a non-empty array`
+      `Enum values for ${String(propertyKey)} must be a non-empty array`,
     );
   }
 
-  if (enumValues.every((v): v is string => typeof v === "string")) {
+  if (enumValues.every((v): v is string => typeof v === 'string')) {
     return z.enum(enumValues as [string, ...string[]]);
   }
 
-  if (enumValues.every((v): v is number => typeof v === "number")) {
+  if (enumValues.every((v): v is number => typeof v === 'number')) {
     return z
       .enum(enumValues.map(String) as [string, ...string[]])
       .transform((val) => {
@@ -80,23 +80,23 @@ function createEnumSchema(
   }
 
   throw new Error(
-    `Enum values for ${String(propertyKey)} must be all strings or all numbers`
+    `Enum values for ${String(propertyKey)} must be all strings or all numbers`,
   );
 }
 
 function createArraySchema(
   target: Object,
-  propertyKey: string | symbol
+  propertyKey: string | symbol,
 ): z.ZodArray<z.ZodTypeAny> {
   const itemTypeFn = Reflect.getMetadata(
     META_KEYS.ARRAY_ITEM_TYPE,
     target,
-    propertyKey
+    propertyKey,
   ) as (() => Function) | undefined;
 
   if (!itemTypeFn) {
     throw new Error(
-      `Array property ${String(propertyKey)} must use @arrayItems decorator`
+      `Array property ${String(propertyKey)} must use @arrayItems decorator`,
     );
   }
 
@@ -106,7 +106,7 @@ function createArraySchema(
 
 function createPrimitiveOrObjectSchema(
   type: Function,
-  propertyKey: string | symbol
+  propertyKey: string | symbol,
 ): z.ZodTypeAny {
   switch (type) {
     case String:
@@ -124,8 +124,8 @@ function createPrimitiveOrObjectSchema(
         } catch (error) {
           throw new Error(
             `Failed to create schema for nested type ${type.name} in ${String(
-              propertyKey
-            )}: ${(error as Error).message}`
+              propertyKey,
+            )}: ${(error as Error).message}`,
           );
         }
       }
@@ -141,46 +141,46 @@ function createPrimitiveOrObjectSchema(
  */
 function applyValidationRule(
   schema: z.ZodTypeAny,
-  rule: ValidationRule
+  rule: ValidationRule,
 ): z.ZodTypeAny {
   switch (rule.type) {
     // String validations
-    case "email":
+    case 'email':
       if (!isZodString(schema)) {
-        throw new Error("Email validation can only be applied to strings");
+        throw new Error('Email validation can only be applied to strings');
       }
       return schema.email();
-    case "url":
+    case 'url':
       if (!isZodString(schema)) {
-        throw new Error("URL validation can only be applied to strings");
+        throw new Error('URL validation can only be applied to strings');
       }
       return schema.url();
-    case "uuid":
+    case 'uuid':
       if (!isZodString(schema)) {
-        throw new Error("UUID validation can only be applied to strings");
+        throw new Error('UUID validation can only be applied to strings');
       }
       return schema.uuid();
-    case "cuid":
+    case 'cuid':
       if (!isZodString(schema)) {
-        throw new Error("CUID validation can only be applied to strings");
+        throw new Error('CUID validation can only be applied to strings');
       }
       return schema.cuid();
-    case "datetime":
+    case 'datetime':
       if (!isZodString(schema)) {
-        throw new Error("Datetime validation can only be applied to strings");
+        throw new Error('Datetime validation can only be applied to strings');
       }
       return schema.datetime();
-    case "ip":
+    case 'ip':
       if (!isZodString(schema)) {
-        throw new Error("IP validation can only be applied to strings");
+        throw new Error('IP validation can only be applied to strings');
       }
       return schema.ip();
-    case "pattern":
+    case 'pattern':
       if (!isZodString(schema)) {
-        throw new Error("Pattern validation can only be applied to strings");
+        throw new Error('Pattern validation can only be applied to strings');
       }
       return schema.regex(rule.params![0]);
-    case "min":
+    case 'min':
       if (isZodString(schema)) {
         return schema.min(rule.params![0]);
       }
@@ -191,9 +191,9 @@ function applyValidationRule(
         return schema.gte(rule.params![0]);
       }
       throw new Error(
-        `Min validation cannot be applied to ${schema.constructor.name}`
+        `Min validation cannot be applied to ${schema.constructor.name}`,
       );
-    case "max":
+    case 'max':
       if (isZodString(schema)) {
         return schema.max(rule.params![0]);
       }
@@ -204,65 +204,65 @@ function applyValidationRule(
         return schema.lte(rule.params![0]);
       }
       throw new Error(
-        `Max validation cannot be applied to ${schema.constructor.name}`
+        `Max validation cannot be applied to ${schema.constructor.name}`,
       );
     // Number validations
-    case "minimum":
+    case 'minimum':
       if (!isZodNumber(schema)) {
-        throw new Error("Minimum validation can only be applied to numbers");
+        throw new Error('Minimum validation can only be applied to numbers');
       }
       return schema.gte(rule.params![0]);
-    case "maximum":
+    case 'maximum':
       if (!isZodNumber(schema)) {
-        throw new Error("Maximum validation can only be applied to numbers");
+        throw new Error('Maximum validation can only be applied to numbers');
       }
       return schema.lte(rule.params![0]);
-    case "exclusiveMinimum":
+    case 'exclusiveMinimum':
       if (!isZodNumber(schema)) {
         throw new Error(
-          "ExclusiveMinimum validation can only be applied to numbers"
+          'ExclusiveMinimum validation can only be applied to numbers',
         );
       }
       return schema.gt(rule.params![0]);
-    case "exclusiveMaximum":
+    case 'exclusiveMaximum':
       if (!isZodNumber(schema)) {
         throw new Error(
-          "ExclusiveMaximum validation can only be applied to numbers"
+          'ExclusiveMaximum validation can only be applied to numbers',
         );
       }
       return schema.lt(rule.params![0]);
-    case "multipleOf":
+    case 'multipleOf':
       if (!isZodNumber(schema)) {
-        throw new Error("MultipleOf validation can only be applied to numbers");
+        throw new Error('MultipleOf validation can only be applied to numbers');
       }
       return schema.multipleOf(rule.params![0]);
-    case "integer":
+    case 'integer':
       if (!isZodNumber(schema)) {
-        throw new Error("Integer validation can only be applied to numbers");
+        throw new Error('Integer validation can only be applied to numbers');
       }
       return schema.int();
     // Array validations
-    case "minItems":
+    case 'minItems':
       if (!isZodArray(schema)) {
-        throw new Error("MinItems validation can only be applied to arrays");
+        throw new Error('MinItems validation can only be applied to arrays');
       }
       return schema.min(rule.params![0]);
-    case "maxItems":
+    case 'maxItems':
       if (!isZodArray(schema)) {
-        throw new Error("MaxItems validation can only be applied to arrays");
+        throw new Error('MaxItems validation can only be applied to arrays');
       }
       return schema.max(rule.params![0]);
-    case "uniqueItems":
+    case 'uniqueItems':
       if (!isZodArray(schema)) {
-        throw new Error("UniqueItems validation can only be applied to arrays");
+        throw new Error('UniqueItems validation can only be applied to arrays');
       }
       return schema.refine(
         (items) =>
           new Set(items.map((item) => JSON.stringify(item))).size ===
           items.length,
-        { message: "All items in array must be unique" }
+        { message: 'All items in array must be unique' },
       );
-    case "enum":
+    case 'enum':
       // Enums are handled in createBaseSchema
       return schema;
     default:
@@ -286,13 +286,13 @@ export function toZodSchema<T>(target: ClassConstructor<T>): z.ZodObject<any> {
       Reflect.getMetadata(
         META_KEYS.PROPERTY_RULES,
         target.prototype,
-        propertyKey
+        propertyKey,
       ) || [];
 
     const propertyOptions: PropertyOptions | undefined = Reflect.getMetadata(
       META_KEYS.PROPERTY,
       target.prototype,
-      propertyKey
+      propertyKey,
     );
 
     // Create base schema from type

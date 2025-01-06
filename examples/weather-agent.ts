@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { model, systemPrompt, output, tool, Agent } from '../agent';
-import { property, schema } from '../schema';
+import { model, systemPrompt, output, tool, Agent } from 'agent';
+import { property, schema } from 'schema';
 
 export interface APIKeys {
   readonly weatherApiKey: string | null;

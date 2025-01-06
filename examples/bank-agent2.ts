@@ -1,5 +1,5 @@
-import { systemPrompt, model, output, Agent, tool } from '../agent';
-import { property, schema, optional } from '../schema';
+import { systemPrompt, model, output, tool, Agent } from 'agent';
+import { property, min, max, schema } from 'schema';
 import z from 'zod';
 
 export interface DatabaseConn {
@@ -12,12 +12,25 @@ export interface DatabaseConn {
 }
 
 @schema()
+class SupportResponsex {
+  @property('Human-readable advice to give to the customer.')
+  support_advice!: string;
+  @property("Whether to block customer's card.")
+  block_card!: boolean;
+  @property('Risk level of query')
+  @min(0)
+  @max(1)
+  risk!: number;
+  @property("Customer's emotional state")
+  status?: 'Happy' | 'Sad' | 'Neutral';
+}
+
+@schema()
 class ToolParams {
   @property("Customer's name")
   customerName!: string;
 
   @property('Whether to include pending transactions')
-  @optional()
   includePending?: boolean;
 }
 
@@ -43,7 +56,10 @@ type SupportResponse = z.infer<typeof SupportResponseSchema>;
 `)
 @output(SupportResponseSchema)
 export class SupportAgent extends Agent<string, SupportResponse> {
-  constructor(private customerId: number, private db: DatabaseConn) {
+  constructor(
+    private customerId: number,
+    private db: DatabaseConn,
+  ) {
     super();
   }
 
@@ -53,7 +69,7 @@ export class SupportAgent extends Agent<string, SupportResponse> {
     return `The customer's name is '${name}'`;
   }
 
-  @tool("Get customer's current balance")
+  @tool("Get customer's current balance", ToolParams)
   async getCustomerBalance(params: ToolParams): Promise<number> {
     return this.db.customerBalance(
       this.customerId,
@@ -84,8 +100,10 @@ async function main() {
   // Simple query
   const balanceResult = await agent.run('What is my balance?');
   console.log(balanceResult);
+
   // Lost card scenario
-  // const cardResult = await agent.run("I just lost my card!");
+  const cardResult = await agent.run('I just lost my card!');
+  console.log(cardResult);
 }
 
 if (require.main === module) {

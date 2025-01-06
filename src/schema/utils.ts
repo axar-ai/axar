@@ -1,5 +1,5 @@
-import { META_KEYS } from "./meta-keys";
-import { ValidationRule } from "./types";
+import { META_KEYS } from './meta-keys';
+import { ValidationRule } from './types';
 
 /**
  * Registers a property in the metadata registry for schema generation.
@@ -36,7 +36,7 @@ export function registerProperty(target: Object, propertyKey: string | symbol) {
 export function addValidationRule(
   target: Object,
   propertyKey: string | symbol,
-  rule: ValidationRule
+  rule: ValidationRule,
 ): void {
   const propertyKeyStr = propertyKey.toString();
   const existingRules = getValidationMetadata(target, propertyKeyStr);
@@ -53,7 +53,7 @@ export function addValidationRule(
  */
 function getValidationMetadata(
   target: Object,
-  propertyKey: string
+  propertyKey: string,
 ): ValidationRule[] {
   return (
     Reflect.getMetadata(META_KEYS.PROPERTY_RULES, target, propertyKey) || []
@@ -71,7 +71,7 @@ function getValidationMetadata(
 function setValidationMetadata(
   target: Object,
   propertyKey: string,
-  rules: ValidationRule[]
+  rules: ValidationRule[],
 ): void {
   Reflect.defineMetadata(META_KEYS.PROPERTY_RULES, rules, target, propertyKey);
 }
