@@ -28,4 +28,6 @@ async function main() {
   console.log(result4);
 }
 
-main().catch(console.error);
+if (require.main === module) {
+  main().catch(console.error);
+}

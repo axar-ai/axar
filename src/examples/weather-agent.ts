@@ -143,4 +143,6 @@ async function main() {
   console.log('Canada Weather:', canadaWeather);
 }
 
-main().catch(console.error);
+if (require.main === module) {
+  main().catch(console.error);
+}

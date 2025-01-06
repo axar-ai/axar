@@ -88,4 +88,6 @@ async function main() {
   // const cardResult = await agent.run("I just lost my card!");
 }
 
-main().catch(console.error);
+if (require.main === module) {
+  main().catch(console.error);
+}

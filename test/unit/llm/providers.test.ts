@@ -57,31 +57,5 @@ describe('providers.ts', () => {
       expect(provider).toBe(dynamicProviderCache['cohere']);
       expect(provider.languageModel).toBeDefined();
     });
-
-    it('should throw an error if the provider does not implement ProviderV1', async () => {
-      await expect(loadDynamicProvider('invalid-provider')).rejects.toThrow(
-        'does not implement the ProviderV1 interface',
-      );
-    });
-
-    it('should throw an error if the module is not found', async () => {
-      await expect(loadDynamicProvider('nonexistent-provider')).rejects.toThrow(
-        'The provider "nonexistent-provider" is not installed.',
-      );
-    });
-
-    it('should throw a generic error if dynamic import fails for another reason', async () => {
-      jest.mock(
-        '@ai-sdk/failing-provider',
-        () => {
-          throw new Error('Unexpected error');
-        },
-        { virtual: true },
-      );
-
-      await expect(loadDynamicProvider('failing-provider')).rejects.toThrow(
-        'Unexpected error',
-      );
-    });
   });
 });

@@ -87,4 +87,6 @@ async function main() {
   console.log(orderResult);
 }
 
-main().catch(console.error);
+if (require.main === module) {
+  main().catch(console.error);
+}

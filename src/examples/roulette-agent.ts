@@ -36,4 +36,6 @@ async function main() {
   console.log(result);
 }
 
-main().catch(console.error);
+if (require.main === module) {
+  main().catch(console.error);
+}
