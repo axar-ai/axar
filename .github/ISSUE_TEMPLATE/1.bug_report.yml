@@ -1,0 +1,38 @@
+name: Bug report
+description: Report a bug with axar-core.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is to report bugs with **axar-core**. If you need help with your own project or have questions about usage, feel free to [start a new discussion in our GitHub Discussions](https://github.com/axar-ai/axar-core/discussions).
+  - type: textarea
+    attributes:
+      label: Description
+      description: A detailed description of the issue you are encountering with axar-core, including reproduction steps, expected behavior, and actual behavior. Helpful details include the API or feature you're using, framework, and AI model/provider.
+      placeholder: |
+        Describe the issue, steps to reproduce, expected behavior, and actual behavior...
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Code example
+      description: Provide a code snippet or minimal reproducible example demonstrating the issue.
+      placeholder: |
+        import { Agent } from 'axar-core';
+        import { model } from 'axar-core/decorators';
+        ...
+  - type: input
+    id: provider
+    attributes:
+      label: AI model/provider
+      description: Specify the AI model/provider (e.g., OpenAI GPT-4) and its version, as well as any configuration details if applicable.
+      placeholder: |
+        openai:gpt-4 v1.2.3
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: |
+        Any extra information that might help us investigate, such as logs, screenshots, or environmental details.
+      placeholder: |
+        Add any additional details here...
