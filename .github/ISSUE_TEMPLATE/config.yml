@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a Question
+    url: https://github.com/axar-ai/axar-core/discussions
+    about: Please ask your questions in our discussions forum.
+  - name: Contribute
+    url: https://github.com/axar-ai/axar-core/blob/main/CONTRIBUTING.md
+    about: Learn more about how to contribute to axar-core.

@@ -1,0 +1,37 @@
+name: Feature Request
+description: Propose a new feature for axar-core.
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is to propose new features for **axar-core**. If you have questions or need help with your own project, feel free to [start a new discussion in our GitHub Discussions](https://github.com/axar-ai/axar-core/discussions).
+  - type: textarea
+    attributes:
+      label: Feature Description
+      description: A detailed description of the feature you are proposing for axar-core, including what it should do and how it would improve the framework.
+      placeholder: |
+        Describe the feature, its purpose, and expected behavior...
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Use Cases
+      description: Provide one or more use cases where this feature would be valuable. Include scenarios or problems it would solve.
+      placeholder: |
+        Describe use cases for the proposed feature...
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Potential Implementation
+      description: Share any ideas or suggestions for how the feature might be implemented (optional).
+      placeholder: |
+        Provide thoughts on implementation, if any...
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: |
+        Any extra information that might help us understand your feature request, such as related features or challenges you're facing.
+      placeholder: |
+        Add any additional details here...
