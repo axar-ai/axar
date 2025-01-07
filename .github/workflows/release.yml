@@ -1,17 +1,19 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
+  # Triggers the workflow on published releases
+  release:
+    types: [published]
 
 jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
-      contents: write # For fetching code and pushing tags/releases
-      id-token: write # For OIDC tokenless publishing
+      permissions:
+        contents: write
+        packages: write
+        id-token: write
 
     steps:
       - name: Checkout repository
@@ -23,19 +25,15 @@ jobs:
           node-version: '20.12.2'
           registry-url: 'https://registry.npmjs.org/'
 
-      - name: Authenticate with npm
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
-          echo "@axar-ai:registry=https://npm.pkg.github.com/" >> ~/.npmrc
-
       - name: Install dependencies
         run: npm install
 
       - name: Build
         run: npm run build
 
-      - name: Release with Semantic Release
+      - name: Publish
+        run: yarn publish
+
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-        run: npx semantic-release
+          # We need this to our NPM account
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
