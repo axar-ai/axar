@@ -1,6 +1,7 @@
 name: Release
 
 on:
+  # Triggers the workflow on published releases
   release:
     types: [published]
 
@@ -14,24 +15,24 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4.0.3
+      - uses: actions/checkout@v4
         with:
-          node-version: '20.12.2'
-          registry-url: 'https://registry.npmjs.org/'
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
 
+      # Install dependencies using npm ci for a clean slate
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
+      # Build the project
       - name: Build
-        run: npm run prepublishOnly
+        run: npm run build
 
-      - name: Publish
-        run: npm publish --access public
-
+      # Publish to npm
+      - name: Publish package
+      - run: npm run publish --access public
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
