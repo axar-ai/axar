@@ -32,7 +32,7 @@ jobs:
         run: npm run build
 
       - name: Publish
-        run: yarn publish
+        run: npm publish
 
         env:
           # We need this to our NPM account
