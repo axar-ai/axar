@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger release on version tags (e.g., v1.0.0)
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # For fetching code
+      id-token: write # For publishing to npm and JSR
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Log in to npm
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org/'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - name: Publish to npm
+        run: |
+          npm publish --access public  # For public packages
+
+      - name: Publish to JSR
+        run: npx jsr publish
