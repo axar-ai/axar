@@ -1,5 +1,5 @@
-import { systemPrompt, model, output, tool, Agent } from '@axar-ai/axar-core';
-import { property, min, max, schema, optional } from '@axar-ai/axar-core';
+import { systemPrompt, model, output, tool, Agent } from '@axarai/axar-core';
+import { property, min, max, schema, optional } from '@axarai/axar-core';
 
 export interface DatabaseConn {
   customerName(id: number): Promise<string>;
