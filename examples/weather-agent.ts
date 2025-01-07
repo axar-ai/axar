@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { model, systemPrompt, output, tool, Agent } from '@axar/core';
-import { property, schema } from '@axar/core';
+import { model, systemPrompt, output, tool, Agent } from '@axar-ai/axar-core';
+import { property, schema } from '@axar-ai/axar-core';
 
 export interface APIKeys {
   readonly weatherApiKey: string | null;

@@ -1,5 +1,5 @@
-import { output, systemPrompt, Agent, model, tool } from '@axar/core';
-import { property, schema, optional } from '@axar/core';
+import { output, systemPrompt, Agent, model, tool } from '@axar-ai/axar-core';
+import { property, schema, optional } from '@axar-ai/axar-core';
 import {
   caseResolved,
   changeFlight,

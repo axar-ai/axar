@@ -1,5 +1,5 @@
-import { model, output, systemPrompt, tool, Agent } from '@axar/core';
-import { property, schema } from '@axar/core';
+import { model, output, systemPrompt, tool, Agent } from '@axar-ai/axar-core';
+import { property, schema } from '@axar-ai/axar-core';
 
 export interface DatabaseConn {
   refundItem(userId: number, itemId: number): Promise<string>;

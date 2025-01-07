@@ -8,19 +8,22 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
-      contents: read # For fetching code
-      id-token: write # For publishing to npm and JSR
+      contents: write # For fetching code and pushing tags/releases
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4.0.3
         with:
-          node-version: '18'
+          node-version: '20.12.2'
           registry-url: 'https://registry.npmjs.org/'
+
+      - name: Authenticate with npm
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
       - name: Install dependencies
         run: npm install
@@ -28,14 +31,11 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Log in to npm
-        run: npm login --registry=https://registry.npmjs.org/
+      - name: Release with Semantic Release
         env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-
-      - name: Publish to npm
-        run: |
-          npm publish --access public  # For public packages
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
 
       - name: Publish to JSR
         run: npx jsr publish

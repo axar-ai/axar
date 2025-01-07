@@ -1,5 +1,5 @@
 import z from 'zod';
-import { model, systemPrompt, output, tool, Agent } from '@axar/core';
+import { model, systemPrompt, output, tool, Agent } from '@axar-ai/axar-core';
 
 export interface DatabaseConn {
   customerName(id: number): Promise<string>;
