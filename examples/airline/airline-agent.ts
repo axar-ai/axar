@@ -32,12 +32,12 @@ async function main() {
       LOCATION: '1234 Main St, San Francisco, CA 94123, USA',
     },
     flight_context: {
-      FLIGHT_NUMBER: '1919',
+      FLIGHT_NUMBER: 'AA123',
       DEPARTURE_AIRPORT: 'LGA',
       ARRIVAL_AIRPORT: 'LAX',
       DEPARTURE_TIME: '3pm ET',
       DEPARTURE_DATE: '5/21/2024',
-      ARRIVAL_TIME: '6pm PT',
+      ARRIVAL_TIME: '7pm PT',
       FLIGHT_STATUS: 'On Time',
     },
   };
@@ -46,12 +46,12 @@ async function main() {
   const changeQuery =
     "I want to change my flight to one day earlier. I can't make it anymore due to a personal conflict. Please provide me a new flight";
   const cancelQuery =
-    "I want to cancel my flight. I can't make it anymore due to a personal conflict. Please provide me a new flight";
+    "I want to cancel my flight. I can't make it anymore due to a personal conflict.";
 
   const cancelQuery2 =
     "I want to cancel my flight. I can't make it anymore due to a personal conflict, and I want refund";
   const unclearQuery =
-    'I dont want this flight, please reschedule it for next week and provide me the new flight details';
+    'I dont want this flight, please reschedule it for next week and provide me the new flight details.';
   const lostBaggageQuery = 'My bag is missing please help me find it';
 
   console.log(
