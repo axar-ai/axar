@@ -23,6 +23,10 @@
     "open:coverage": "npx jest --coverage && open-cli coverage/lcov-report/index.html",
     "prettier:check": "prettier --check --write ."
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "keywords": [
     "typescript",
     "agent-framework",
