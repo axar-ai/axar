@@ -73,6 +73,10 @@ Here's a more complex example (truncated to fit in this README):
 
 (Full code here: [examples/bank-agent4.ts](src/examples/bank-agent4.ts))
 
+<p align="center">
+  <img src="https://github.com/axar-ai/axar-core/blob/2bd27b5d46c2116481820eb8be7931da572857e1/screenshots.png">
+</p>
+
 ```ts
 // ...
 // Define the structured response that the agent will produce.

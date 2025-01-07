@@ -1,7 +1,7 @@
 import {} from '../';
 import z from 'zod';
-import { optional, property, schema } from 'schema';
-import { model, output, systemPrompt, tool, Agent } from 'agent';
+import { optional, property, schema } from '@axar/core';
+import { model, output, systemPrompt, tool, Agent } from '@axar/core';
 
 export interface DatabaseConn {
   customerName(id: number): Promise<string>;

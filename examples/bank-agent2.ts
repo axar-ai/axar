@@ -1,5 +1,5 @@
-import { systemPrompt, model, output, tool, Agent } from 'agent';
-import { property, min, max, schema } from 'schema';
+import { systemPrompt, model, output, tool, Agent } from '@axar/core';
+import { property, min, max, schema } from '@axar/core';
 import z from 'zod';
 
 export interface DatabaseConn {
