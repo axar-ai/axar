@@ -1,7 +1,6 @@
 name: Release
 
 on:
-  # Triggers the workflow on published releases
   release:
     types: [published]
 
@@ -28,11 +27,11 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build
+        run: npm run prepublishOnly
 
       - name: Publish
         run: npm publish --access public
 
         env:
-          # We need this to our NPM account
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
