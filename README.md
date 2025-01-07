@@ -6,6 +6,7 @@
   <a href="https://github.com/axar-ai/axar-core/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://github.com/axar-ai/axar-core/actions/workflows/ci.yml/badge.svg?event=push" alt="CI"></a>
   <a href='https://coveralls.io/github/axar-ai/axar-core?branch=main'><img src='https://coveralls.io/repos/github/axar-ai/axar-core/badge.svg?branch=main' alt='Coverage Status' /></a>
 <a href="https://github.com/axar-ai/axar-core/blob/main/LICENSE"><img src="https://img.shields.io/github/license/axar-ai/axar-core" alt="license"></a>
+<a href="https://img.shields.io/npm/v/%40axarai%2Faxar-core"><img alt="NPM Version" src="https://img.shields.io/npm/v/%40axarai%2Faxar-core"></a>
 
 </div>
 
@@ -207,13 +208,13 @@ npm install
 **Build**
 
 ```
-npx tsc
+npm run build
 ```
 
 **Run tests**
 
 ```
-npx jest
+npm run test
 ```
 
 ## Inspirations
