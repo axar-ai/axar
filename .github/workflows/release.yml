@@ -2,8 +2,8 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*' # Trigger release on version tags (e.g., v1.0.0)
+    branches:
+      - main
 
 jobs:
   release:
@@ -11,6 +11,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write # For fetching code and pushing tags/releases
+      id-token: write # For OIDC tokenless publishing
 
     steps:
       - name: Checkout repository
