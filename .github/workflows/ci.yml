@@ -39,9 +39,19 @@ jobs:
           CI: true
           DISABLE_MOCKED_WARNING: true
 
-      - name: Coveralls GitHub Action
-        uses: coverallsapp/github-action@v2.3.4
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
         with:
-          github-token: ${{ secrets.github_token }}
-          flag-name: run-${{ matrix.node-version }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          flag-name: ${{ matrix.os }}-node-${{ matrix.node }}
           parallel: true
+
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel-finished: true
