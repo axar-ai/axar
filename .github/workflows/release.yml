@@ -24,7 +24,9 @@ jobs:
           registry-url: 'https://registry.npmjs.org/'
 
       - name: Authenticate with npm
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
+          echo "@axar-ai:registry=https://npm.pkg.github.com/" >> ~/.npmrc
 
       - name: Install dependencies
         run: npm install
