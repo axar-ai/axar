@@ -50,6 +50,10 @@ async function main() {
 
   const cancelQuery2 =
     "I want to cancel my flight. I can't make it anymore due to a personal conflict, and I want refund";
+
+  const cancelQuery3 =
+    "I have another connecting flight. I want to cancel my flight. I can't make it anymore due to a personal conflict, and I want refund";
+
   const unclearQuery =
     'I dont want this flight, please reschedule it for next week and provide me the new flight details.';
   const lostBaggageQuery = 'My bag is missing please help me find it';
@@ -78,6 +82,16 @@ async function main() {
       }),
     ),
   );
+
+  console.log(
+    await triggerAgent.run(
+      JSON.stringify({
+        query: cancelQuery3,
+        context: context,
+      }),
+    ),
+  );
+
   console.log(
     await triggerAgent.run(
       JSON.stringify({

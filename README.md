@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://axar.ai/assets/images/image01.svg?v=0cac29f0" alt="AXAR-logo" width="360">
+  <img src="https://axar.ai/assets/images/image01.svg?v=0cac29f0" alt="AXAR Logo" width="360">
 </p>
 
 <div align="center">
