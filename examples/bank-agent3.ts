@@ -1,5 +1,5 @@
-import { tool, systemPrompt, model, output, Agent } from 'agent';
-import { schema, property, min, max, optional } from 'schema';
+import { tool, systemPrompt, model, output, Agent } from '@axar/core';
+import { schema, property, min, max, optional } from '@axar/core';
 
 import z from 'zod';
 

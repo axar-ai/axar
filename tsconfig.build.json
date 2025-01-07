@@ -8,6 +8,9 @@
     "declarationDir": "dist",
     "esModuleInterop": true,
     "baseUrl": "./src",
+    "paths": {
+      "@axar/core": ["./"]
+    },
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
