@@ -7,8 +7,7 @@
   <a href='https://coveralls.io/github/axar-ai/axar-core?branch=main'><img src='https://coveralls.io/repos/github/axar-ai/axar-core/badge.svg?branch=main' alt='Coverage Status' /></a>
 <a href="https://github.com/axar-ai/axar-core/blob/main/LICENSE"><img src="https://img.shields.io/github/license/axar-ai/axar-core" alt="license"></a>
 <a href="https://www.npmjs.com/package/@axarai/axar-core"><img alt="NPM Version" src="https://img.shields.io/npm/v/%40axarai%2Faxar-core"></a>
-<a href="https://www.npmjs.com/package/@axarai/axar-core"><img alt="NPM download" src="https://img.shields.io/npm/dw/%40axarai%2Faxar-core
-"></a>
+<a href="https://www.npmjs.com/package/@axarai/axar-core"><img alt="NPM download" src="https://img.shields.io/npm/dw/%40axarai%2Faxar-core"></a>
 
 </div>
 
