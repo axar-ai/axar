@@ -1,44 +1,43 @@
 <p align="center">
-  <img src="https://axar.ai/assets/images/image01.svg?v=0cac29f0" alt="AXAR Logo" width="360">
+  <img src="https://private-user-images.githubusercontent.com/83516/402573250-a7b6d31d-c3f8-4890-b84c-7af956edac7d.svg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MzY3Nzg1MDUsIm5iZiI6MTczNjc3ODIwNSwicGF0aCI6Ii84MzUxNi80MDI1NzMyNTAtYTdiNmQzMWQtYzNmOC00ODkwLWI4NGMtN2FmOTU2ZWRhYzdkLnN2Zz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTAxMTMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwMTEzVDE0MjMyNVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWJlYmI5M2M4ZmIyZmYzYWQ5ZjdhZjI2NjA3MmVjOWY1YzQyZTZlMDkzMzdhYmEwZjFjNGRjOWZmMjA4NmYzYjkmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.UtQ4THxNgDvDoY5g64cH5z9zlkhROFgVuyQx_t4GxhQ" alt="AXAR Logo" width="360">
 </p>
 
-<div align="center">
+<div align="center" style="margin-bottom: 16px;">
   <a href="https://github.com/axar-ai/axar-core/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://github.com/axar-ai/axar-core/actions/workflows/ci.yml/badge.svg?event=push" alt="CI"></a>
   <a href='https://coveralls.io/github/axar-ai/axar-core?branch=main'><img src='https://coveralls.io/repos/github/axar-ai/axar-core/badge.svg?branch=main' alt='Coverage Status' /></a>
 <a href="https://github.com/axar-ai/axar-core/blob/main/LICENSE"><img src="https://img.shields.io/github/license/axar-ai/axar-core" alt="license"></a>
 <a href="https://www.npmjs.com/package/@axarai/axar-core"><img alt="NPM Version" src="https://img.shields.io/npm/v/%40axarai%2Faxar-core"></a>
 <a href="https://www.npmjs.com/package/@axarai/axar-core"><img alt="NPM download" src="https://img.shields.io/npm/dw/%40axarai%2Faxar-core"></a>
-
 </div>
 
 Most agent frameworks today miss the mark: they’re designed to impress on stage, not deliver in production. Flashy demos and overengineered complexity have overshadowed what truly matters—giving developers the tools they need to build reliable, robust applications.
 
 ## What developers really need
 
-In the race toward AGI, we’ve overlooked a critical truth: production-grade application development demands clarity, control, and trust. We need tools that are intuitive to code with, straightforward to debug, and simple to iterate on.
+In the race toward AGI, we’ve overlooked a critical truth: production-grade software development demands clarity, control, and trust. We need tools that are intuitive to code with, straightforward to debug, and simple to iterate on.
 
-## Why code is king
+## Code is king
 
-Agents are only as good as their instructions. And when reliability is the goal, the best way to write those instructions is through code. Code gives developers clarity, control, and precision—qualities that matter more than ever in the unpredictable world of LLMs. Explicit, structured communication with LLMs isn’t just nice to have; it’s essential for better outcomes.
+Agents are only as good as their instructions. And when reliability is the goal, the best way to write those instructions is through code. Code gives developers clarity, control, and precision—qualities that matter more than ever in the unpredictable world of LLMs. Explicit, structured communication with LLMs isn’t just nice to have, it’s essential.
 
 ## Meet AXAR AI
 
-**AXAR AI** is designed for developers building production-grade applications. It gives you full control to create predictable, robust solutions that integrate LLMs into proven development workflows. AXAR feels familiar and intuitive—letting you code as you would with any other application. No unnecessary complexity, no steep learning curve.
+**AXAR AI** is built for developers building production-grade applications. It gives developers full control to build predictable, robust LLM powered software while adhering to proven development workflows. AXAR feels natural and intuitive——just like coding any other application. No unnecessary abstractions, no steep learning curve.
 
 ## Practicality over hype
 
 At AXAR, we focus on what developers need: tools that are reliable, practical, and rooted in solid coding principles. We’re not chasing trends—we’re here to help you build applications you can trust in production. AXAR combines the best of traditional coding practices with the power of LLMs, making it easy to integrate AI into real-world applications.
 
-If you’re building something real, something that _works_—AXAR AI is your framework.
+If you’re building something real, something that _actually_ works—AXAR AI is your agentic framework.
 
 ## Why use AXAR AI
 
-- **Type-first design**: Structured, typed inputs and outputs with TypeScript (decorator or Zod based) ensure predictable and reliable agent workflows.
+- **Type-first design**: Structured, typed inputs and outputs with TypeScript (Zod or @annotations) for predictable and reliable agent workflows.
 - **Familiar and intuitive**: Built on patterns like dependency injection and decorators, so you can use what you already know.
 - **Explicit control**: Define agent behavior, guardrails, and validations directly in code for clarity and maintainability.
 - **Transparent**: Includes tools for real-time logging and monitoring, giving you full control and insight into agent operations.
 - **Lightweight**: Minimalistic design with little to no overhead for your codebase.
-- **Model agnostic**: Works with OpenAI, Anthropic, Mistral, and more, with easy extensibility for additional models.
+- **Model agnostic**: Works with OpenAI, Anthropic, Gemini, and more, with easy extensibility for additional models.
 - **Streamed outputs**: Streams LLM responses with built-in validation for fast and accurate results.
 - **Production-ready**: Built for maintainable and reliable applications in production environments.
 
