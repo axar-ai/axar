@@ -1,5 +1,5 @@
 import z from 'zod';
-import { model, output, systemPrompt, tool, Agent } from '@axarai/axar-core';
+import { model, output, systemPrompt, tool, Agent } from '@axarai/axar';
 
 // FIXME: Support boolean output
 

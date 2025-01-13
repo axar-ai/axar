@@ -1,4 +1,4 @@
-import { model, systemPrompt, Agent } from '@axarai/axar-core';
+import { model, systemPrompt, Agent } from '@axarai/axar';
 
 type User = {
   name: string;

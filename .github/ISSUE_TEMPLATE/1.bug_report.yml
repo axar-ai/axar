@@ -1,15 +1,15 @@
 name: Bug report
-description: Report a bug with axar-core.
+description: Report a bug with axar.
 labels: ['bug']
 body:
   - type: markdown
     attributes:
       value: |
-        This template is to report bugs with **axar-core**. If you need help with your own project or have questions about usage, feel free to [start a new discussion in our GitHub Discussions](https://github.com/axar-ai/axar-core/discussions).
+        This template is to report bugs with **axar**. If you need help with your own project or have questions about usage, feel free to [start a new discussion in our GitHub Discussions](https://github.com/axar-ai/axar/discussions).
   - type: textarea
     attributes:
       label: Description
-      description: A detailed description of the issue you are encountering with axar-core, including reproduction steps, expected behavior, and actual behavior. Helpful details include the API or feature you're using, framework, and AI model/provider.
+      description: A detailed description of the issue you are encountering with axar, including reproduction steps, expected behavior, and actual behavior. Helpful details include the API or feature you're using, framework, and AI model/provider.
       placeholder: |
         Describe the issue, steps to reproduce, expected behavior, and actual behavior...
     validations:
@@ -19,8 +19,8 @@ body:
       label: Code example
       description: Provide a code snippet or minimal reproducible example demonstrating the issue.
       placeholder: |
-        import { Agent } from 'axar-core';
-        import { model } from 'axar-core/decorators';
+        import { Agent } from 'axar';
+        import { model } from 'axar/decorators';
         ...
   - type: input
     id: provider
