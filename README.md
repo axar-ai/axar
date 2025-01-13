@@ -5,10 +5,11 @@
 <div align="center" style="margin-bottom: 16px;">
   <a href="https://github.com/axar-ai/axar/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://github.com/axar-ai/axar/actions/workflows/ci.yml/badge.svg?event=push" alt="CI"></a>
   <a href='https://coveralls.io/github/axar-ai/axar?branch=main'><img src='https://coveralls.io/repos/github/axar-ai/axar/badge.svg?branch=main' alt='Coverage Status' /></a>
-<a href="https://github.com/axar-ai/axar/blob/main/LICENSE"><img src="https://img.shields.io/github/license/axar-ai/axar" alt="license"></a>
-<a href="https://www.npmjs.com/package/@axarai/axar"><img alt="NPM Version" src="https://img.shields.io/npm/v/%40axarai%2Faxar"></a>
-<a href="https://www.npmjs.com/package/@axarai/axar"><img alt="NPM download" src="https://img.shields.io/npm/dw/%40axarai%2Faxar"></a>
+  <a href="https://github.com/axar-ai/axar/blob/main/LICENSE"><img src="https://img.shields.io/github/license/axar-ai/axar" alt="license"></a>
+  <a href="https://www.npmjs.com/package/@axarai/axar"><img alt="NPM Version" src="https://img.shields.io/npm/v/%40axarai%2Faxar"></a>
+  <a href="https://www.npmjs.com/package/@axarai/axar"><img alt="NPM download" src="https://img.shields.io/npm/dw/%40axarai%2Faxar"></a>
 </div>
+<br/>
 
 Most agent frameworks today miss the mark: they’re designed to impress on stage, not deliver in production. Flashy demos and overengineered complexity have overshadowed what truly matters—giving developers the tools they need to build reliable, robust applications.
 
@@ -72,7 +73,7 @@ It's basic for now, but you can easily extend it with tools, dynamic prompts, an
 
 Here's a more complex example (truncated to fit in this README):
 
-(Full code here: [examples/bank-agent4.ts](src/examples/bank-agent4.ts))
+(Full code here: [examples/bank-agent4.ts](examples/bank-agent4.ts))
 
 <p align="center">
   <img src="https://github.com/axar-ai/axar/blob/2bd27b5d46c2116481820eb8be7931da572857e1/screenshots.png">
@@ -188,7 +189,49 @@ More examples can be found in the [examples](src/examples) directory.
 
 ## Usage
 
-[Coming soon]
+### 1. Configure your project
+Set up a new project and install the required dependencies:
+```bash
+mkdir axar-demo
+cd axar-demo
+npm init -y
+npm i @axarai/axar ts-node typescript
+npx tsc --init
+```
+> [!INFO]
+> You might want to configure your `tsconfig.json` file as follows for better compatibility:
+>
+> ```json
+> {
+>   "compilerOptions": {
+>     "strict": true,
+>     "module": "CommonJS",
+>     "target": "es2020",
+>     "esModuleInterop": true
+>   }
+> }
+> ```
+
+### 2. Use the package
+Create a new file `text-agent.ts` and add the following code:
+```ts
+import { model, systemPrompt, Agent } from "@axarai/axar";
+
+@model("openai:gpt-4o-mini")
+@systemPrompt("Be concise, reply with one sentence")
+class TextAgent extends Agent<string, string> {}
+
+(async () => {
+  const response = await new TextAgent().run("Who invented the internet?");
+  console.log(response);
+})();
+```
+
+### 3. Run the agent
+```bash
+export OPENAI_API_KEY="sk-proj-YOUR-API-KEY"
+npx ts-node text-agent.ts
+```
 
 > [!WARNING]
 > AXAR AI (axar) is currently in early alpha. It is not intended to be used in production as of yet. But we're working hard to get there and we would love your help!
@@ -219,7 +262,7 @@ npm run test
 
 ## Inspirations
 
-AXAR is built on ideas from some of the best tools and frameworks out there. We use Vercel's AI SDK and take inspiration from [Pydantic AI](https://github.com/pydantic/pydantic-ai)and OpenAI’s [Swarm](https://github.com/openai/swarm). These projects have set the standard for developer-friendly AI tooling, and AXAR builds on that foundation.
+AXAR is built on ideas from some of the best tools and frameworks out there. We use Vercel's AI SDK and take inspiration from [Pydantic AI](https://github.com/pydantic/pydantic-ai) and OpenAI’s [Swarm](https://github.com/openai/swarm). These projects have set the standard for developer-friendly AI tooling, and AXAR builds on that foundation.
 
 ## Resources
 
