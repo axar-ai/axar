@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "baseUrl": "./src",
     "paths": {
-      "@axarai/axar-core": ["./"]
+      "@axarai/axar": ["./"]
     },
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true

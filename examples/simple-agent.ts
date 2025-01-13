@@ -1,4 +1,4 @@
-import { model, systemPrompt, Agent } from '@axarai/axar-core';
+import { model, systemPrompt, Agent } from '@axarai/axar';
 
 @model('openai:gpt-4o-mini')
 @systemPrompt('Be concise, reply with one sentence')

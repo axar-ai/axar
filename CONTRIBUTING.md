@@ -11,8 +11,8 @@ Hey there! 👋 Thanks for checking out AXAR. Whether you’re fixing a bug, add
 1. **Fork the repo** (you know the drill).
 2. Clone your fork:
    ```bash
-   git clone https://github.com/your-username/axar-core.git
-   cd axar-core
+   git clone https://github.com/your-username/axar.git
+   cd axar
    ```
 3. Install dependencies (we use npm):
    ```bash

@@ -3,11 +3,11 @@
 </p>
 
 <div align="center" style="margin-bottom: 16px;">
-  <a href="https://github.com/axar-ai/axar-core/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://github.com/axar-ai/axar-core/actions/workflows/ci.yml/badge.svg?event=push" alt="CI"></a>
-  <a href='https://coveralls.io/github/axar-ai/axar-core?branch=main'><img src='https://coveralls.io/repos/github/axar-ai/axar-core/badge.svg?branch=main' alt='Coverage Status' /></a>
-<a href="https://github.com/axar-ai/axar-core/blob/main/LICENSE"><img src="https://img.shields.io/github/license/axar-ai/axar-core" alt="license"></a>
-<a href="https://www.npmjs.com/package/@axarai/axar-core"><img alt="NPM Version" src="https://img.shields.io/npm/v/%40axarai%2Faxar-core"></a>
-<a href="https://www.npmjs.com/package/@axarai/axar-core"><img alt="NPM download" src="https://img.shields.io/npm/dw/%40axarai%2Faxar-core"></a>
+  <a href="https://github.com/axar-ai/axar/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://github.com/axar-ai/axar/actions/workflows/ci.yml/badge.svg?event=push" alt="CI"></a>
+  <a href='https://coveralls.io/github/axar-ai/axar?branch=main'><img src='https://coveralls.io/repos/github/axar-ai/axar/badge.svg?branch=main' alt='Coverage Status' /></a>
+<a href="https://github.com/axar-ai/axar/blob/main/LICENSE"><img src="https://img.shields.io/github/license/axar-ai/axar" alt="license"></a>
+<a href="https://www.npmjs.com/package/@axarai/axar"><img alt="NPM Version" src="https://img.shields.io/npm/v/%40axarai%2Faxar"></a>
+<a href="https://www.npmjs.com/package/@axarai/axar"><img alt="NPM download" src="https://img.shields.io/npm/dw/%40axarai%2Faxar"></a>
 </div>
 
 Most agent frameworks today miss the mark: they’re designed to impress on stage, not deliver in production. Flashy demos and overengineered complexity have overshadowed what truly matters—giving developers the tools they need to build reliable, robust applications.
@@ -75,7 +75,7 @@ Here's a more complex example (truncated to fit in this README):
 (Full code here: [examples/bank-agent4.ts](src/examples/bank-agent4.ts))
 
 <p align="center">
-  <img src="https://github.com/axar-ai/axar-core/blob/2bd27b5d46c2116481820eb8be7931da572857e1/screenshots.png">
+  <img src="https://github.com/axar-ai/axar/blob/2bd27b5d46c2116481820eb8be7931da572857e1/screenshots.png">
 </p>
 
 ```ts
@@ -191,7 +191,7 @@ More examples can be found in the [examples](src/examples) directory.
 [Coming soon]
 
 > [!WARNING]
-> AXAR AI (axar-core) is currently in early alpha. It is not intended to be used in production as of yet. But we're working hard to get there and we would love your help!
+> AXAR AI (axar) is currently in early alpha. It is not intended to be used in production as of yet. But we're working hard to get there and we would love your help!
 
 ## Documentation
 

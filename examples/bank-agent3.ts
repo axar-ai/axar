@@ -1,5 +1,5 @@
-import { tool, systemPrompt, model, output, Agent } from '@axarai/axar-core';
-import { schema, property, min, max, optional } from '@axarai/axar-core';
+import { tool, systemPrompt, model, output, Agent } from '@axarai/axar';
+import { schema, property, min, max, optional } from '@axarai/axar';
 
 import z from 'zod';
 

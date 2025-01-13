@@ -1,5 +1,5 @@
-import { output, systemPrompt, Agent, model, tool } from '@axarai/axar-core';
-import { property, schema } from '@axarai/axar-core';
+import { output, systemPrompt, Agent, model, tool } from '@axarai/axar';
+import { property, schema } from '@axarai/axar';
 import {
   FlightModificationAgent,
   FlightModificationResponse,

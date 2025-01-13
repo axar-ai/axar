@@ -1,10 +1,9 @@
-import { output, systemPrompt, Agent, model, tool } from '@axarai/axar-core';
-import { property, schema, optional } from '@axarai/axar-core';
+import { output, systemPrompt, Agent, model, tool } from '@axarai/axar';
+import { property, schema, optional } from '@axarai/axar';
 import {
   caseResolved,
   changeFlight,
   escalateToAgent,
-  IChnageFlightResponse,
   initiateFlightCredits,
   initiateRefund,
   validToChangeFlight,

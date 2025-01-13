@@ -1,4 +1,4 @@
-import { model, systemPrompt, Agent } from '@axarai/axar-core';
+import { model, systemPrompt, Agent } from '@axarai/axar';
 
 // FIXME: Support boolean output
 @model('openai:gpt-4o-mini')
