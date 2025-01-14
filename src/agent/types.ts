@@ -6,7 +6,7 @@ import { z, ZodSchema } from 'zod';
 export type ClassConstructor<T = any> = { new (): T };
 // TODO: export type ClassConstructor<T = unknown> = new (...args: any[]) => T;
 
-export type OutputType =
+export type InputOutputType =
   | ZodSchema
   | ClassConstructor
   | StringConstructor

@@ -11,7 +11,7 @@ import { ToolMetadata } from './types';
 import { getModel } from '../llm';
 
 // Base agent that handles core functionality
-export abstract class Agent<TInput = string, TOutput = any> {
+export abstract class Agent<TInput = any, TOutput = any> {
   private static getMetadata<T>(key: symbol, target: any): T {
     return Reflect.getMetadata(key, target) || ([] as unknown as T);
   }
@@ -76,21 +76,70 @@ export abstract class Agent<TInput = string, TOutput = any> {
     return schema;
   }
 
+  protected getInputSchema(): ZodSchema<any> | undefined {
+    // Retrieve the ZodSchema from metadata
+    const schema: ZodSchema<TInput> = Reflect.getMetadata(
+      META_KEYS.INPUT,
+      this.constructor,
+    );
+
+    return schema;
+  }
+
+  protected serializeInput(
+    input: TInput,
+    inputSchema: ZodSchema<TInput> | undefined,
+  ): string {
+    // If schema is provided then validate input
+    if (inputSchema) {
+      inputSchema.parse(input);
+    }
+
+    try {
+      // Handle object inputs
+      if (typeof input === 'object' && input !== null) {
+        // Warn only if we have an object type input but no schema
+        if (!inputSchema) {
+          console.warn(
+            `No input schema found for ${this.constructor.name}. ` +
+              `Did you forget to apply @input decorator?`,
+          );
+        }
+        return JSON.stringify(input);
+      }
+
+      // Handle primitives
+      return String(input);
+    } catch (error) {
+      throw new Error(
+        `Failed to serialize input: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  /**
+   * Runs the agent with the given input and returns the output.
+   * @param input - The input to run the agent with.
+   * @returns The output of the agent.
+   */
   async run(input: TInput): Promise<TOutput> {
     const model = await this.getModel();
     const tools = this.getTools();
-    const schema = this.getOutputSchema();
+    const outputSchema = this.getOutputSchema();
+    const inputSchema = this.getInputSchema();
 
     const systemPrompts = await Promise.all(
       this.getSystemPrompts().map((fn) => fn.call(this)),
     );
 
+    const inputString = this.serializeInput(input, inputSchema);
+
     const messages = [
       { role: 'system', content: systemPrompts.join('\n\n') },
-      { role: 'user', content: String(input) },
+      { role: 'user', content: inputString },
     ] as CoreMessage[];
 
-    const baseConfig = {
+    const baseOutputConfig = {
       model: model,
       messages: messages,
       tools: tools,
@@ -98,33 +147,34 @@ export abstract class Agent<TInput = string, TOutput = any> {
       maxSteps: 3,
     };
 
-    // Check if schema is for string then use plain text result
-    if (schema instanceof z.ZodString) {
-      const result = await generateText(baseConfig);
+    const isStringSchema = outputSchema instanceof z.ZodString;
+    const isPrimitiveSchema =
+      outputSchema instanceof z.ZodBoolean ||
+      outputSchema instanceof z.ZodNumber;
+
+    // Check if not plain string schema, for all other cases (including primitives and complex types) use object output
+    const finalOutputConfig = isStringSchema
+      ? baseOutputConfig
+      : {
+          ...baseOutputConfig,
+          experimental_output: Output.object({
+            schema: outputSchema,
+          }),
+        };
+
+    const result = await generateText(finalOutputConfig);
+
+    // For plain string schema, return the text
+    if (isStringSchema) {
       return result.text as TOutput;
     }
 
-    // For all other cases (including primitives and complex types)
-    const result = await generateText({
-      ...baseConfig,
-      experimental_output: Output.object({
-        schema: schema,
-      }),
-    });
-
     // For primitive types (boolean, number), return .value
-    if (schema instanceof z.ZodBoolean || schema instanceof z.ZodNumber) {
+    if (isPrimitiveSchema) {
       return result.experimental_output.value as TOutput;
     }
 
-    // For complex types, return the whole object
+    // For object/array or other complex types, return the whole object
     return result.experimental_output as TOutput;
   }
-
-  // Stream method for streaming responses
-  // async stream(input: TInput): Promise<StreamingTextResponse> {
-  //   // Similar to run() but uses streamText from AI SDK
-  //   // Implementation would follow AI SDK streaming patterns
-  //   throw new Error("Streaming not yet implemented");
-  // }
 }

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { z, ZodSchema, ZodObject } from 'zod';
 import { META_KEYS } from './meta-keys';
-import { ClassConstructor, ToolMetadata, OutputType } from './types';
+import { ClassConstructor, ToolMetadata, InputOutputType } from './types';
 import { hasSchemaDef, getSchemaDef } from '../schema';
 
 /**
@@ -14,6 +14,50 @@ export function model(modelIdentifier: string): ClassDecorator {
   return function <T extends Function>(target: T): T {
     Reflect.defineMetadata(META_KEYS.MODEL, modelIdentifier, target);
     return target;
+  };
+}
+
+/**
+ * Creates a schema from the provided type specification
+ */
+function createSchema(type: InputOutputType, decoratorName: string): ZodSchema {
+  if (type instanceof ZodSchema) {
+    return type;
+  }
+
+  const primitiveSchemas = {
+    [String.name]: z.string(),
+    [Number.name]: z.number(),
+    [Boolean.name]: z.boolean(),
+  };
+
+  const primitiveSchema = primitiveSchemas[type.name];
+  if (primitiveSchema) {
+    return primitiveSchema;
+  }
+
+  if (hasSchemaDef(type)) {
+    return getSchemaDef(type);
+  }
+  const typeName =
+    typeof type === 'function' && type.name ? type.name : String(type);
+
+  throw new Error(
+    `${decoratorName} error: Could not create a schema for "${typeName}". ` +
+      `Type must be a Zod schema, a class decorated with @schema, or a primitive constructor (String, Number, Boolean).`,
+  );
+}
+
+/**
+ * Creates a decorator for input/output schema definition
+ */
+function createSchemaDecorator(metaKey: symbol, decoratorName: string) {
+  return function (type: InputOutputType): ClassDecorator {
+    return function <T extends Function>(target: T): T {
+      const schema = createSchema(type, decoratorName);
+      Reflect.defineMetadata(metaKey, schema, target);
+      return target;
+    };
   };
 }
 
@@ -40,30 +84,32 @@ export function model(modelIdentifier: string): ClassDecorator {
  * class BooleanAgent extends Agent<string, boolean> {}
  * ```
  */
-export function output(type: OutputType): ClassDecorator {
-  return function <T extends Function>(target: T): T {
-    let schema: ZodSchema;
+export const output = createSchemaDecorator(META_KEYS.OUTPUT, '@output');
 
-    if (type instanceof ZodSchema) {
-      schema = type;
-    } else if (type === String) {
-      schema = z.string();
-    } else if (type === Number) {
-      schema = z.number();
-    } else if (type === Boolean) {
-      schema = z.boolean();
-    } else if (hasSchemaDef(type)) {
-      schema = getSchemaDef(type);
-    } else {
-      throw new Error(
-        `Output must be a Zod schema, a class with @schema, or a primitive constructor`,
-      );
-    }
-
-    Reflect.defineMetadata(META_KEYS.OUTPUT, schema, target);
-    return target;
-  };
-}
+/**
+ * Specifies the input schema for a class.
+ *
+ * @param type - The input type specification, which can be:
+ *   - A Zod schema
+ *   - A class decorated with @schema
+ *   - A primitive type (String, Number, Boolean)
+ *
+ * @example
+ * ```typescript
+ * // Using primitive
+ * @input(Boolean)
+ * class BooleanAgent extends Agent<boolean, string> {}
+ *
+ * // Using schema-decorated class
+ * @input(UserProfile)
+ * class UserAgent extends Agent<UserProfile, string> {}
+ *
+ * // Using Zod schema directly
+ * @input(z.boolean())
+ * class BooleanAgent extends Agent<boolean, string> {}
+ * ```
+ */
+export const input = createSchemaDecorator(META_KEYS.INPUT, '@input');
 
 /**
  * `systemPrompt` decorator to set system prompts for classes and methods.
@@ -78,9 +124,13 @@ export function output(type: OutputType): ClassDecorator {
  * @param prompt - (Optional) The system prompt string.
  * @returns A decorator function.
  */
-
-// Function Overloads
 export function systemPrompt(prompt: string): ClassDecorator;
+
+/**
+ * Decorates a method to work a dynamic system prompt provider.
+ *
+ * @returns A decorator function.
+ */
 export function systemPrompt(): MethodDecorator;
 
 // Implementation
