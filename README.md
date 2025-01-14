@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://private-user-images.githubusercontent.com/83516/402573250-a7b6d31d-c3f8-4890-b84c-7af956edac7d.svg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MzY3Nzg1MDUsIm5iZiI6MTczNjc3ODIwNSwicGF0aCI6Ii84MzUxNi80MDI1NzMyNTAtYTdiNmQzMWQtYzNmOC00ODkwLWI4NGMtN2FmOTU2ZWRhYzdkLnN2Zz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTAxMTMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwMTEzVDE0MjMyNVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWJlYmI5M2M4ZmIyZmYzYWQ5ZjdhZjI2NjA3MmVjOWY1YzQyZTZlMDkzMzdhYmEwZjFjNGRjOWZmMjA4NmYzYjkmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.UtQ4THxNgDvDoY5g64cH5z9zlkhROFgVuyQx_t4GxhQ" alt="AXAR Logo" width="360">
+  <img src="https://1845789600-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FEsqZ01bZEklboQR0Pa9C%2Fuploads%2FzA1p5nNK5LK1Nlo8yjxh%2FColor%20logo%20with%20background.svg?alt=media&token=df4fd20a-d9be-4994-99b7-8ae3f9f558cb" alt="AXAR Logo" width="360">
 </p>
 
 <div align="center" style="margin-bottom: 16px;">
@@ -15,7 +15,7 @@ Most agent frameworks today miss the mark: they’re designed to impress on stag
 
 ## What developers really need
 
-In the race toward AGI, we’ve overlooked a critical truth: production-grade software development demands clarity, control, and trust. We need tools that are intuitive to code with, straightforward to debug, and simple to iterate on.
+In the race toward AGI, we’ve overlooked a critical truth: production-grade software development demands tools that are intuitive to work with, straightforward to debug, and simple to iterate on.
 
 ## Code is king
 
@@ -41,6 +41,56 @@ If you’re building something real, something that _actually_ works—AXAR AI i
 - **Model agnostic**: Works with OpenAI, Anthropic, Gemini, and more, with easy extensibility for additional models.
 - **Streamed outputs**: Streams LLM responses with built-in validation for fast and accurate results.
 - **Production-ready**: Built for maintainable and reliable applications in production environments.
+
+## Usage
+
+### 1. Configure your project
+Set up a new project and install the required dependencies:
+```bash
+mkdir axar-demo
+cd axar-demo
+npm init -y
+npm i @axarai/axar ts-node typescript
+npx tsc --init
+```
+> [!NOTE]
+> You might want to configure your `tsconfig.json` file as follows for better compatibility:
+>
+> ```json
+> {
+>   "compilerOptions": {
+>     "strict": true,
+>     "module": "CommonJS",
+>     "target": "es2020",
+>     "esModuleInterop": true
+>   }
+> }
+> ```
+
+### 2. Write your first agent
+Create a new file `text-agent.ts` and add the following code:
+```ts
+import { model, systemPrompt, Agent } from "@axarai/axar";
+
+@model("openai:gpt-4o-mini")
+@systemPrompt("Be concise, reply with one sentence")
+class TextAgent extends Agent<string, string> {}
+
+(async () => {
+  const response = await new TextAgent().run("Who invented the internet?");
+  console.log(response);
+})();
+```
+
+### 3. Run the agent
+```bash
+export OPENAI_API_KEY="sk-proj-YOUR-API-KEY"
+npx ts-node text-agent.ts
+```
+
+> [!WARNING]
+> AXAR AI (axar) is currently in early alpha. It is not intended to be used in production as of yet. But we're working hard to get there and we would love your help!
+
 
 ## Examples
 
@@ -76,7 +126,7 @@ Here's a more complex example (truncated to fit in this README):
 (Full code here: [examples/bank-agent4.ts](examples/bank-agent4.ts))
 
 <p align="center">
-  <img src="https://github.com/axar-ai/axar/blob/2bd27b5d46c2116481820eb8be7931da572857e1/screenshots.png">
+  <img src="https://1845789600-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FEsqZ01bZEklboQR0Pa9C%2Fuploads%2F1w7BWzdiMjXduOh0KAzW%2Fbank-agent.svg?alt=media&token=dcc90aa0-3119-4ecd-9f03-991f7dc99a35">
 </p>
 
 ```ts
@@ -187,78 +237,11 @@ main().catch(console.error);
 
 More examples can be found in the [examples](src/examples) directory.
 
-## Usage
+## Setting up for contribution
 
-### 1. Configure your project
-Set up a new project and install the required dependencies:
-```bash
-mkdir axar-demo
-cd axar-demo
-npm init -y
-npm i @axarai/axar ts-node typescript
-npx tsc --init
-```
-> [!INFO]
-> You might want to configure your `tsconfig.json` file as follows for better compatibility:
->
-> ```json
-> {
->   "compilerOptions": {
->     "strict": true,
->     "module": "CommonJS",
->     "target": "es2020",
->     "esModuleInterop": true
->   }
-> }
-> ```
-
-### 2. Use the package
-Create a new file `text-agent.ts` and add the following code:
-```ts
-import { model, systemPrompt, Agent } from "@axarai/axar";
-
-@model("openai:gpt-4o-mini")
-@systemPrompt("Be concise, reply with one sentence")
-class TextAgent extends Agent<string, string> {}
-
-(async () => {
-  const response = await new TextAgent().run("Who invented the internet?");
-  console.log(response);
-})();
-```
-
-### 3. Run the agent
-```bash
-export OPENAI_API_KEY="sk-proj-YOUR-API-KEY"
-npx ts-node text-agent.ts
-```
-
-> [!WARNING]
-> AXAR AI (axar) is currently in early alpha. It is not intended to be used in production as of yet. But we're working hard to get there and we would love your help!
-
-## Documentation
-
-[Coming soon]
-
-## Setup
-
-**Install dependencies**
-
-```
-npm install
-```
-
-**Build**
-
-```
-npm run build
-```
-
-**Run tests**
-
-```
-npm run test
-```
+- **Install dependencies**: `npm install`
+- **Build**: `npm run build`
+- **Run tests**: `npm run test`
 
 ## Inspirations
 
@@ -266,9 +249,10 @@ AXAR is built on ideas from some of the best tools and frameworks out there. We 
 
 ## Resources
 
-- [Discord](https://discord.gg/4h8fUZTWD9)
-- [LinkedIn](https://www.linkedin.com/company/axar-ai/)
-- [GitHub](https://github.com/axar-ai)
+- [📕 AXAR AI Documentation ↗](https://axar-ai.gitbook.io/axar)
+- [💬 Discord](https://discord.gg/4h8fUZTWD9)
+- [👔 LinkedIn](https://www.linkedin.com/company/axar-ai/)
+- [🐙 GitHub](https://github.com/axar-ai)
 
 ## Contributing
 
