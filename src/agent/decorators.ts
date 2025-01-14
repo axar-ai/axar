@@ -236,26 +236,51 @@ export function tool(
       );
 
       if (!paramTypes || paramTypes.length === 0) {
-        throw new Error(
-          `@tool decorator on ${String(
-            propertyKey,
-          )} requires at least one parameter or an explicit schema.`,
-        );
+        // Empty parameter list, so we use an empty schema
+        schema = z.object({});
+      } else {
+        const paramType = paramTypes[0];
+
+        // Validate parameter count
+        if (paramTypes.length > 1) {
+          throw new Error(
+            `@tool ${String(propertyKey)}: Expected a single parameter, but found ${paramTypes.length}.`,
+          );
+        }
+
+        // Exclude primitive types
+        const primitiveTypes = [
+          String,
+          Number,
+          Boolean,
+          Symbol,
+          BigInt,
+          Function,
+        ];
+        if (primitiveTypes.includes(paramType)) {
+          throw new Error(
+            `@tool ${String(propertyKey)}: The parameter type (${paramType.name}) is a primitive, not an object.`,
+          );
+        }
+
+        // Ensure paramType is constructable and produces an object
+        if (typeof paramType !== 'function' || !paramType.prototype) {
+          throw new Error(
+            `@tool ${String(propertyKey)}: The parameter type (${paramType.name}) is not a valid class or constructor.`,
+          );
+        }
+
+        // Check if paramType is a class decorated with @schema
+        if (!hasSchemaDef(paramType)) {
+          throw new Error(
+            `@tool decorator on ${String(
+              propertyKey,
+            )} requires an explicit Zod schema or a parameter class decorated with @schema.`,
+          );
+        }
+        // Convert the parameter class to Zod schema
+        schema = getSchemaDef(paramType);
       }
-
-      const paramType = paramTypes[0];
-
-      // Check if paramType is a class decorated with @schema
-      if (!hasSchemaDef(paramType)) {
-        throw new Error(
-          `@tool decorator on ${String(
-            propertyKey,
-          )} requires an explicit Zod schema or a parameter class decorated with @schema.`,
-        );
-      }
-
-      // Convert the parameter class to Zod schema
-      schema = getSchemaDef(paramType);
     }
 
     // Retrieve existing tools metadata or initialize an empty array
