@@ -82,8 +82,8 @@ npm i @axarai/axar ts-node typescript
 npx tsc --init
 ```
 
-> [!NOTE]
-> You might want to configure your `tsconfig.json` file as follows for better compatibility:
+> [!WARNING]
+> You need to configure your `tsconfig.json` file as follows for better compatibility:
 >
 > ```json
 > {
@@ -91,7 +91,9 @@ npx tsc --init
 >     "strict": true,
 >     "module": "CommonJS",
 >     "target": "es2020",
->     "esModuleInterop": true
+>     "esModuleInterop": true,
+>     "experimentalDecorators": true,
+>     "emitDecoratorMetadata": true
 >   }
 > }
 > ```
