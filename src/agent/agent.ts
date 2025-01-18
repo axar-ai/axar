@@ -9,6 +9,7 @@ import {
 import { META_KEYS } from './meta-keys';
 import { ToolMetadata } from './types';
 import { getModel } from '../llm';
+import { logger } from '../common';
 
 // Base agent that handles core functionality
 export abstract class Agent<TInput = any, TOutput = any> {
@@ -65,7 +66,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
     );
 
     if (!schema) {
-      console.warn(
+      logger.debug(
         `No output schema found for ${this.constructor.name}. ` +
           `Did you forget to apply @output decorator? ` +
           `Falling back to string schema.`,
@@ -100,7 +101,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
       if (typeof input === 'object' && input !== null) {
         // Warn only if we have an object type input but no schema
         if (!inputSchema) {
-          console.warn(
+          logger.warn(
             `No input schema found for ${this.constructor.name}. ` +
               `Did you forget to apply @input decorator?`,
           );
