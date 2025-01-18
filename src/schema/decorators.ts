@@ -6,7 +6,7 @@ import {
   SchemaOptions,
   PropertyOptions,
   ValidationRule,
-  ClassConstructor,
+  SchemaConstructor,
 } from './types';
 
 /**
@@ -183,7 +183,7 @@ export function enumValues<T extends string | number>(
  * ```
  */
 export function arrayItems(
-  itemType: () => ClassConstructor,
+  itemType: () => SchemaConstructor,
 ): PropertyDecorator {
   return function (target: Object, propertyKey: string | symbol): void {
     if (typeof itemType !== 'function') {

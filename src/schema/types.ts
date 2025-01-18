@@ -1,7 +1,7 @@
 /**
- * Represents a class constructor with no argument
+ * Schemas have constructors with no argument
  */
-export type ClassConstructor<T = any> = { new (): T };
+export type SchemaConstructor<T = any> = { new (): T };
 
 /**
  * Options for schema annotation

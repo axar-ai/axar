@@ -11,12 +11,31 @@ import { ToolMetadata } from './types';
 import { getModel } from '../llm';
 import { logger } from '../common';
 
-// Base agent that handles core functionality
+/**
+ * Base class for creating AI agents with standardized input/output handling,
+ * tool management, and model integration.
+ *
+ * @typeParam TInput - The type of input the agent accepts
+ * @typeParam TOutput - The type of output the agent produces
+ */
 export abstract class Agent<TInput = any, TOutput = any> {
+  /**
+   * Retrieves metadata from a decorator.
+   *
+   * @param key - The metadata key symbol
+   * @param target - The target object to get metadata from
+   * @returns The metadata value or default empty array
+   */
   private static getMetadata<T>(key: symbol, target: any): T {
     return Reflect.getMetadata(key, target) || ([] as unknown as T);
   }
 
+  /**
+   * Gets the configured language model for this agent.
+   *
+   * @returns Promise resolving to the language model instance
+   * @throws {Error} If model metadata is not found
+   */
   protected async getModel(): Promise<LanguageModelV1> {
     const providerModelName = Agent.getMetadata<string>(
       META_KEYS.MODEL,
@@ -31,6 +50,11 @@ export abstract class Agent<TInput = any, TOutput = any> {
     return await getModel(providerModelName);
   }
 
+  /**
+   * Gets the tools configured for this agent through the @tool decorator.
+   *
+   * @returns A record of tool names to their implementations
+   */
   protected getTools(): Record<string, CoreTool> {
     const tools = Agent.getMetadata<ToolMetadata[]>(
       META_KEYS.TOOLS,
@@ -51,6 +75,11 @@ export abstract class Agent<TInput = any, TOutput = any> {
     return toolsFormatted as Record<string, CoreTool>;
   }
 
+  /**
+   * Gets the system prompts configured through the @systemPrompt decorator.
+   *
+   * @returns An array of functions that generate system prompt strings
+   */
   protected getSystemPrompts(): Array<() => Promise<string>> {
     return Agent.getMetadata<Array<() => Promise<string>>>(
       META_KEYS.SYSTEM_PROMPTS,
@@ -58,6 +87,11 @@ export abstract class Agent<TInput = any, TOutput = any> {
     );
   }
 
+  /**
+   * Gets the output schema configured through the @output decorator.
+   *
+   * @returns The Zod schema for validating agent outputs, fallbacks to string schema if not configured
+   */
   protected getOutputSchema(): ZodSchema<any> {
     // Retrieve the ZodSchema from metadata
     const schema: ZodSchema<TOutput> = Reflect.getMetadata(
@@ -77,6 +111,11 @@ export abstract class Agent<TInput = any, TOutput = any> {
     return schema;
   }
 
+  /**
+   * Gets the input schema configured through the @input decorator.
+   *
+   * @returns The Zod schema for validating agent inputs, if configured
+   */
   protected getInputSchema(): ZodSchema<any> | undefined {
     // Retrieve the ZodSchema from metadata
     const schema: ZodSchema<TInput> = Reflect.getMetadata(
@@ -87,6 +126,14 @@ export abstract class Agent<TInput = any, TOutput = any> {
     return schema;
   }
 
+  /**
+   * Serializes the input into a string format for the language model.
+   *
+   * @param input - The input to serialize
+   * @param inputSchema - Optional schema to validate the input
+   * @returns The serialized input string
+   * @throws {Error} If serialization or validation fails
+   */
   protected serializeInput(
     input: TInput,
     inputSchema: ZodSchema<TInput> | undefined,
@@ -120,8 +167,10 @@ export abstract class Agent<TInput = any, TOutput = any> {
 
   /**
    * Runs the agent with the given input and returns the output.
-   * @param input - The input to run the agent with.
-   * @returns The output of the agent.
+   *
+   * @param input - The input (user prompt) to process
+   * @returns Promise resolving to the processed output
+   * @throws {Error} If input validation fails or processing errors occur
    */
   async run(input: TInput): Promise<TOutput> {
     const model = await this.getModel();

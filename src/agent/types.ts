@@ -1,14 +1,9 @@
 import { z, ZodSchema } from 'zod';
-
-/**
- * Represents a class constructor with no argument
- */
-export type ClassConstructor<T = any> = { new (): T };
-// TODO: export type ClassConstructor<T = unknown> = new (...args: any[]) => T;
+import { SchemaConstructor } from '../schema';
 
 export type InputOutputType =
   | ZodSchema
-  | ClassConstructor
+  | SchemaConstructor
   | StringConstructor
   | NumberConstructor
   | BooleanConstructor;

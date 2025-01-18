@@ -2,9 +2,16 @@ import { coreProviders, loadDynamicProvider } from './providers';
 import { LanguageModelV1 } from '@ai-sdk/provider';
 
 /**
- * Create a language model instance based on the provider and model name.
- * @param providerModel A string in the format "provider:model_name".
+ * Creates a language model instance based on the provider and model name.
+ *
+ * @param providerModel - A string in the format "provider:model_name" (e.g., "openai:gpt-4").
  * @returns A promise resolving to an instance of LanguageModelV1.
+ * @throws {Error} If the provider:model format is invalid or provider is not found.
+ *
+ * @example
+ * ```typescript
+ * const model = await getModel('openai:gpt-4');
+ * ```
  */
 export async function getModel(
   providerModel: string,

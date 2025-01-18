@@ -1,14 +1,21 @@
 import 'reflect-metadata';
 import { z, ZodSchema, ZodObject } from 'zod';
 import { META_KEYS } from './meta-keys';
-import { ClassConstructor, ToolMetadata, InputOutputType } from './types';
+import { ToolMetadata, InputOutputType } from './types';
 import { hasSchemaDef, getSchemaDef } from '../schema';
+import { SchemaConstructor } from '../schema';
 
 /**
- * `model` decorator to associate a model identifier with a class.
+ * `model` decorator to associate a model identifier with an agent.
  *
- * @param modelIdentifier - The model identifier string.
+ * @param modelIdentifier - The model identifier string. List of model identifiers available at https://axar-ai.gitbook.io/axar/basics/model
  * @returns A class decorator function.
+ *
+ * @example
+ * ```typescript
+ * @model('openai:gpt-4-mini')
+ * class MyAgent extends Agent<string, string> {}
+ * ```
  */
 export function model(modelIdentifier: string): ClassDecorator {
   return function <T extends Function>(target: T): T {
@@ -19,6 +26,10 @@ export function model(modelIdentifier: string): ClassDecorator {
 
 /**
  * Creates a schema from the provided type specification
+ *
+ * @param type - The type specification (ZodSchema, class decorated with @schema, or primitive constructor)
+ * @param decoratorName - The name of the decorator that we're creating the schema for
+ * @returns The created schema
  */
 function createSchema(type: InputOutputType, decoratorName: string): ZodSchema {
   if (type instanceof ZodSchema) {
@@ -49,7 +60,12 @@ function createSchema(type: InputOutputType, decoratorName: string): ZodSchema {
 }
 
 /**
+ *
  * Creates a decorator for input/output schema definition
+ *
+ * @param metaKey - Input/Ouput symbol
+ * @param decoratorName - '@input' or '@output'
+ * @returns a decorator
  */
 function createSchemaDecorator(metaKey: symbol, decoratorName: string) {
   return function (type: InputOutputType): ClassDecorator {
@@ -112,24 +128,43 @@ export const output = createSchemaDecorator(META_KEYS.OUTPUT, '@output');
 export const input = createSchemaDecorator(META_KEYS.INPUT, '@input');
 
 /**
- * `systemPrompt` decorator to set system prompts for classes and methods.
+ * Class-level `systemPrompt` decorator.
+ *
+ * Use this decorator to add a static system prompt to the entire class.
+ * The provided system prompt will be prepended to the list of system prompts for the class.
  *
  * Usage:
- * - As a Class Decorator: @systemPrompt("Your system prompt here.")
- * - As a Method Decorator: @systemPrompt
+ * ```typescript
+ * @systemPrompt("Static system prompt.")
+ * class ExampleClass {
+ *   // Class implementation
+ * }
+ * ```
  *
- * When used as a method decorator, the decorated method must return a string.
- * The returned string is added to the system prompts.
- *
- * @param prompt - (Optional) The system prompt string.
- * @returns A decorator function.
+ * @param prompt - A static system prompt string to associate with the class.
+ * @returns A class decorator function.
  */
 export function systemPrompt(prompt: string): ClassDecorator;
 
 /**
- * Decorates a method to work a dynamic system prompt provider.
+ * Method-level `systemPrompt` decorator.
  *
- * @returns A decorator function.
+ * Use this decorator on methods to dynamically provide a system prompt.
+ * The method must return a string or a Promise resolving to a string, which
+ * will be added to the list of system prompts for the class.
+ *
+ * Usage:
+ * ```typescript
+ * class ExampleClass {
+ *   @systemPrompt
+ *   async dynamicPromptMethod(): Promise<string> {
+ *     return "Dynamic system prompt from the method.";
+ *   }
+ * }
+ * ```
+ *
+ * @returns A method decorator function.
+ * @throws An error if applied to a property or a method that does not return a string.
  */
 export function systemPrompt(): MethodDecorator;
 
@@ -139,55 +174,65 @@ export function systemPrompt(
 ): ClassDecorator | MethodDecorator {
   // Class Decorator
   if (typeof prompt === 'string') {
-    return function <T extends Function>(target: T): T {
-      const systemPrompts =
-        Reflect.getMetadata(META_KEYS.SYSTEM_PROMPTS, target) || [];
-
-      // Add class prompt to the beginning
-      systemPrompts.unshift(async () => prompt);
-
-      Reflect.defineMetadata(META_KEYS.SYSTEM_PROMPTS, systemPrompts, target);
-      return target;
-    };
+    return systemPromptClass(prompt);
   } else {
     // Method Decorator
-    return function (
-      target: Object,
-      propertyKey: string | symbol,
-      descriptor: PropertyDescriptor,
-    ): void | PropertyDescriptor {
-      if (typeof descriptor.value !== 'function') {
+    return systemPromptMethod();
+  }
+}
+
+// Internal helper for class-level system prompts
+function systemPromptClass(prompt: string): ClassDecorator {
+  return function <T extends Function>(target: T): T {
+    const systemPrompts =
+      Reflect.getMetadata(META_KEYS.SYSTEM_PROMPTS, target) || [];
+
+    // Add class prompt to the beginning
+    systemPrompts.unshift(async () => prompt);
+
+    Reflect.defineMetadata(META_KEYS.SYSTEM_PROMPTS, systemPrompts, target);
+    return target;
+  };
+}
+
+// Internal helper for method-level system prompts
+function systemPromptMethod(): MethodDecorator {
+  return function (
+    target: Object,
+    propertyKey: string | symbol,
+    descriptor: PropertyDescriptor,
+  ): void | PropertyDescriptor {
+    if (typeof descriptor.value !== 'function') {
+      throw new Error(
+        `@systemPrompt can only be applied to methods, not to property '${String(
+          propertyKey,
+        )}'.`,
+      );
+    }
+
+    // Retrieve existing system prompts or initialize
+    const systemPrompts =
+      Reflect.getMetadata(META_KEYS.SYSTEM_PROMPTS, target.constructor) || [];
+    systemPrompts.push(async function (this: any) {
+      const result = await descriptor.value.apply(this); // Use the actual instance's `this`
+      if (typeof result !== 'string') {
         throw new Error(
-          `@systemPrompt can only be applied to methods, not to property '${String(
+          `Method '${String(
             propertyKey,
-          )}'.`,
+          )}' decorated with @systemPrompt must return a string.`,
         );
       }
+      return result;
+    });
 
-      // Retrieve existing system prompts or initialize
-      const systemPrompts =
-        Reflect.getMetadata(META_KEYS.SYSTEM_PROMPTS, target.constructor) || [];
-      systemPrompts.push(async function (this: any) {
-        const result = await descriptor.value.apply(this); // Use the actual instance's `this`
-        if (typeof result !== 'string') {
-          throw new Error(
-            `Method '${String(
-              propertyKey,
-            )}' decorated with @systemPrompt must return a string.`,
-          );
-        }
-        return result;
-      });
+    Reflect.defineMetadata(
+      META_KEYS.SYSTEM_PROMPTS,
+      systemPrompts,
+      target.constructor,
+    );
 
-      Reflect.defineMetadata(
-        META_KEYS.SYSTEM_PROMPTS,
-        systemPrompts,
-        target.constructor,
-      );
-
-      return descriptor;
-    };
-  }
+    return descriptor;
+  };
 }
 
 /**
@@ -207,7 +252,7 @@ export function systemPrompt(
  */
 export function tool(
   description: string,
-  schemaOrClass?: ZodSchema<any> | ClassConstructor,
+  schemaOrClass?: ZodSchema<any> | SchemaConstructor,
 ): MethodDecorator {
   return function (
     target: Object,

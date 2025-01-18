@@ -1,4 +1,4 @@
-import { ClassConstructor } from './types';
+import { SchemaConstructor } from './types';
 import { META_KEYS } from './meta-keys';
 import { ZodSchema } from 'zod';
 /**
@@ -11,7 +11,7 @@ import { ZodSchema } from 'zod';
  * @param target - The class constructor to check for schema metadata.
  * @returns A boolean indicating if the Zod schema metadata is present.
  */
-export function hasSchemaDef(target: ClassConstructor): boolean {
+export function hasSchemaDef(target: SchemaConstructor): boolean {
   return Reflect.hasMetadata(META_KEYS.SCHEMA_DEF, target);
 }
 
@@ -22,7 +22,7 @@ export function hasSchemaDef(target: ClassConstructor): boolean {
  * @returns The Zod schema associated with the class constructor
  * @throws Error if no schema is present.
  */
-export function getSchemaDef(target: ClassConstructor): ZodSchema {
+export function getSchemaDef(target: SchemaConstructor): ZodSchema {
   const schema = Reflect.getMetadata(META_KEYS.SCHEMA_DEF, target);
   if (!schema) {
     throw new Error(

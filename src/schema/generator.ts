@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { z } from 'zod';
-import { ClassConstructor } from './types';
+import { SchemaConstructor } from './types';
 import { META_KEYS } from './meta-keys';
 import { SchemaOptions, PropertyOptions, ValidationRule } from './types';
 
@@ -120,7 +120,7 @@ function createPrimitiveOrObjectSchema(
     default:
       if (type?.prototype) {
         try {
-          return toZodSchema(type as ClassConstructor);
+          return toZodSchema(type as SchemaConstructor);
         } catch (error) {
           throw new Error(
             `Failed to create schema for nested type ${type.name} in ${String(
@@ -273,7 +273,7 @@ function applyValidationRule(
 // Implement caching for performance
 const schemaCache = new WeakMap<Function, z.ZodObject<any>>();
 
-export function toZodSchema<T>(target: ClassConstructor<T>): z.ZodObject<any> {
+export function toZodSchema<T>(target: SchemaConstructor<T>): z.ZodObject<any> {
   const cached = schemaCache.get(target);
   if (cached) return cached;
 

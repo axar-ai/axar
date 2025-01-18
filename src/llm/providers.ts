@@ -2,19 +2,31 @@ import { ProviderV1 } from '@ai-sdk/provider';
 import * as OpenAI from '@ai-sdk/openai';
 import * as Anthropic from '@ai-sdk/anthropic';
 
+/**
+ * Map of core provider implementations that are available by default.
+ * Includes built-in providers like OpenAI and Anthropic.
+ */
 export const coreProviders: Record<string, ProviderV1> = {
   openai: OpenAI.openai,
   anthropic: Anthropic.anthropic,
 };
 
-// Dynamic provider cache
+/**
+ * Cache for dynamically loaded providers to avoid repeated imports.
+ */
 export const dynamicProviderCache: Record<string, ProviderV1> = {};
 
 /**
- * Dynamically import a provider module and access its named export.
- * Assumes the provider function has the same name as the provider.
- * @param providerName The normalized name of the provider.
- * @returns The provider function.
+ * Dynamically loads a provider implementation by name.
+ *
+ * @param providerName - The name of the provider to load (e.g., "cohere", "azure")
+ * @returns Promise resolving to the provider implementation
+ * @throws {Error} If the provider module is not found or doesn't implement ProviderV1
+ *
+ * @example
+ * ```typescript
+ * const cohereProvider = await loadDynamicProvider('cohere');
+ * ```
  */
 export async function loadDynamicProvider(
   providerName: string,
