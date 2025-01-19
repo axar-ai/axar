@@ -1,6 +1,7 @@
 import { SchemaConstructor } from './types';
 import { META_KEYS } from './meta-keys';
 import { ZodSchema } from 'zod';
+
 /**
  * Checks if a class has an associated Zod schema.
  *

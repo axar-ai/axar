@@ -273,6 +273,39 @@ function applyValidationRule(
 // Implement caching for performance
 const schemaCache = new WeakMap<Function, z.ZodObject<any>>();
 
+/**
+ * Creates a Zod schema for a given class constructor.
+ *
+ * Scans the class for property decorators and applies their validation rules
+ * to the generated schema.
+ *
+ * @param target - The class constructor to generate the schema for
+ * @returns A cached Zod object schema with all validations applied
+ *
+ * @example
+ * ```ts
+ * @schema({ description: 'User data' })
+ * class User {
+ *   @property({ description: 'User email' })
+ *   @validate('email')
+ *   email: string;
+ *
+ *   @optional()
+ *   @validate('min', 3)
+ *   name?: string;
+ * }
+ *
+ * const userSchema = toZodSchema(User);
+ * ```
+ *
+ * @features
+ * - Schema-level descriptions via `@schema` decorator
+ * - Property-level descriptions via `@property` decorator
+ * - Optional properties via `@optional` decorator
+ * - Built-in validations (min, max, pattern, etc.)
+ * - Custom validation rules via `@validate` decorator
+ * - Automatic schema caching for performance
+ */
 export function toZodSchema<T>(target: SchemaConstructor<T>): z.ZodObject<any> {
   const cached = schemaCache.get(target);
   if (cached) return cached;

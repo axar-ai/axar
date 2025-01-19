@@ -199,34 +199,138 @@ export function arrayItems(
   };
 }
 
-// String validation decorators
+/**
+ * Validates that a string property is a valid email address.
+ * @example
+ * ```ts
+ * class User {
+ *   @email()
+ *   email: string;
+ * }
+ * ```
+ */
 export const email = () => createValidationDecorator('email');
+
+/**
+ * Validates that a string property is a valid URL.
+ * @example `@url() website: string;`
+ */
 export const url = () => createValidationDecorator('url');
+
+/**
+ * Validates that a string property matches the given regular expression pattern.
+ * @param regex - The regular expression to test against
+ * @example `@pattern(/^[A-Z]{2}\d{3}$/) code: string;`
+ */
 export const pattern = (regex: RegExp) =>
   createValidationDecorator('pattern', [regex]);
+
+/**
+ * Validates that a string property is a valid UUID.
+ * @example `@uuid() id: string;`
+ */
 export const uuid = () => createValidationDecorator('uuid');
+
+/**
+ * Validates that a string property is a valid CUID.
+ * @example `@cuid() id: string;`
+ */
 export const cuid = () => createValidationDecorator('cuid');
+
+/**
+ * Validates that a string property is a valid ISO datetime string.
+ * @example `@datetime() createdAt: string;`
+ */
 export const datetime = () => createValidationDecorator('datetime');
+
+/**
+ * Validates that a string property is a valid IP address.
+ * @example `@ip() serverAddress: string;`
+ */
 export const ip = () => createValidationDecorator('ip');
+
+/**
+ * Validates that a string's length is at most the specified value.
+ * @param value - Maximum length allowed
+ * @example `@max(100) description: string;`
+ */
 export const max = (value: number) => createValidationDecorator('max', [value]);
+
+/**
+ * Validates that a string's length is at least the specified value.
+ * @param value - Minimum length required
+ * @example `@min(3) username: string;`
+ */
 export const min = (value: number) => createValidationDecorator('min', [value]);
 
 // Number validation decorators
+
+/**
+ * Validates that a number is greater than or equal to the specified value.
+ * @param value - Minimum value allowed (inclusive)
+ * @example `@minimum(0) price: number;`
+ */
 export const minimum = (value: number) =>
   createValidationDecorator('minimum', [value]);
+
+/**
+ * Validates that a number is less than or equal to the specified value.
+ * @param value - Maximum value allowed (inclusive)
+ * @example `@maximum(100) percentage: number;`
+ */
 export const maximum = (value: number) =>
   createValidationDecorator('maximum', [value]);
+
+/**
+ * Validates that a number is a multiple of the specified value.
+ * @param value - The number must be divisible by this value
+ * @example `@multipleOf(5) quantity: number;`
+ */
 export const multipleOf = (value: number) =>
   createValidationDecorator('multipleOf', [value]);
+
+/**
+ * Validates that a number is strictly greater than the specified value.
+ * @param value - Minimum value allowed (exclusive)
+ * @example `@exclusiveMinimum(0) positiveNumber: number;`
+ */
 export const exclusiveMinimum = (value: number) =>
   createValidationDecorator('exclusiveMinimum', [value]);
+
+/**
+ * Validates that a number is strictly less than the specified value.
+ * @param value - Maximum value allowed (exclusive)
+ * @example `@exclusiveMaximum(100) score: number;`
+ */
 export const exclusiveMaximum = (value: number) =>
   createValidationDecorator('exclusiveMaximum', [value]);
+
+/**
+ * Validates that a number is an integer (no decimal places).
+ * @example `@integer() age: number;`
+ */
 export const integer = () => createValidationDecorator('integer');
 
 // Array validation decorators
+
+/**
+ * Validates that an array has at least the specified number of items.
+ * @param min - Minimum number of items required
+ * @example `@minItems(1) tags: string[];`
+ */
 export const minItems = (min: number) =>
   createValidationDecorator('minItems', [min]);
+
+/**
+ * Validates that an array has at most the specified number of items.
+ * @param max - Maximum number of items allowed
+ * @example `@maxItems(10) selections: string[];`
+ */
 export const maxItems = (max: number) =>
   createValidationDecorator('maxItems', [max]);
+
+/**
+ * Validates that all items in an array are unique.
+ * @example `@uniqueItems() categories: string[];`
+ */
 export const uniqueItems = () => createValidationDecorator('uniqueItems');
