@@ -25,7 +25,6 @@ venv.bak/
 
 # Node.js / TypeScript
 node_modules/
-package-lock.json
 yarn.lock
 .pnp.*
 .pnp.js
