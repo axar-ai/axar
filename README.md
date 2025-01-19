@@ -245,7 +245,7 @@ main().catch(console.error);
 
 ## More examples
 
-More examples can be found in the [examples](src/examples) directory.
+More examples can be found in the [examples](./examples) directory.
 
 ## Setting up for contribution
 

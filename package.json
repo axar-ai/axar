@@ -22,7 +22,8 @@
     "test:coverage": "jest --coverage",
     "test:report": "jest --coverage --reporters=default --reporters=jest-junit",
     "open:coverage": "npx jest --coverage && open-cli coverage/lcov-report/index.html",
-    "prettier:check": "prettier --check --write ."
+    "prettier:check": "prettier --check --write .",
+    "docs": "typedoc"
   },
   "files": [
     "dist",
@@ -67,6 +68,7 @@
     "open-cli": "^8.0.0",
     "prettier": "^3.4.2",
     "ts-jest": "^29.2.5",
+    "typedoc": "^0.27.6",
     "typescript": "^5.7.2"
   }
 }

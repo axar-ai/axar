@@ -2,6 +2,7 @@
  * Represents a class constructor that creates schema instances.
  * Constructor must not require any arguments.
  *
+ * @internal
  * @template T - The type of schema being constructed
  */
 export type SchemaConstructor<T = any> = { new (): T };

@@ -118,6 +118,7 @@ instance/
 
 # mkdocs documentation
 /site/
+/docs/
 
 # Sphinx documentation
 docs/_build/

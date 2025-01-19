@@ -9,6 +9,7 @@ import { ZodSchema } from 'zod';
  * has been decorated with a Zod schema, by checking for the presence
  * of metadata associated with the schema.
  *
+ * @internal
  * @param target - The class constructor to check for schema metadata.
  * @returns A boolean indicating if the Zod schema metadata is present.
  */
@@ -19,6 +20,7 @@ export function hasSchemaDef(target: SchemaConstructor): boolean {
 /**
  * Retrieves the Zod schema associated with the specified class constructor.
  *
+ * @internal
  * @param target - The class constructor to retrieve the schema for.
  * @returns The Zod schema associated with the class constructor
  * @throws Error if no schema is present.
