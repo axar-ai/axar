@@ -3,7 +3,7 @@ import {
   SupportResponseSchema,
   SupportAgent,
   DatabaseConn,
-} from '../../../examples/bank-agent';
+} from '../../../../examples/bank-agent/bank-agent-with-zod';
 import 'reflect-metadata';
 
 const mockDatabaseConn: jest.Mocked<DatabaseConn> = {

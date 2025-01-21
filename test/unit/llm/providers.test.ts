@@ -31,6 +31,12 @@ describe('providers.ts', () => {
     Object.keys(dynamicProviderCache).forEach(
       (key) => delete dynamicProviderCache[key],
     );
+    // Mock console.error
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   describe('coreProviders', () => {
@@ -56,6 +62,24 @@ describe('providers.ts', () => {
       const provider = await loadDynamicProvider('cohere');
       expect(provider).toBe(dynamicProviderCache['cohere']);
       expect(provider.languageModel).toBeDefined();
+    });
+
+    it('should throw error for empty provider name', async () => {
+      await expect(loadDynamicProvider('')).rejects.toThrow(
+        'Provider name is required',
+      );
+    });
+
+    it('should throw error for invalid provider implementation', async () => {
+      await expect(loadDynamicProvider('invalid-provider')).rejects.toThrow(
+        'does not implement the ProviderV1 interface',
+      );
+    });
+
+    it('should throw error for non-existent provider', async () => {
+      await expect(loadDynamicProvider('non-existent')).rejects.toThrow(
+        'is not installed',
+      );
     });
   });
 });

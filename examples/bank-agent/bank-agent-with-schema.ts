@@ -1,5 +1,5 @@
 import { systemPrompt, model, output, tool, Agent } from '@axarai/axar';
-import { property, min, max, schema, optional } from '@axarai/axar';
+import { property, min, max, schema, optional, enumValues } from '@axarai/axar';
 
 export interface DatabaseConn {
   customerName(id: number): Promise<string>;
@@ -21,6 +21,7 @@ export class SupportResponse {
   @max(1)
   risk!: number;
   @property("Customer's emotional state")
+  @enumValues(['Happy', 'Sad', 'Neutral'])
   @optional()
   status?: 'Happy' | 'Sad' | 'Neutral';
 }

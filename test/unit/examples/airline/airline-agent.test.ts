@@ -1,13 +1,13 @@
-import { TriggerAgent } from './../../../examples/airline/config/trigger-agent';
+import { TriggerAgent } from '../../../../examples/airline/config/trigger-agent';
 import {
   FlightCancelAgent,
   FlightChangeAgent,
   FlightModificationAgent,
-} from './../../../examples/airline/config/flight-modification-agent';
-import { LostBaggageAgent } from './../../../examples/airline/config/lost-baggage-agent';
+} from '../../../../examples/airline/config/flight-modification-agent';
+import { LostBaggageAgent } from '../../../../examples/airline/config/lost-baggage-agent';
 
-jest.mock('./../../../examples/airline/config/flight-modification-agent');
-jest.mock('./../../../examples/airline/config/lost-baggage-agent');
+jest.mock('../../../../examples/airline/config/flight-modification-agent');
+jest.mock('../../../../examples/airline/config/lost-baggage-agent');
 
 describe.skip('TriggerAgent', () => {
   let cancelAgent: jest.Mocked<FlightCancelAgent>;

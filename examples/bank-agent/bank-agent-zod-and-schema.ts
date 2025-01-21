@@ -1,7 +1,14 @@
-import {} from '../';
+import {
+  model,
+  output,
+  systemPrompt,
+  tool,
+  Agent,
+  optional,
+  property,
+  schema,
+} from '@axarai/axar';
 import z from 'zod';
-import { optional, property, schema } from '@axarai/axar';
-import { model, output, systemPrompt, tool, Agent } from '@axarai/axar';
 
 export interface DatabaseConn {
   customerName(id: number): Promise<string>;
@@ -89,7 +96,8 @@ async function main() {
   const balanceResult = await agent.run('What is my balance?');
   console.log(balanceResult);
   // Lost card scenario
-  // const cardResult = await agent.run("I just lost my card!");
+  const cardResult = await agent.run('I just lost my card!');
+  console.log(cardResult);
 }
 
 if (require.main === module) {
