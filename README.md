@@ -123,7 +123,7 @@ npx ts-node text-agent.ts
 ```
 
 > [!WARNING]
-> AXAR AI (axar) is currently in early alpha. It is not intended to be used in production as of yet. But we're working hard to get there and we would love your help!
+> AXAR currently requires ts-node because tsx does not yet fully support experimental decorators.
 
 ## In-depth example
 
@@ -261,6 +261,5 @@ We welcome contributions from the community. Please see the [CONTRIBUTING.md](CO
 
 AXAR is built on ideas from some of the best tools and frameworks out there. We use Vercel's AI SDK and take inspiration from [Pydantic AI](https://github.com/pydantic/pydantic-ai) and OpenAI’s [Swarm](https://github.com/openai/swarm). These projects have set the standard for developer-friendly AI tooling, and AXAR builds on that foundation.
 
-## License
-
-AXAR AI is open-sourced under the Apache 2.0 license. See the [LICENSE](LICENSE) file for more details.
+> [!WARNING]
+> AXAR AI (axar) is currently in early alpha. It is not intended to be used in production as of yet. But we're working hard to get there and we would love your help!
