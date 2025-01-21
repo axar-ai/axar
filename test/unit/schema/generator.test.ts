@@ -368,6 +368,15 @@ describe('Schema Generator', () => {
         'Enum values for mixedEnum must be all strings or all numbers',
       );
     });
+
+    it('should throw error for invalid number enum value', () => {
+      const schema = toZodSchema(NumberEnumClass);
+      const invalidData = { numberEnum: 'not-a-number' };
+
+      expect(() => schema.parse(invalidData)).toThrow(
+        "Invalid enum value. Expected '1' | '2' | '3', received 'not-a-number'",
+      );
+    });
   });
 
   describe('Array Validations', () => {
@@ -893,6 +902,70 @@ describe('Schema Generator', () => {
           unsupported!: UndefinedType;
         }
       }).toThrow('Type UndefinedType must be decorated with @schema');
+    });
+  });
+
+  describe('Nested Type Schema Creation', () => {
+    it('should throw error when nested type is not decorated with @schema', () => {
+      expect(() => {
+        class InvalidNestedType {
+          value: string = '';
+        }
+
+        @schema()
+        class BrokenNestedClass {
+          @property('')
+          nested!: InvalidNestedType;
+        }
+      }).toThrow('Type InvalidNestedType must be decorated with @schema');
+    });
+  });
+
+  describe('Additional Validation Rule Edge Cases', () => {
+    it('should throw error for max validation on unsupported type', () => {
+      expect(() => {
+        @schema()
+        class MaxOnDate {
+          @property('')
+          @max(10)
+          value!: Date;
+        }
+      }).toThrow('Max validation cannot be applied to ZodDate');
+    });
+
+    it('should throw error for validation rules on array of wrong type', () => {
+      expect(() => {
+        @schema()
+        class ArrayOfWrongType {
+          @property('')
+          @arrayItems(() => String)
+          @minimum(0) // This should fail as minimum can't be applied to string arrays
+          value!: string[];
+        }
+      }).toThrow('Minimum validation can only be applied to numbers');
+    });
+  });
+
+  describe('Array Validation Edge Cases', () => {
+    it('should throw error for array items with invalid type', () => {
+      expect(() => {
+        @schema()
+        class InvalidArrayType {
+          @property('')
+          @arrayItems(() => undefined as any) // This should fail as undefined is not a valid type
+          value!: any[];
+        }
+      }).toThrow();
+    });
+
+    it('should throw error for array items with missing type', () => {
+      expect(() => {
+        @schema()
+        class MissingArrayType {
+          @property('')
+          value!: any[]; // Missing @arrayItems decorator
+        }
+      }).toThrow('Array property value must use @arrayItems decorator');
     });
   });
 });
