@@ -449,6 +449,7 @@ describe('toZodSchema', () => {
 
   // Nested Objects
   describe('nested objects', () => {
+    @zodify()
     class Address {
       @pattern(/^[0-9]{5}$/)
       zipCode!: string;

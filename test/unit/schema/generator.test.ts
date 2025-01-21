@@ -26,6 +26,7 @@ import {
   exclusiveMaximum,
 } from '../../../src/schema/decorators';
 import { toZodSchema } from '../../../src/schema/generator';
+import { META_KEYS } from '../../../src/schema/meta-keys';
 
 // Enable strict property initialization for test classes
 class TestBase {
@@ -749,6 +750,149 @@ describe('Schema Generator', () => {
           ),
         ).toBe(true);
       }
+    });
+  });
+
+  describe('Validation Rule Edge Cases', () => {
+    it('should throw error for incompatible validations', () => {
+      // Test email validation on number
+      class EmailOnNumber {
+        @property('')
+        value: number;
+        constructor() {
+          this.value = 123;
+        }
+      }
+      Reflect.defineMetadata(
+        'design:type',
+        Number,
+        EmailOnNumber.prototype,
+        'value',
+      );
+      Reflect.defineMetadata(
+        META_KEYS.PROPERTY_RULES,
+        [{ type: 'email' }],
+        EmailOnNumber.prototype,
+        'value',
+      );
+      expect(() => toZodSchema(EmailOnNumber)).toThrow(
+        'Email validation can only be applied to strings',
+      );
+
+      // Test integer validation on string
+      class IntegerOnString {
+        @property('')
+        value: string;
+        constructor() {
+          this.value = 'test';
+        }
+      }
+      Reflect.defineMetadata(
+        'design:type',
+        String,
+        IntegerOnString.prototype,
+        'value',
+      );
+      Reflect.defineMetadata(
+        META_KEYS.PROPERTY_RULES,
+        [{ type: 'integer' }],
+        IntegerOnString.prototype,
+        'value',
+      );
+      expect(() => toZodSchema(IntegerOnString)).toThrow(
+        'Integer validation can only be applied to numbers',
+      );
+
+      // Test minItems validation on string
+      class MinItemsOnString {
+        @property('')
+        value: string;
+        constructor() {
+          this.value = 'test';
+        }
+      }
+      Reflect.defineMetadata(
+        'design:type',
+        String,
+        MinItemsOnString.prototype,
+        'value',
+      );
+      Reflect.defineMetadata(
+        META_KEYS.PROPERTY_RULES,
+        [{ type: 'minItems', value: 1 }],
+        MinItemsOnString.prototype,
+        'value',
+      );
+      expect(() => toZodSchema(MinItemsOnString)).toThrow(
+        'MinItems validation can only be applied to arrays',
+      );
+
+      // Test pattern validation on number
+      class PatternOnNumber {
+        @property('')
+        value: number;
+        constructor() {
+          this.value = 123;
+        }
+      }
+      Reflect.defineMetadata(
+        'design:type',
+        Number,
+        PatternOnNumber.prototype,
+        'value',
+      );
+      Reflect.defineMetadata(
+        META_KEYS.PROPERTY_RULES,
+        [{ type: 'pattern', value: '^test$' }],
+        PatternOnNumber.prototype,
+        'value',
+      );
+      expect(() => toZodSchema(PatternOnNumber)).toThrow(
+        'Pattern validation can only be applied to strings',
+      );
+
+      // Test min validation on boolean
+      class MinOnBoolean {
+        @property('')
+        value: boolean;
+        constructor() {
+          this.value = true;
+        }
+      }
+      Reflect.defineMetadata(
+        'design:type',
+        Boolean,
+        MinOnBoolean.prototype,
+        'value',
+      );
+      Reflect.defineMetadata(
+        META_KEYS.PROPERTY_RULES,
+        [{ type: 'min', value: 0 }],
+        MinOnBoolean.prototype,
+        'value',
+      );
+      expect(() => toZodSchema(MinOnBoolean)).toThrow(
+        'Min validation cannot be applied to ZodBoolean',
+      );
+    });
+  });
+
+  describe('Primitive Schema Edge Cases', () => {
+    class UndefinedType {
+      value: any;
+      constructor(value: any) {
+        this.value = value;
+      }
+    }
+
+    it('should throw error for unsupported types', () => {
+      expect(() => {
+        @schema()
+        class UnsupportedTypeClass {
+          @property('')
+          unsupported!: UndefinedType;
+        }
+      }).toThrow('Type UndefinedType must be decorated with @schema');
     });
   });
 });

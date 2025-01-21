@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { SchemaConstructor } from './types';
 import { META_KEYS } from './meta-keys';
 import { SchemaOptions, PropertyOptions, ValidationRule } from './types';
+import { hasSchemaDef } from './info';
 
 /**
  * Checks if a property is marked as optional
@@ -120,6 +121,9 @@ function createPrimitiveOrObjectSchema(
     default:
       if (type?.prototype) {
         try {
+          if (!hasSchemaDef(type as unknown as SchemaConstructor)) {
+            throw new Error(`Type ${type.name} must be decorated with @schema`);
+          }
           return toZodSchema(type as SchemaConstructor);
         } catch (error) {
           throw new Error(

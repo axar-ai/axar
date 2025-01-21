@@ -47,6 +47,7 @@ describe('toZodSchema - Advanced Scenarios', () => {
   //   });
   //Deep Nested Structures
   describe.skip('deeply nested structures', () => {
+    @zodify()
     class GeoLocation {
       @minimum(-90)
       @maximum(90)
@@ -151,6 +152,7 @@ describe('toZodSchema - Advanced Scenarios', () => {
 
   //Complex Validation Combinations
   describe('complex validation combinations', () => {
+    @zodify()
     class Tag {
       @min(2)
       @max(10)
@@ -390,28 +392,6 @@ describe('toZodSchema - Advanced Scenarios', () => {
 
       const invalidData = { largeArray: Array(10001).fill('valid') };
       expect(schema.safeParse(invalidData).success).toBe(false); // Exceeds maxItems
-    });
-  });
-
-  describe.skip('null and undefined values', () => {
-    @zodify()
-    class NullableValidation {
-      @optional()
-      value!: number | null;
-    }
-
-    const schema = toZodSchema(NullableValidation);
-
-    it('allows undefined values', () => {
-      expect(schema.safeParse({}).success).toBe(true);
-    });
-
-    it('handles null values', () => {
-      expect(schema.safeParse({ value: null }).success).toBe(true);
-    });
-
-    it('handles null values', () => {
-      expect(schema.safeParse(null).success).toBe(true);
     });
   });
 });
