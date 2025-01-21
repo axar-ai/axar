@@ -24,10 +24,14 @@ export abstract class Agent<TInput = any, TOutput = any> {
    *
    * @param key - The metadata key symbol
    * @param target - The target object to get metadata from
+   * @param defaultValue - The default value to return if metadata is not found
    * @returns The metadata value or default empty array
    */
-  private static getMetadata<T>(key: symbol, target: any): T {
-    return Reflect.getMetadata(key, target) || ([] as unknown as T);
+  private static getMetadata<T>(key: symbol, target: any, defaultValue?: T): T {
+    const metadata = Reflect.getMetadata(key, target);
+    return metadata !== undefined
+      ? metadata
+      : (defaultValue ?? ([] as unknown as T));
   }
 
   /**
@@ -40,6 +44,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
     const providerModelName = Agent.getMetadata<string>(
       META_KEYS.MODEL,
       this.constructor,
+      '',
     );
     if (!providerModelName) {
       throw new Error(
