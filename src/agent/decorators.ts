@@ -259,6 +259,14 @@ export function tool(
     propertyKey: string | symbol,
     descriptor: PropertyDescriptor,
   ): PropertyDescriptor {
+    if (typeof descriptor.value !== 'function') {
+      throw new Error(
+        `@tool can only be applied to methods, not to property '${String(
+          propertyKey,
+        )}'.`,
+      );
+    }
+
     let schema: ZodSchema<any>;
 
     if (schemaOrClass) {
