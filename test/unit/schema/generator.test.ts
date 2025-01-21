@@ -27,6 +27,7 @@ import {
 } from '../../../src/schema/decorators';
 import { toZodSchema } from '../../../src/schema/generator';
 import { META_KEYS } from '../../../src/schema/meta-keys';
+import { registerProperty } from '../../../src/schema/utils';
 
 // Enable strict property initialization for test classes
 class TestBase {
@@ -54,6 +55,9 @@ describe('Schema Generator', () => {
       @property('')
       dateProp!: Date;
 
+      @property('')
+      symbolProp!: symbol;
+
       @optional()
       @property('')
       optionalString?: string;
@@ -66,6 +70,7 @@ describe('Schema Generator', () => {
       expect(schema.shape.numberProp).toBeInstanceOf(z.ZodNumber);
       expect(schema.shape.booleanProp).toBeInstanceOf(z.ZodBoolean);
       expect(schema.shape.dateProp).toBeInstanceOf(z.ZodDate);
+      expect(schema.shape.symbolProp).toBeInstanceOf(z.ZodSymbol);
       expect(schema.shape.optionalString).toBeInstanceOf(z.ZodOptional);
     });
 
@@ -76,6 +81,7 @@ describe('Schema Generator', () => {
         numberProp: 123,
         booleanProp: true,
         dateProp: new Date(),
+        symbolProp: Symbol('test'),
       };
 
       expect(() => schema.parse(validData)).not.toThrow();
@@ -965,6 +971,276 @@ describe('Schema Generator', () => {
           @property('')
           value!: any[]; // Missing @arrayItems decorator
         }
+      }).toThrow('Array property value must use @arrayItems decorator');
+    });
+  });
+
+  describe('Edge Cases and Error Handling', () => {
+    it('should handle undefined property type', () => {
+      expect(() => {
+        @schema()
+        class UndefinedType {
+          @property('')
+          value: any;
+        }
+        // Remove design:type metadata to simulate undefined type
+        Reflect.deleteMetadata('design:type', UndefinedType.prototype, 'value');
+      }).toThrow();
+    });
+
+    it('should handle array property without item type', () => {
+      expect(() => {
+        @schema()
+        class ArrayWithoutType {
+          @property('')
+          value!: any[];
+        }
+      }).toThrow();
+    });
+
+    it('should handle array property with invalid item type', () => {
+      expect(() => {
+        @schema()
+        class ArrayWithInvalidType {
+          @property('')
+          @arrayItems(() => null as any)
+          value!: any[];
+        }
+      }).toThrow();
+    });
+
+    it('should handle property with unsupported type', () => {
+      class CustomType {}
+      expect(() => {
+        @schema()
+        class UnsupportedType {
+          @property('')
+          value!: CustomType;
+        }
+      }).toThrow();
+    });
+
+    it('should handle property with invalid validation rule params', () => {
+      expect(() => {
+        @schema()
+        class InvalidParams {
+          @pattern(new RegExp('[')) // Invalid regex pattern
+          value!: string;
+        }
+      }).toThrow();
+    });
+
+    it('should handle validation rules applied to wrong types', () => {
+      expect(() => {
+        @schema()
+        class WrongTypes {
+          @min(5) // min on boolean
+          value!: boolean;
+        }
+      }).toThrow('Min validation cannot be applied to ZodBoolean');
+
+      expect(() => {
+        @schema()
+        class WrongTypes2 {
+          @property('')
+          @minimum(5) // minimum on string
+          value!: string;
+        }
+      }).toThrow('Minimum validation can only be applied to numbers');
+
+      expect(() => {
+        @schema()
+        class WrongTypes3 {
+          @property('')
+          @minItems(5) // minItems on number
+          value!: number;
+        }
+      }).toThrow('MinItems validation can only be applied to arrays');
+
+      expect(() => {
+        @schema()
+        class WrongTypes4 {
+          @property('')
+          @uniqueItems() // uniqueItems on string
+          value!: string;
+        }
+      }).toThrow('UniqueItems validation can only be applied to arrays');
+
+      expect(() => {
+        @schema()
+        class WrongTypes5 {
+          @property('')
+          @integer() // integer on string
+          value!: string;
+        }
+      }).toThrow('Integer validation can only be applied to numbers');
+    });
+
+    it('should handle unknown validation type', () => {
+      // Create a custom validation decorator for unknown type
+      function unknownValidation(): PropertyDecorator {
+        return function (target: Object, propertyKey: string | symbol): void {
+          registerProperty(target, propertyKey);
+          Reflect.defineMetadata(
+            META_KEYS.PROPERTY_RULES,
+            [{ type: 'unknown', params: [] }],
+            target,
+            propertyKey,
+          );
+        };
+      }
+
+      expect(() => {
+        @schema()
+        class UnknownValidation {
+          @unknownValidation()
+          value!: string;
+        }
+      }).toThrow();
+    });
+  });
+
+  describe('Validation Rules on Wrong Types', () => {
+    it('should throw when min is applied to boolean', () => {
+      expect(() => {
+        @schema()
+        class WrongTypes {
+          @property({})
+          @min(5)
+          booleanWithMin!: boolean;
+
+          @property({})
+          @max(10)
+          booleanWithMax!: boolean;
+
+          @property({})
+          @minimum(5)
+          stringWithMinimum!: string;
+
+          @property({})
+          @maximum(10)
+          stringWithMaximum!: string;
+
+          @property({})
+          @minItems(1)
+          numberWithMinItems!: number;
+
+          @property({})
+          @maxItems(5)
+          stringWithMaxItems!: string;
+        }
+      }).toThrow();
+    });
+  });
+
+  describe('Schema Generator Error Cases', () => {
+    it('should throw error for min/max validation on unsupported types', () => {
+      expect(() => {
+        @schema()
+        class InvalidValidations extends TestBase {
+          @property('')
+          @min(5)
+          dateWithMin!: Date; // min validation doesn't work on Date
+
+          @property('')
+          @max(10)
+          dateWithMax!: Date; // max validation doesn't work on Date
+        }
+      }).toThrow('Min validation cannot be applied to ZodDate');
+    });
+
+    it('should throw error for pattern validation on number', () => {
+      expect(() => {
+        @schema()
+        class InvalidPatternValidation extends TestBase {
+          @property('')
+          @pattern(/test/)
+          numberWithPattern!: number; // pattern only works on strings
+        }
+      }).toThrow('Pattern validation can only be applied to strings');
+    });
+
+    it('should throw error for number validations on string', () => {
+      expect(() => {
+        @schema()
+        class InvalidNumberValidations extends TestBase {
+          @property('')
+          @minimum(5)
+          stringWithMinimum!: string; // minimum only works on numbers
+
+          @property('')
+          @maximum(10)
+          stringWithMaximum!: string; // maximum only works on numbers
+
+          @property('')
+          @multipleOf(2)
+          stringWithMultipleOf!: string; // multipleOf only works on numbers
+
+          @property('')
+          @integer()
+          stringWithInteger!: string; // integer only works on numbers
+        }
+      }).toThrow('Minimum validation can only be applied to numbers');
+    });
+
+    it('should throw error for array validations on non-arrays', () => {
+      expect(() => {
+        @schema()
+        class InvalidArrayValidations extends TestBase {
+          @property('')
+          @minItems(1)
+          numberWithMinItems!: number; // minItems only works on arrays
+
+          @property('')
+          @maxItems(5)
+          stringWithMaxItems!: string; // maxItems only works on arrays
+
+          @property('')
+          @uniqueItems()
+          numberWithUniqueItems!: number; // uniqueItems only works on arrays
+        }
+      }).toThrow('MinItems validation can only be applied to arrays');
+    });
+
+    it('should throw error for string validations on non-strings', () => {
+      expect(() => {
+        @schema()
+        class InvalidStringValidations extends TestBase {
+          @property('')
+          @email()
+          numberWithEmail!: number; // email only works on strings
+
+          @property('')
+          @url()
+          numberWithUrl!: number; // url only works on strings
+
+          @property('')
+          @uuid()
+          numberWithUuid!: number; // uuid only works on strings
+
+          @property('')
+          @cuid()
+          numberWithCuid!: number; // cuid only works on strings
+
+          @property('')
+          @datetime()
+          numberWithDatetime!: number; // datetime only works on strings
+
+          @property('')
+          @ip()
+          numberWithIp!: number; // ip only works on strings
+        }
+      }).toThrow('Email validation can only be applied to strings');
+    });
+
+    it('should throw error for array without item type', () => {
+      expect(() => {
+        @schema()
+        class MissingArrayType extends TestBase {
+          @property('')
+          value!: string[]; // Missing @arrayItems decorator
+        }
+        toZodSchema(MissingArrayType);
       }).toThrow('Array property value must use @arrayItems decorator');
     });
   });

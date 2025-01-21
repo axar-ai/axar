@@ -118,6 +118,8 @@ function createPrimitiveOrObjectSchema(
       return z.boolean();
     case Date:
       return z.date();
+    case Symbol:
+      return z.symbol();
     default:
       if (type?.prototype) {
         try {
@@ -300,8 +302,7 @@ const schemaCache = new WeakMap<Function, z.ZodObject<any>>();
  * }
  *
  * const userSchema = toZodSchema(User);
- * ```
- *
+ * ``` *
  * @features
  * - Schema-level descriptions via `@schema` decorator
  * - Property-level descriptions via `@property` decorator
