@@ -105,11 +105,22 @@ function createArraySchema(
   return z.array(createPrimitiveOrObjectSchema(itemType, propertyKey));
 }
 
+/**
+ * Creates a Zod schema for a primitive type or custom class
+ * @param type - Constructor function for the type
+ * @param propertyKey - Property name (used for error messages)
+ * @returns Appropriate Zod schema for the type
+ * @throws Error if type is unsupported or invalid
+ */
 function createPrimitiveOrObjectSchema(
   type: Function,
   propertyKey: string | symbol,
 ): z.ZodTypeAny {
   switch (type) {
+    case undefined:
+      throw new Error(
+        `Type for property ${String(propertyKey)} cannot be undefined`,
+      );
     case String:
       return z.string();
     case Number:
@@ -120,7 +131,14 @@ function createPrimitiveOrObjectSchema(
       return z.date();
     case Symbol:
       return z.symbol();
+    case BigInt:
+      return z.bigint();
     default:
+      if (type?.name === 'Object') {
+        throw new Error(
+          `Type 'any' is not allowed for property ${String(propertyKey)}. Please specify a concrete type`,
+        );
+      }
       if (type?.prototype) {
         try {
           if (!hasSchemaDef(type as unknown as SchemaConstructor)) {

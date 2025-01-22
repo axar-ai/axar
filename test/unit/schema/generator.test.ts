@@ -28,6 +28,8 @@ import {
 import { toZodSchema } from '../../../src/schema/generator';
 import { META_KEYS } from '../../../src/schema/meta-keys';
 import { registerProperty } from '../../../src/schema/utils';
+import { getSchemaDef } from '../../../src/schema/info';
+import { ValidationRule } from '../../../src/schema/types';
 
 // Enable strict property initialization for test classes
 class TestBase {
@@ -38,6 +40,24 @@ class TestBase {
     );
   }
 }
+
+describe('Schema Info', () => {
+  it('should throw error when getting schema for undecorated class', () => {
+    class Undecorated {}
+    expect(() => getSchemaDef(Undecorated)).toThrow(
+      'No schema found for Undecorated. Did you apply @schema decorator?',
+    );
+  });
+
+  it('should get schema for decorated class', () => {
+    @schema()
+    class Decorated {
+      @property('')
+      value!: string;
+    }
+    expect(() => getSchemaDef(Decorated)).not.toThrow();
+  });
+});
 
 describe('Schema Generator', () => {
   describe('Basic Types', () => {
@@ -362,7 +382,7 @@ describe('Schema Generator', () => {
       }).toThrow('Enum values must be a non-empty array');
     });
 
-    it('should throw error for mixed enum values', () => {
+    it('should throw error for mixed type enum values', () => {
       expect(() => {
         @schema()
         class MixedEnumClass extends TestBase {
@@ -370,6 +390,7 @@ describe('Schema Generator', () => {
           @enumValues(['A', 1] as const)
           mixedEnum!: string | number;
         }
+        toZodSchema(MixedEnumClass);
       }).toThrow(
         'Enum values for mixedEnum must be all strings or all numbers',
       );
@@ -909,6 +930,18 @@ describe('Schema Generator', () => {
         }
       }).toThrow('Type UndefinedType must be decorated with @schema');
     });
+
+    it('should throw error for invalid primitive type', () => {
+      expect(() => {
+        @schema()
+        class InvalidPrimitiveType extends TestBase {
+          @property('')
+          value!: any;
+        }
+      }).toThrow(
+        "Type 'any' is not allowed for property value. Please specify a concrete type",
+      );
+    });
   });
 
   describe('Nested Type Schema Creation', () => {
@@ -1081,9 +1114,10 @@ describe('Schema Generator', () => {
       function unknownValidation(): PropertyDecorator {
         return function (target: Object, propertyKey: string | symbol): void {
           registerProperty(target, propertyKey);
+          const rules: ValidationRule[] = [{ type: 'unknown' as any }];
           Reflect.defineMetadata(
             META_KEYS.PROPERTY_RULES,
-            [{ type: 'unknown', params: [] }],
+            rules,
             target,
             propertyKey,
           );
@@ -1092,11 +1126,13 @@ describe('Schema Generator', () => {
 
       expect(() => {
         @schema()
-        class UnknownValidation {
+        class UnknownValidation extends TestBase {
+          @property('')
           @unknownValidation()
           value!: string;
         }
-      }).toThrow();
+        toZodSchema(UnknownValidation);
+      }).toThrow('Unknown validation type: unknown');
     });
   });
 
@@ -1242,6 +1278,324 @@ describe('Schema Generator', () => {
         }
         toZodSchema(MissingArrayType);
       }).toThrow('Array property value must use @arrayItems decorator');
+    });
+
+    it('should throw error for invalid primitive type', () => {
+      expect(() => {
+        @schema()
+        class InvalidPrimitiveType extends TestBase {
+          @property('')
+          value!: any;
+        }
+      }).toThrow(
+        "Type 'any' is not allowed for property value. Please specify a concrete type",
+      );
+    });
+  });
+
+  describe('Validation Rule Combinations', () => {
+    @schema()
+    class ValidationCombos extends TestBase {
+      @property('')
+      @pattern(/^[0-9]+$/)
+      @min(5)
+      @max(10)
+      stringWithMultipleRules!: string;
+
+      @property('')
+      @integer()
+      @multipleOf(5)
+      @minimum(0)
+      @maximum(100)
+      numberWithMultipleRules!: number;
+
+      @property('')
+      @arrayItems(() => String)
+      @uniqueItems()
+      @minItems(2)
+      @maxItems(5)
+      arrayWithMultipleRules!: string[];
+    }
+
+    it('should apply multiple string validations correctly', () => {
+      const schema = toZodSchema(ValidationCombos);
+
+      // Valid cases
+      expect(() =>
+        schema.parse({
+          stringWithMultipleRules: '12345',
+          numberWithMultipleRules: 50,
+          arrayWithMultipleRules: ['a', 'b', 'c'],
+        }),
+      ).not.toThrow();
+
+      // Invalid cases
+      expect(() =>
+        schema.parse({
+          stringWithMultipleRules: '123', // too short
+          numberWithMultipleRules: 50,
+          arrayWithMultipleRules: ['a', 'b', 'c'],
+        }),
+      ).toThrow();
+
+      expect(() =>
+        schema.parse({
+          stringWithMultipleRules: '12345abc', // invalid pattern
+          numberWithMultipleRules: 50,
+          arrayWithMultipleRules: ['a', 'b', 'c'],
+        }),
+      ).toThrow();
+    });
+
+    it('should apply multiple number validations correctly', () => {
+      const schema = toZodSchema(ValidationCombos);
+
+      // Invalid cases
+      expect(() =>
+        schema.parse({
+          stringWithMultipleRules: '12345',
+          numberWithMultipleRules: 7, // not multiple of 5
+          arrayWithMultipleRules: ['a', 'b', 'c'],
+        }),
+      ).toThrow();
+
+      expect(() =>
+        schema.parse({
+          stringWithMultipleRules: '12345',
+          numberWithMultipleRules: 7.5, // not integer
+          arrayWithMultipleRules: ['a', 'b', 'c'],
+        }),
+      ).toThrow();
+    });
+
+    it('should apply multiple array validations correctly', () => {
+      const schema = toZodSchema(ValidationCombos);
+
+      // Invalid cases
+      expect(() =>
+        schema.parse({
+          stringWithMultipleRules: '12345',
+          numberWithMultipleRules: 50,
+          arrayWithMultipleRules: ['a'], // too few items
+        }),
+      ).toThrow();
+
+      expect(() =>
+        schema.parse({
+          stringWithMultipleRules: '12345',
+          numberWithMultipleRules: 50,
+          arrayWithMultipleRules: ['a', 'a'], // duplicate items
+        }),
+      ).toThrow();
+    });
+  });
+
+  describe('Additional Validation Rule Cases', () => {
+    @schema()
+    class AdditionalValidations extends TestBase {
+      @property('')
+      @email()
+      @url()
+      @uuid()
+      @cuid()
+      @datetime()
+      @ip()
+      stringWithAllValidations!: string;
+
+      @property('')
+      @exclusiveMinimum(0)
+      @exclusiveMaximum(10)
+      @multipleOf(2)
+      numberWithAllValidations!: number;
+    }
+
+    it('should apply all string validations correctly', () => {
+      const schema = toZodSchema(AdditionalValidations);
+
+      // Valid case
+      expect(() =>
+        schema.parse({
+          stringWithAllValidations: 'test@example.com',
+          numberWithAllValidations: 4,
+        }),
+      ).toThrow(); // Should fail because it's not a valid URL
+
+      // Test each validation
+      expect(() =>
+        schema.parse({
+          stringWithAllValidations: 'not-an-email',
+          numberWithAllValidations: 4,
+        }),
+      ).toThrow();
+
+      expect(() =>
+        schema.parse({
+          stringWithAllValidations: 'not-a-url',
+          numberWithAllValidations: 4,
+        }),
+      ).toThrow();
+
+      expect(() =>
+        schema.parse({
+          stringWithAllValidations: 'not-a-uuid',
+          numberWithAllValidations: 4,
+        }),
+      ).toThrow();
+
+      expect(() =>
+        schema.parse({
+          stringWithAllValidations: 'not-a-cuid',
+          numberWithAllValidations: 4,
+        }),
+      ).toThrow();
+
+      expect(() =>
+        schema.parse({
+          stringWithAllValidations: 'not-a-datetime',
+          numberWithAllValidations: 4,
+        }),
+      ).toThrow();
+
+      expect(() =>
+        schema.parse({
+          stringWithAllValidations: 'not-an-ip',
+          numberWithAllValidations: 4,
+        }),
+      ).toThrow();
+    });
+
+    it('should apply all number validations correctly', () => {
+      const schema = toZodSchema(AdditionalValidations);
+
+      // Valid case
+      expect(() =>
+        schema.parse({
+          stringWithAllValidations: 'test@example.com',
+          numberWithAllValidations: 4,
+        }),
+      ).toThrow(); // Fails because email is not a URL
+
+      // Test each validation
+      expect(() =>
+        schema.parse({
+          stringWithAllValidations: 'test@example.com',
+          numberWithAllValidations: 0, // Should fail exclusive minimum
+        }),
+      ).toThrow();
+
+      expect(() =>
+        schema.parse({
+          stringWithAllValidations: 'test@example.com',
+          numberWithAllValidations: 10, // Should fail exclusive maximum
+        }),
+      ).toThrow();
+
+      expect(() =>
+        schema.parse({
+          stringWithAllValidations: 'test@example.com',
+          numberWithAllValidations: 3, // Should fail multipleOf
+        }),
+      ).toThrow();
+    });
+  });
+
+  describe('Decorator Error Cases', () => {
+    it('should throw error when arrayItems is given invalid type', () => {
+      expect(() => {
+        @schema()
+        class InvalidArrayItems extends TestBase {
+          @property('')
+          @arrayItems('not a function' as any)
+          items!: string[];
+        }
+      }).toThrow('Item type must be a function returning a constructor');
+    });
+  });
+
+  describe('Validation Rules Applied to Wrong Types', () => {
+    it('should throw error when string validations are applied to numbers', () => {
+      expect(() => {
+        @schema()
+        class InvalidStringValidations extends TestBase {
+          @property('')
+          @email()
+          numberWithEmail!: number;
+
+          @property('')
+          @url()
+          numberWithUrl!: number;
+
+          @property('')
+          @uuid()
+          numberWithUuid!: number;
+
+          @property('')
+          @cuid()
+          numberWithCuid!: number;
+
+          @property('')
+          @datetime()
+          numberWithDatetime!: number;
+
+          @property('')
+          @ip()
+          numberWithIp!: number;
+
+          @property('')
+          @pattern(/test/)
+          numberWithPattern!: number;
+        }
+      }).toThrow('Email validation can only be applied to strings');
+    });
+
+    it('should throw error when number validations are applied to strings', () => {
+      expect(() => {
+        @schema()
+        class InvalidNumberValidations extends TestBase {
+          @property('')
+          @minimum(0)
+          stringWithMinimum!: string;
+
+          @property('')
+          @maximum(10)
+          stringWithMaximum!: string;
+
+          @property('')
+          @exclusiveMinimum(0)
+          stringWithExclusiveMinimum!: string;
+
+          @property('')
+          @exclusiveMaximum(10)
+          stringWithExclusiveMaximum!: string;
+
+          @property('')
+          @multipleOf(2)
+          stringWithMultipleOf!: string;
+
+          @property('')
+          @integer()
+          stringWithInteger!: string;
+        }
+      }).toThrow('Minimum validation can only be applied to numbers');
+    });
+
+    it('should throw error when array validations are applied to non-arrays', () => {
+      expect(() => {
+        @schema()
+        class InvalidArrayValidations extends TestBase {
+          @property('')
+          @minItems(2)
+          stringWithMinItems!: string;
+
+          @property('')
+          @maxItems(5)
+          stringWithMaxItems!: string;
+
+          @property('')
+          @uniqueItems()
+          stringWithUniqueItems!: string;
+        }
+      }).toThrow('MinItems validation can only be applied to arrays');
     });
   });
 });
