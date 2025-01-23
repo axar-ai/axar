@@ -83,4 +83,21 @@ describe('getModel', () => {
       `The provider "${providerName}" is not installed.`,
     );
   });
+
+  it('should throw an error if providerModel is empty or undefined', async () => {
+    // Test empty string
+    await expect(getModel('')).rejects.toThrow(
+      'Provider and model metadata not found. Please provide a valid provider:model_name string.',
+    );
+
+    // Test undefined
+    await expect(getModel(undefined as any)).rejects.toThrow(
+      'Provider and model metadata not found. Please provide a valid provider:model_name string.',
+    );
+
+    // Test whitespace only
+    await expect(getModel('   ')).rejects.toThrow(
+      'Invalid format. Use "provider:model_name", e.g., "openai:gpt-3.5".',
+    );
+  });
 });

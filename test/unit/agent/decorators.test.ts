@@ -31,6 +31,18 @@ describe('Decorators', () => {
       expect(outputMetadata).toBe(testSchema);
     });
 
+    it('should handle invalid type specification with proper error message', () => {
+      // Create an object without a name property
+      const invalidType = {};
+
+      expect(() => {
+        @input(invalidType as any)
+        class TestClass {}
+      }).toThrow(
+        '@input error: Could not create a schema for "[object Object]". Type must be a Zod schema, a class decorated with @schema, or a primitive constructor (String, Number, Boolean).'
+      );
+    });
+
     it('should handle primitive types', () => {
       @input(String)
       @output(Number)
@@ -179,6 +191,63 @@ describe('Decorators', () => {
       expect(tools[0].parameters).toBeInstanceOf(z.ZodObject);
     });
 
+    it('should handle methods with no parameters', () => {
+      class TestClass {
+        @tool('Test tool')
+        async testTool() {
+          return 'result';
+        }
+      }
+
+      const tools = Reflect.getMetadata(META_KEYS.TOOLS, TestClass);
+      expect(tools[0].parameters).toBeInstanceOf(z.ZodObject);
+      expect(Object.keys(tools[0].parameters.shape)).toHaveLength(0);
+    });
+
+    it('should throw when schema class is provided but not decorated with @schema', () => {
+      class UnDecoratedSchema {
+        field!: string;
+      }
+
+      expect(() => {
+        class TestClass {
+          @tool('Test tool', UnDecoratedSchema)
+          async testTool(params: UnDecoratedSchema) {
+            return params.field;
+          }
+        }
+      }).toThrow('must be either a Zod schema or a class decorated with @schema');
+    });
+
+    it('should throw when parameter type is not a valid class or constructor', () => {
+      // Create a non-constructable type
+      const nonConstructableType = Object.create(null);
+      nonConstructableType.name = 'InvalidType';
+
+      // Mock Reflect.getMetadata to return our invalid type
+      const originalGetMetadata = Reflect.getMetadata;
+      Reflect.getMetadata = jest.fn().mockImplementation((key, target, prop) => {
+        if (key === 'design:paramtypes') {
+          return [nonConstructableType];
+        }
+        return originalGetMetadata(key, target, prop);
+      });
+
+      try {
+        expect(() => {
+          class TestClass {
+            @tool('Test tool')
+            async testTool(param: any) {
+              return param;
+            }
+          }
+        }).toThrow('is not a valid class or constructor');
+      } finally {
+        // Restore original Reflect.getMetadata
+        Reflect.getMetadata = originalGetMetadata;
+      }
+    });
+
     it('should throw for invalid parameter types', () => {
       expect(() => {
         class TestClass {
@@ -249,7 +318,7 @@ describe('Decorators', () => {
       }).toThrow('The parameter type (String) is a primitive');
     });
 
-    it('should throw when schema class is not decorated with @schema', () => {
+    it('should throw with properly formatted error for undecorated parameter class', () => {
       class UnDecoratedParams {
         param!: string;
       }
@@ -257,12 +326,12 @@ describe('Decorators', () => {
       expect(() => {
         class TestClass {
           @tool('Test tool')
-          async testTool(params: UnDecoratedParams) {
+          async myCustomTool(params: UnDecoratedParams) {
             return params.param;
           }
         }
       }).toThrow(
-        'requires an explicit Zod schema or a parameter class decorated with @schema',
+        '@tool decorator on myCustomTool requires an explicit Zod schema or a parameter class decorated with @schema',
       );
     });
   });
