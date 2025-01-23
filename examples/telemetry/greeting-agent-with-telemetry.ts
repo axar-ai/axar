@@ -15,7 +15,6 @@ import { Resource } from '@opentelemetry/resources';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 
 
 @schema()
@@ -59,7 +58,6 @@ const sdk = new NodeSDK({
     [ATTR_SERVICE_NAME]: 'TelemetryExample',
   }),
   spanProcessor: new SimpleSpanProcessor(new OTLPTraceExporter()),
-  instrumentations: [getNodeAutoInstrumentations()],
 });
 
 // Instantiate and run the agent
