@@ -1,15 +1,9 @@
 import { z, ZodSchema } from 'zod';
-import {
-  generateText,
-  LanguageModelV1,
-  CoreMessage,
-  CoreTool,
-  Output,
-} from 'ai';
+import { generateText, CoreMessage, CoreTool, Output, LanguageModelV1} from 'ai';
 import { META_KEYS } from './meta-keys';
 import { ToolMetadata } from './types';
 import { getModel } from '../llm';
-import { logger } from '../common';
+import { logger, Telemetry } from '../common';
 
 /**
  * Base class for creating AI agents with standardized input/output handling,
@@ -19,6 +13,12 @@ import { logger } from '../common';
  * @typeParam TOutput - The type of output the agent produces
  */
 export abstract class Agent<TInput = any, TOutput = any> {
+  private telemetry: Telemetry<Agent<TInput, TOutput>>;
+
+  constructor() {
+    this.telemetry = new Telemetry(this);
+  }
+
   /**
    * Retrieves metadata from a decorator.
    *
@@ -178,58 +178,81 @@ export abstract class Agent<TInput = any, TOutput = any> {
    * @throws {Error} If input validation fails or processing errors occur
    */
   async run(input: TInput): Promise<TOutput> {
-    const model = await this.getModel();
-    const tools = this.getTools();
-    const outputSchema = this.getOutputSchema();
-    const inputSchema = this.getInputSchema();
+    return this.telemetry.withSpan('run', async () => {
+      const model = await this.getModel();
+      const tools = this.getTools();
+      const outputSchema = this.getOutputSchema();
+      const inputSchema = this.getInputSchema();
 
-    const systemPrompts = await Promise.all(
-      this.getSystemPrompts().map((fn) => fn.call(this)),
+      this.addTelemetry(model, tools, outputSchema, inputSchema);
+
+      const systemPrompts = await Promise.all(
+        this.getSystemPrompts().map((fn) => fn.call(this)),
+      );
+
+      const inputString = this.serializeInput(input, inputSchema);
+
+      const messages = [
+        { role: 'system', content: systemPrompts.join('\n\n') },
+        { role: 'user', content: inputString },
+      ] as CoreMessage[];
+
+      const baseOutputConfig = {
+        model: model,
+        messages: messages,
+        tools: tools,
+        // FIXME: this needs to be configurable
+        maxSteps: 3,
+        experimental_telemetry: {
+          isEnabled: this.telemetry.isRecording(),
+          functionId: this.constructor.name,
+        },
+      };
+
+      const isStringSchema = outputSchema instanceof z.ZodString;
+      const isPrimitiveSchema =
+        outputSchema instanceof z.ZodBoolean ||
+        outputSchema instanceof z.ZodNumber;
+
+      // Check if not plain string schema, for all other cases (including primitives and complex types) use object output
+      const finalOutputConfig = isStringSchema
+        ? baseOutputConfig
+        : {
+            ...baseOutputConfig,
+            experimental_output: Output.object({
+              schema: outputSchema,
+            }),
+          };
+
+      const result = await generateText(finalOutputConfig);
+
+      // For plain string schema, return the text
+      if (isStringSchema) {
+        return result.text as TOutput;
+      }
+
+      // For primitive types (boolean, number), return .value
+      if (isPrimitiveSchema) {
+        return result.experimental_output.value as TOutput;
+      }
+
+      // For object/array or other complex types, return the whole object
+      return result.experimental_output as TOutput;
+    });
+  }
+
+  private addTelemetry(
+    model: LanguageModelV1,
+    tools: Record<string, CoreTool>,
+    outputSchema: z.ZodType<any, z.ZodTypeDef, any>,
+    inputSchema: z.ZodType<any, z.ZodTypeDef, any> | undefined,
+  ) {
+    this.telemetry.addAttribute(
+      'agent.model',
+      `${model.modelId}:${model.provider}`,
     );
-
-    const inputString = this.serializeInput(input, inputSchema);
-
-    const messages = [
-      { role: 'system', content: systemPrompts.join('\n\n') },
-      { role: 'user', content: inputString },
-    ] as CoreMessage[];
-
-    const baseOutputConfig = {
-      model: model,
-      messages: messages,
-      tools: tools,
-      // FIXME: this needs to be configurable
-      maxSteps: 3,
-    };
-
-    const isStringSchema = outputSchema instanceof z.ZodString;
-    const isPrimitiveSchema =
-      outputSchema instanceof z.ZodBoolean ||
-      outputSchema instanceof z.ZodNumber;
-
-    // Check if not plain string schema, for all other cases (including primitives and complex types) use object output
-    const finalOutputConfig = isStringSchema
-      ? baseOutputConfig
-      : {
-          ...baseOutputConfig,
-          experimental_output: Output.object({
-            schema: outputSchema,
-          }),
-        };
-
-    const result = await generateText(finalOutputConfig);
-
-    // For plain string schema, return the text
-    if (isStringSchema) {
-      return result.text as TOutput;
-    }
-
-    // For primitive types (boolean, number), return .value
-    if (isPrimitiveSchema) {
-      return result.experimental_output.value as TOutput;
-    }
-
-    // For object/array or other complex types, return the whole object
-    return result.experimental_output as TOutput;
+    this.telemetry.addAttribute('agent.tools', Object.keys(tools));
+    this.telemetry.addAttribute('agent.output_schema', outputSchema);
+    this.telemetry.addAttribute('agent.input_schema', inputSchema);
   }
 }
