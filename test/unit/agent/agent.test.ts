@@ -1,6 +1,7 @@
 import { Agent, model, output, systemPrompt, tool } from '../../../src/agent';
 import { z } from 'zod';
 import { logger } from '../../../src/common';
+import { CoreTool, ToolExecutionOptions } from 'ai';
 
 jest.mock('ai', () => {
   const generateText = jest.fn();
@@ -134,6 +135,33 @@ describe('Agent', () => {
         "Get customer's current balance",
       );
     });
+
+    it('should execute tool method correctly', async () => {
+      const tools = agent['getTools']();
+      expect(tools).toHaveProperty('customerBalance');
+      
+      const customerBalanceTool = tools['customerBalance'] as CoreTool;
+      expect(customerBalanceTool.execute).toBeDefined();
+
+      const options: ToolExecutionOptions = {
+        toolCallId: 'test-call',
+        messages: []
+      };
+
+      // Call execute with the correct arguments
+      const result = await customerBalanceTool.execute!({
+        includePending: true,
+        customerName: 'John'
+      }, options);
+      expect(result).toBe(123.45);
+    });
+
+    it('should return empty object when no tools are configured', () => {
+      class NoToolsAgent extends Agent<any, any> {}
+      const noToolsAgent = new NoToolsAgent();
+      const tools = noToolsAgent['getTools']();
+      expect(tools).toEqual({});
+    });
   });
 
   describe('getSystemPrompts', () => {
@@ -187,6 +215,11 @@ describe('Agent', () => {
         const result = agent['serializeInput'](null, undefined);
         expect(result).toBe('null');
       });
+
+      it('should handle undefined value', () => {
+        const result = agent['serializeInput'](undefined, undefined);
+        expect(result).toBe('undefined');
+      });
     });
 
     describe('object handling', () => {
@@ -202,6 +235,22 @@ describe('Agent', () => {
         expect(() => agent['serializeInput'](circularObj, undefined)).toThrow(
           'Failed to serialize input',
         );
+      });
+
+      it('should handle non-Error objects in serialization errors', () => {
+        // Mock JSON.stringify to throw a string error
+        const originalStringify = JSON.stringify;
+        JSON.stringify = jest.fn().mockImplementation(() => {
+          throw 'Some string error';
+        });
+
+        try {
+          expect(() => agent['serializeInput']({ test: 'value' }, undefined)).toThrow(
+            'Failed to serialize input: Unknown error'
+          );
+        } finally {
+          JSON.stringify = originalStringify;
+        }
       });
 
       it('should warn when serializing object without schema', () => {
@@ -240,6 +289,55 @@ describe('Agent', () => {
 
       const result = await agent.run('input');
       expect(result).toBe(true);
+    });
+
+    it('should handle number output type', async () => {
+      const numberSchema = z.number();
+      jest
+        .spyOn(agent as any, 'getOutputSchema')
+        .mockReturnValue(numberSchema);
+      generateTextMock.mockResolvedValue({
+        experimental_output: { value: 42 },
+      });
+
+      const result = await agent.run('input');
+      expect(result).toBe(42);
+    });
+
+    it('should handle array output type', async () => {
+      const arraySchema = z.array(z.string());
+      jest
+        .spyOn(agent as any, 'getOutputSchema')
+        .mockReturnValue(arraySchema);
+      const mockOutput = ['item1', 'item2'];
+      generateTextMock.mockResolvedValue({
+        experimental_output: mockOutput,
+      });
+
+      const result = await agent.run('input');
+      expect(result).toEqual(mockOutput);
+    });
+
+    it('should handle telemetry attributes correctly', async () => {
+      const telemetrySpy = jest.spyOn(agent['telemetry'], 'addAttribute');
+      await agent.run('input');
+
+      expect(telemetrySpy).toHaveBeenCalledWith(
+        'agent.model',
+        'gpt-4o-mini:openai'
+      );
+      expect(telemetrySpy).toHaveBeenCalledWith(
+        'agent.tools',
+        expect.arrayContaining(['customerBalance'])
+      );
+      expect(telemetrySpy).toHaveBeenCalledWith(
+        'agent.output_schema',
+        expect.any(Object)
+      );
+      expect(telemetrySpy).toHaveBeenCalledWith(
+        'agent.input_schema',
+        undefined
+      );
     });
 
     it('should handle string output type', async () => {
