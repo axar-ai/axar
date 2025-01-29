@@ -63,7 +63,7 @@ function createSchema(type: InputOutputType, decoratorName: string): ZodSchema {
  *
  * Creates a decorator for input/output schema definition
  *
- * @param metaKey - Input/Ouput symbol
+ * @param metaKey - Input/Output symbol
  * @param decoratorName - '@input' or '@output'
  * @returns a decorator
  */
