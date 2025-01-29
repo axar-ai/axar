@@ -12,6 +12,28 @@ export const coreProviders: Record<string, ProviderV1> = {
 };
 
 /**
+ * Map of all provider implementations that are available by default.
+ * Includes built-in providers like OpenAI and Anthropic.
+ */
+const SupportedProviders = [
+  {
+    name: 'openai',
+    package: '@ai-sdk/openai',
+    exportedAs: 'openai'
+  },
+  {
+    name: 'anthropic',
+    package: '@ai-sdk/anthropic',
+    exportedAs: 'anthropic'
+  },
+  {
+    name: 'ollama',
+    package: 'ollama-ai-provider',
+    exportedAs: 'ollama'
+  }
+]
+
+/**
  * Cache for dynamically loaded providers to avoid repeated imports.
  */
 export const dynamicProviderCache: Record<string, ProviderV1> = {};
@@ -40,8 +62,15 @@ export async function loadDynamicProvider(
   }
 
   try {
-    const providerModule = await import(`@ai-sdk/${providerName}`);
-    const provider = providerModule[providerName];
+    const selectedProvider = SupportedProviders.find(provider => provider.name === providerName);
+    if (!selectedProvider) {
+      throw new Error(
+        `Unsupported provider ${selectedProvider}. Please see the supported list of provider here: https://https://axar-ai.gitbook.io/axar/basics/model`
+      );
+    }
+
+    const providerModule = await import(selectedProvider.package);
+    const provider = providerModule[selectedProvider.exportedAs];
 
     if (!isValidProvider(provider)) {
       throw new Error(
@@ -73,7 +102,7 @@ export async function loadDynamicProvider(
  */
 function isValidProvider(provider: unknown): provider is ProviderV1 {
   return (
-    typeof provider === 'object' &&
+    (typeof provider === 'object' || typeof provider === 'function') &&
     provider !== null &&
     'languageModel' in provider &&
     typeof (provider as ProviderV1).languageModel === 'function'
