@@ -12,24 +12,34 @@ export const coreProviders: Record<string, ProviderV1> = {
 };
 
 /**
- * Map of all provider implementations that are available by default.
- * Includes built-in providers like OpenAI and Anthropic.
+ * A list of all provider implementations available via the Vercel AI SDK.  
+ * Includes built-in providers such as OpenAI, Anthropic, Azure, Cohere, and community provider like Ollama.  
  */
-const SupportedProviders = [
+const SupportedProviders: { name: string, packagePath: string; exportName: string }[] = [
   {
     name: 'openai',
-    package: '@ai-sdk/openai',
-    exportedAs: 'openai'
+    packagePath: '@ai-sdk/openai',
+    exportName: 'openai'
+  },
+  {
+    name: 'azure',
+    packagePath: '@ai-sdk/azure',
+    exportName: 'azure'
   },
   {
     name: 'anthropic',
-    package: '@ai-sdk/anthropic',
-    exportedAs: 'anthropic'
+    packagePath: '@ai-sdk/anthropic',
+    exportName: 'anthropic'
+  },
+  {
+    name: 'cohere',
+    packagePath: '@ai-sdk/cohere',
+    exportName: 'cohere'
   },
   {
     name: 'ollama',
-    package: 'ollama-ai-provider',
-    exportedAs: 'ollama'
+    packagePath: 'ollama-ai-provider',
+    exportName: 'ollama'
   }
 ]
 
@@ -61,20 +71,20 @@ export async function loadDynamicProvider(
     return dynamicProviderCache[providerName];
   }
 
+  const selectedProvider = SupportedProviders.find(provider => provider.name === providerName);
   try {
-    const selectedProvider = SupportedProviders.find(provider => provider.name === providerName);
     if (!selectedProvider) {
       throw new Error(
-        `Unsupported provider ${selectedProvider}. Please see the supported list of provider here: https://https://axar-ai.gitbook.io/axar/basics/model`
+        `Unsupported provider '${providerName}'. Refer to the list of supported providers here: https://axar-ai.gitbook.io/axar/basics/model.`
       );
     }
 
-    const providerModule = await import(selectedProvider.package);
-    const provider = providerModule[selectedProvider.exportedAs];
+    const providerModule = await import(selectedProvider.packagePath);
+    const provider = providerModule[selectedProvider.exportName];
 
     if (!isValidProvider(provider)) {
       throw new Error(
-        `The export "${providerName}" does not implement the ProviderV1 interface in the module "@ai-sdk/${providerName}".`,
+        `The export "${providerName}" does not implement the ProviderV1 interface in the module "${selectedProvider.packagePath}".`,
       );
     }
 
@@ -82,10 +92,9 @@ export async function loadDynamicProvider(
     dynamicProviderCache[providerName] = provider;
     return provider;
   } catch (error) {
-    console.error(`Error importing provider "${providerName}":`, error);
     if (isModuleNotFoundError(error)) {
       throw new Error(
-        `The provider "${providerName}" is not installed. Please install "@ai-sdk/${providerName}" to use it.`,
+        `The provider "${providerName}" is not installed. Please install "${selectedProvider?.packagePath}" to use it.`,
       );
     }
     throw new Error(

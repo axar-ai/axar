@@ -17,7 +17,7 @@ jest.mock(
 );
 
 jest.mock(
-  '@ai-sdk/invalid-provider',
+  '@ai-sdk/azure',
   () => ({
     'invalid-provider': {},
   }),
@@ -71,14 +71,16 @@ describe('providers.ts', () => {
     });
 
     it('should throw error for invalid provider implementation', async () => {
-      await expect(loadDynamicProvider('invalid-provider')).rejects.toThrow(
+      // The 'azure' provider was mocked at the top of the file as an empty object, 
+      // which does not conform to the ProviderV1 interface.
+      await expect(loadDynamicProvider('azure')).rejects.toThrow(
         'does not implement the ProviderV1 interface',
       );
     });
 
     it('should throw error for non-existent provider', async () => {
       await expect(loadDynamicProvider('non-existent')).rejects.toThrow(
-        'is not installed',
+        'Unsupported provider',
       );
     });
   });
