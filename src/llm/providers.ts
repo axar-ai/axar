@@ -15,7 +15,7 @@ export const coreProviders: Record<string, ProviderV1> = {
  * A list of all provider implementations available via the Vercel AI SDK.  
  * Includes built-in providers such as OpenAI, Anthropic, Azure, Cohere, and community provider like Ollama.  
  */
-const SupportedProviders: { name: string, packagePath: string; exportName: string }[] = [
+export const supportedProviders: { name: string, packagePath: string; exportName: string }[] = [
   {
     name: 'openai',
     packagePath: '@ai-sdk/openai',
@@ -71,7 +71,7 @@ export async function loadDynamicProvider(
     return dynamicProviderCache[providerName];
   }
 
-  const selectedProvider = SupportedProviders.find(provider => provider.name === providerName);
+  const selectedProvider = supportedProviders.find(provider => provider.name === providerName);
   try {
     if (!selectedProvider) {
       throw new Error(
@@ -79,7 +79,8 @@ export async function loadDynamicProvider(
       );
     }
 
-    const providerModule = await import(selectedProvider.packagePath);
+    const modulePath = require.resolve(selectedProvider.packagePath, { paths: [process.cwd()] });
+    const providerModule = await import(modulePath);
     const provider = providerModule[selectedProvider.exportName];
 
     if (!isValidProvider(provider)) {
@@ -124,6 +125,7 @@ function isValidProvider(provider: unknown): provider is ProviderV1 {
  * @returns True if the error is a module not found error.
  */
 function isModuleNotFoundError(error: unknown): error is NodeJS.ErrnoException {
+  console.log("🚀 ~ isModuleNotFoundError ~ error:", error)
   return (
     typeof error === 'object' &&
     error !== null &&
