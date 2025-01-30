@@ -59,8 +59,13 @@ describe('providers.ts', () => {
     });
 
     it('should dynamically import and cache a valid provider', async () => {
-      const provider = await loadDynamicProvider('cohere');
-      expect(provider).toBe(dynamicProviderCache['cohere']);
+      jest.mock('@ai-sdk/openai', () => ({
+        openai: {
+          languageModel: jest.fn()
+        },
+      })); 
+      const provider = await loadDynamicProvider('openai');
+      expect(provider).toBe(dynamicProviderCache['openai']);
       expect(provider.languageModel).toBeDefined();
     });
 
@@ -70,12 +75,16 @@ describe('providers.ts', () => {
       );
     });
 
+    it('should throw error if package is not installed', async () => {
+      await expect(loadDynamicProvider('cohere')).rejects.toThrow(/is not installed. Please install/);
+    });
+
     it('should throw error for invalid provider implementation', async () => {
-      // The 'azure' provider was mocked at the top of the file as an empty object, 
-      // which does not conform to the ProviderV1 interface.
-      await expect(loadDynamicProvider('azure')).rejects.toThrow(
-        'does not implement the ProviderV1 interface',
-      );
+      jest.resetModules();
+      jest.mock('@ai-sdk/openai', () => ({
+        openai: {},
+      }));
+      await expect(loadDynamicProvider('openai')).rejects.toThrow(/does not implement the ProviderV1 interface in the module/);
     });
 
     it('should throw error for non-existent provider', async () => {
