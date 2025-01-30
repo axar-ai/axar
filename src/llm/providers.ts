@@ -125,7 +125,6 @@ function isValidProvider(provider: unknown): provider is ProviderV1 {
  * @returns True if the error is a module not found error.
  */
 function isModuleNotFoundError(error: unknown): error is NodeJS.ErrnoException {
-  console.log("🚀 ~ isModuleNotFoundError ~ error:", error)
   return (
     typeof error === 'object' &&
     error !== null &&
