@@ -133,7 +133,7 @@ You can easily extend AXAR agents with tools, dynamic prompts, and structured re
 
 Here's a more complex example (truncated to fit in this README):
 
-(Full code here: [examples/bank-agent4.ts](examples/bank-agent4.ts))
+- [Full code here](./examples/bank-agent/bank-agent-with-schema.ts)
 
 <p align="center">
   <img src="https://1845789600-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FEsqZ01bZEklboQR0Pa9C%2Fuploads%2F1w7BWzdiMjXduOh0KAzW%2Fbank-agent.svg?alt=media&token=dcc90aa0-3119-4ecd-9f03-991f7dc99a35">
