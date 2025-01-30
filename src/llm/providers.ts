@@ -15,26 +15,101 @@ export const coreProviders: Record<string, ProviderV1> = {
  * A list of all provider implementations available via the Vercel AI SDK.  
  * Includes built-in providers such as OpenAI, Anthropic, Azure, Cohere, and community provider like Ollama.  
  */
-export const supportedProviders: { name: string, packagePath: string; }[] = [
+export const supportedProviders: { name: string, packagePath: string; exportName: string }[] = [
   {
     name: 'openai',
-    packagePath: '@ai-sdk/openai'
+    packagePath: '@ai-sdk/openai',
+    exportName: 'openai'
   },
   {
     name: 'azure',
-    packagePath: '@ai-sdk/azure'
+    packagePath: '@ai-sdk/azure',
+    exportName: 'azure'
   },
   {
     name: 'anthropic',
-    packagePath: '@ai-sdk/anthropic'
+    packagePath: '@ai-sdk/anthropic',
+    exportName: 'anthropic'
+  },
+  {
+    name: 'amazon-bedrock',
+    packagePath: '@ai-sdk/amazon-bedrock',
+    exportName: 'bedrock'
+  },
+  {
+    name: 'google',
+    packagePath: '@ai-sdk/google',
+    exportName: 'google'
+  },
+  {
+    name: 'google-vertex',
+    packagePath: '@ai-sdk/google-vertex',
+    exportName: 'vertex'
+  },
+  {
+    name: 'mistral',
+    packagePath: '@ai-sdk/mistral',
+    exportName: 'mistral'
+  },
+  {
+    name: 'xai',
+    packagePath: '@ai-sdk/xai',
+    exportName: 'xai'
+  },
+  {
+    name: 'togetherai',
+    packagePath: '@ai-sdk/togetherai',
+    exportName: 'togetherai'
   },
   {
     name: 'cohere',
-    packagePath: '@ai-sdk/cohere'
+    packagePath: '@ai-sdk/cohere',
+    exportName: 'cohere'
+  },
+  {
+    name: 'fireworks',
+    packagePath: '@ai-sdk/fireworks',
+    exportName: 'fireworks'
+  },
+  {
+    name: 'deepinfra',
+    packagePath: '@ai-sdk/deepinfra',
+    exportName: 'deepinfra'
+  },
+  {
+    name: 'deepseek',
+    packagePath: '@ai-sdk/deepseek',
+    exportName: 'deepseek'
+  },
+  {
+    name: 'cerebras',
+    packagePath: '@ai-sdk/cerebras',
+    exportName: 'cerebras'
+  },
+  {
+    name: 'groq',
+    packagePath: '@ai-sdk/groq',
+    exportName: 'groq'
+  },
+  {
+    name: 'perplexity',
+    packagePath: '@ai-sdk/perplexity',
+    exportName: 'perplexity'
+  },
+  {
+    name: 'luma',
+    packagePath: '@ai-sdk/luma',
+    exportName: 'luma'
+  },
+  {
+    name: 'fal',
+    packagePath: '@ai-sdk/fal',
+    exportName: 'fal'
   },
   {
     name: 'ollama',
-    packagePath: 'ollama-ai-provider'
+    packagePath: 'ollama-ai-provider',
+    exportName: 'ollama'
   }
 ]
 
@@ -76,11 +151,11 @@ export async function loadDynamicProvider(
 
     const modulePath = require.resolve(selectedProvider.packagePath, { paths: [process.cwd()] });
     const providerModule = await import(modulePath);
-    const provider = providerModule[selectedProvider.name];
+    const provider = providerModule[selectedProvider.exportName];
 
     if (!isValidProvider(provider)) {
       throw new Error(
-        `The export "${selectedProvider.name}" does not implement the ProviderV1 interface in the module "${selectedProvider.packagePath}".`,
+        `The export "${selectedProvider.exportName}" does not implement the ProviderV1 interface in the module "${selectedProvider.packagePath}".`,
       );
     }
 
