@@ -15,31 +15,26 @@ export const coreProviders: Record<string, ProviderV1> = {
  * A list of all provider implementations available via the Vercel AI SDK.  
  * Includes built-in providers such as OpenAI, Anthropic, Azure, Cohere, and community provider like Ollama.  
  */
-export const supportedProviders: { name: string, packagePath: string; exportName: string }[] = [
+export const supportedProviders: { name: string, packagePath: string; }[] = [
   {
     name: 'openai',
-    packagePath: '@ai-sdk/openai',
-    exportName: 'openai'
+    packagePath: '@ai-sdk/openai'
   },
   {
     name: 'azure',
-    packagePath: '@ai-sdk/azure',
-    exportName: 'azure'
+    packagePath: '@ai-sdk/azure'
   },
   {
     name: 'anthropic',
-    packagePath: '@ai-sdk/anthropic',
-    exportName: 'anthropic'
+    packagePath: '@ai-sdk/anthropic'
   },
   {
     name: 'cohere',
-    packagePath: '@ai-sdk/cohere',
-    exportName: 'cohere'
+    packagePath: '@ai-sdk/cohere'
   },
   {
     name: 'ollama',
-    packagePath: 'ollama-ai-provider',
-    exportName: 'ollama'
+    packagePath: 'ollama-ai-provider'
   }
 ]
 
@@ -81,11 +76,11 @@ export async function loadDynamicProvider(
 
     const modulePath = require.resolve(selectedProvider.packagePath, { paths: [process.cwd()] });
     const providerModule = await import(modulePath);
-    const provider = providerModule[selectedProvider.exportName];
+    const provider = providerModule[selectedProvider.name];
 
     if (!isValidProvider(provider)) {
       throw new Error(
-        `The export "${selectedProvider.exportName}" does not implement the ProviderV1 interface in the module "${selectedProvider.packagePath}".`,
+        `The export "${selectedProvider.name}" does not implement the ProviderV1 interface in the module "${selectedProvider.packagePath}".`,
       );
     }
 
@@ -110,7 +105,7 @@ export async function loadDynamicProvider(
  * @param provider The object to validate.
  * @returns True if the object implements ProviderV1.
  */
-function isValidProvider(provider: unknown): provider is ProviderV1 {
+export function isValidProvider(provider: unknown): provider is ProviderV1 {
   return (
     (typeof provider === 'object' || typeof provider === 'function') &&
     provider !== null &&
