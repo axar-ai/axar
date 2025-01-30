@@ -85,7 +85,7 @@ export async function loadDynamicProvider(
 
     if (!isValidProvider(provider)) {
       throw new Error(
-        `The export "${providerName}" does not implement the ProviderV1 interface in the module "${selectedProvider.packagePath}".`,
+        `The export "${selectedProvider.exportName}" does not implement the ProviderV1 interface in the module "${selectedProvider.packagePath}".`,
       );
     }
 
