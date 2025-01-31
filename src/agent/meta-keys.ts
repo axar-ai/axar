@@ -5,3 +5,6 @@ export const META_KEYS = {
   OUTPUT: Symbol('axar:output'),
   INPUT: Symbol('axar:input'),
 } as const;
+
+// Add new meta key for maximum steps configuration
+export const MAX_STEPS = Symbol('maxSteps');

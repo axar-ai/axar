@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { model, input, output, systemPrompt, tool } from '../../../src/agent';
+import {
+  model,
+  input,
+  output,
+  systemPrompt,
+  tool,
+  maxSteps,
+} from '../../../src/agent';
 import { META_KEYS } from '../../../src/agent/meta-keys';
 import { schema } from '../../../src/schema';
 
@@ -333,6 +340,40 @@ describe('Decorators', () => {
       }).toThrow(
         '@tool decorator on myCustomTool requires an explicit Zod schema or a parameter class decorated with @schema',
       );
+    });
+  });
+
+  describe('@maxSteps', () => {
+    const { Agent, tool, maxSteps } = require('../../../src/agent');
+    const { z } = require('zod');
+
+    // Define a dummy agent class that extends Agent
+    class TestAgent extends Agent<string, string> {
+      // Expose the protected getMaxSteps() method for testing
+      public getMaxStepsPublic() {
+        return this.getMaxSteps();
+      }
+
+      // Add a dummy tool so that the default tool count is 1
+      @tool('Dummy tool', z.object({}))
+      async dummyTool(params: {}) {
+        return 'dummy';
+      }
+    }
+
+    it('should return the default maxSteps (number of tools) when not decorated', () => {
+      const agent = new TestAgent();
+      // There is 1 tool, so default maxSteps should be 1
+      expect(agent.getMaxStepsPublic()).toBe(1);
+    });
+
+    it('should return the maxSteps value provided via @maxSteps decorator', () => {
+      // Create a TestAgent class decorated with @maxSteps(5)
+      @maxSteps(5)
+      class TestAgentWithMax extends TestAgent {}
+      const agentWithMax = new TestAgentWithMax();
+      // Even though the tool count is 1, the @maxSteps decorator should override to 5
+      expect(agentWithMax.getMaxStepsPublic()).toBe(5);
     });
   });
 });

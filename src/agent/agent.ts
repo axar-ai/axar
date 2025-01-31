@@ -1,6 +1,12 @@
 import { z, ZodSchema } from 'zod';
-import { generateText, CoreMessage, CoreTool, Output, LanguageModelV1} from 'ai';
-import { META_KEYS } from './meta-keys';
+import {
+  generateText,
+  CoreMessage,
+  CoreTool,
+  Output,
+  LanguageModelV1,
+} from 'ai';
+import { META_KEYS, MAX_STEPS } from './meta-keys';
 import { ToolMetadata } from './types';
 import { getModel } from '../llm';
 import { logger, Telemetry } from '../common';
@@ -132,6 +138,20 @@ export abstract class Agent<TInput = any, TOutput = any> {
   }
 
   /**
+   * Returns the maximum number of execution steps the agent is allowed to perform.
+   * It first checks if a value has been provided via the @maxSteps decorator. If not,
+   * it falls back to the default, which is the number of available tools.
+   *
+   * @returns {number} The maximum steps allowed for this agent.
+   */
+  protected getMaxSteps(): number {
+    const maxStepsMetadata = Reflect.getMetadata(MAX_STEPS, this.constructor);
+    return maxStepsMetadata !== undefined
+      ? maxStepsMetadata
+      : Object.keys(this.getTools()).length;
+  }
+
+  /**
    * Serializes the input into a string format for the language model.
    *
    * @param input - The input to serialize
@@ -201,8 +221,8 @@ export abstract class Agent<TInput = any, TOutput = any> {
         model: model,
         messages: messages,
         tools: tools,
-        // FIXME: this needs to be configurable
-        maxSteps: 3,
+        // Updated to use configurable maxSteps based on number of tools
+        maxSteps: this.getMaxSteps(),
         experimental_telemetry: {
           isEnabled: this.telemetry.isRecording(),
           functionId: this.constructor.name,

@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { z, ZodSchema, ZodObject } from 'zod';
-import { META_KEYS } from './meta-keys';
+import { META_KEYS, MAX_STEPS } from './meta-keys';
 import { ToolMetadata, InputOutputType } from './types';
 import { hasSchemaDef, getSchemaDef } from '../schema';
 import { SchemaConstructor } from '../schema';
@@ -361,5 +361,16 @@ export function tool(
     };
 
     return descriptor;
+  };
+}
+
+/**
+ * Decorator to configure the maximum number of execution steps for an Agent.
+ *
+ * @param steps - The maximum number of steps allowed.
+ */
+export function maxSteps(steps: number): ClassDecorator {
+  return (target: Function) => {
+    Reflect.defineMetadata(MAX_STEPS, steps, target);
   };
 }
