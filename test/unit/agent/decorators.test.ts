@@ -344,8 +344,7 @@ describe('Decorators', () => {
   });
 
   describe('@maxSteps', () => {
-    const { Agent, tool, maxSteps } = require('../../../src/agent');
-    const { z } = require('zod');
+    const { Agent } = require('../../../src/agent');
 
     // Define a dummy agent class that extends Agent
     class TestAgent extends Agent<string, string> {
