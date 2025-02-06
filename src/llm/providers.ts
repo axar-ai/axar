@@ -12,6 +12,91 @@ export const coreProviders: Record<string, ProviderV1> = {
 };
 
 /**
+ * A list of all provider implementations available via the Vercel AI SDK.  
+ * Includes built-in providers such as OpenAI, Anthropic, Azure, Cohere, and community provider like Ollama.  
+ */
+export const supportedProviders: { name: string, packagePath: string; exportName?: string }[] = [
+  {
+    name: 'openai',
+    packagePath: '@ai-sdk/openai'
+  },
+  {
+    name: 'azure',
+    packagePath: '@ai-sdk/azure'
+  },
+  {
+    name: 'anthropic',
+    packagePath: '@ai-sdk/anthropic'
+  },
+  {
+    name: 'amazon-bedrock',
+    packagePath: '@ai-sdk/amazon-bedrock',
+    exportName: 'bedrock'
+  },
+  {
+    name: 'google',
+    packagePath: '@ai-sdk/google'
+  },
+  {
+    name: 'google-vertex',
+    packagePath: '@ai-sdk/google-vertex',
+    exportName: 'vertex'
+  },
+  {
+    name: 'mistral',
+    packagePath: '@ai-sdk/mistral'
+  },
+  {
+    name: 'xai',
+    packagePath: '@ai-sdk/xai'
+  },
+  {
+    name: 'togetherai',
+    packagePath: '@ai-sdk/togetherai'
+  },
+  {
+    name: 'cohere',
+    packagePath: '@ai-sdk/cohere'
+  },
+  {
+    name: 'fireworks',
+    packagePath: '@ai-sdk/fireworks'
+  },
+  {
+    name: 'deepinfra',
+    packagePath: '@ai-sdk/deepinfra'
+  },
+  {
+    name: 'deepseek',
+    packagePath: '@ai-sdk/deepseek'
+  },
+  {
+    name: 'cerebras',
+    packagePath: '@ai-sdk/cerebras'
+  },
+  {
+    name: 'groq',
+    packagePath: '@ai-sdk/groq'
+  },
+  {
+    name: 'perplexity',
+    packagePath: '@ai-sdk/perplexity'
+  },
+  {
+    name: 'luma',
+    packagePath: '@ai-sdk/luma'
+  },
+  {
+    name: 'fal',
+    packagePath: '@ai-sdk/fal'
+  },
+  {
+    name: 'ollama',
+    packagePath: 'ollama-ai-provider'
+  }
+]
+
+/**
  * Cache for dynamically loaded providers to avoid repeated imports.
  */
 export const dynamicProviderCache: Record<string, ProviderV1> = {};
@@ -39,13 +124,21 @@ export async function loadDynamicProvider(
     return dynamicProviderCache[providerName];
   }
 
+  const selectedProvider = supportedProviders.find(provider => provider.name === providerName);
   try {
-    const providerModule = await import(`@ai-sdk/${providerName}`);
-    const provider = providerModule[providerName];
+    if (!selectedProvider) {
+      throw new Error(
+        `Unsupported provider '${providerName}'. Refer to the list of supported providers here: https://axar-ai.gitbook.io/axar/basics/model.`
+      );
+    }
+    const modulePath = require.resolve(selectedProvider.packagePath, { paths: [process.cwd()] });
+    const providerModule = await import(modulePath);
+    const exportName = selectedProvider?.exportName ?? selectedProvider?.name;
+    const provider = providerModule[exportName];
 
     if (!isValidProvider(provider)) {
       throw new Error(
-        `The export "${providerName}" does not implement the ProviderV1 interface in the module "@ai-sdk/${providerName}".`,
+        `The export "${exportName}" does not implement the ProviderV1 interface in the module "${selectedProvider.packagePath}".`,
       );
     }
 
@@ -53,10 +146,9 @@ export async function loadDynamicProvider(
     dynamicProviderCache[providerName] = provider;
     return provider;
   } catch (error) {
-    console.error(`Error importing provider "${providerName}":`, error);
     if (isModuleNotFoundError(error)) {
       throw new Error(
-        `The provider "${providerName}" is not installed. Please install "@ai-sdk/${providerName}" to use it.`,
+        `The provider "${providerName}" is not installed. Please install "${selectedProvider?.packagePath}" to use it.`,
       );
     }
     throw new Error(
@@ -71,9 +163,9 @@ export async function loadDynamicProvider(
  * @param provider The object to validate.
  * @returns True if the object implements ProviderV1.
  */
-function isValidProvider(provider: unknown): provider is ProviderV1 {
+export function isValidProvider(provider: unknown): provider is ProviderV1 {
   return (
-    typeof provider === 'object' &&
+    (typeof provider === 'object' || typeof provider === 'function') &&
     provider !== null &&
     'languageModel' in provider &&
     typeof (provider as ProviderV1).languageModel === 'function'
