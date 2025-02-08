@@ -1,9 +1,21 @@
 import { z, ZodSchema } from 'zod';
-import { generateText, CoreMessage, CoreTool, Output, LanguageModelV1} from 'ai';
+import {
+  generateText,
+  CoreMessage,
+  CoreTool,
+  Output,
+  LanguageModelV1,
+} from 'ai';
 import { META_KEYS } from './meta-keys';
-import { ToolMetadata } from './types';
+import {
+  ToolMetadata,
+  AgentStreamResult,
+  StreamTextResult,
+  ProcessedStreamOutput,
+} from './types';
 import { getModel } from '../llm';
 import { logger, Telemetry } from '../common';
+import { streamText } from 'ai';
 
 /**
  * Base class for creating AI agents with standardized input/output handling,
@@ -238,6 +250,112 @@ export abstract class Agent<TInput = any, TOutput = any> {
 
       // For object/array or other complex types, return the whole object
       return result.experimental_output as TOutput;
+    });
+  }
+
+  /**
+   * Creates a processed stream that automatically handles the output type
+   */
+  private createProcessedStream(
+    stream: StreamTextResult<Record<string, CoreTool>, TOutput>,
+    schema: z.ZodType,
+  ): AsyncIterable<ProcessedStreamOutput<TOutput>> {
+    if (schema instanceof z.ZodString) {
+      return stream.textStream as AsyncIterable<ProcessedStreamOutput<TOutput>>;
+    }
+    return stream.experimental_partialOutputStream as AsyncIterable<
+      ProcessedStreamOutput<TOutput>
+    >;
+  }
+
+  /**
+   * Gets the final result from the stream, converting it to the correct type
+   */
+  private async getFinalResult(
+    stream: StreamTextResult<Record<string, CoreTool>, TOutput>,
+    schema: z.ZodType,
+  ): Promise<TOutput> {
+    if (schema instanceof z.ZodString) {
+      return stream.text as TOutput;
+    }
+
+    const isPrimitiveSchema =
+      schema instanceof z.ZodBoolean || schema instanceof z.ZodNumber;
+
+    if (isPrimitiveSchema) {
+      return stream.experimental_output.value as TOutput;
+    }
+
+    return stream.experimental_output as TOutput;
+  }
+
+  /**
+   * Streams the agent's response for the given input.
+   *
+   * @param input - The input (user prompt) to process
+   * @returns Promise resolving to an enhanced stream result
+   * @throws {Error} If input validation fails or processing errors occur
+   */
+  async streamRun(input: TInput): Promise<AgentStreamResult<TOutput>> {
+    return this.telemetry.withSpan('streamRun', async () => {
+      const model = await this.getModel();
+      const tools = this.getTools();
+      const outputSchema = this.getOutputSchema();
+      const inputSchema = this.getInputSchema();
+
+      this.addTelemetry(model, tools, outputSchema, inputSchema);
+
+      const systemPrompts = await Promise.all(
+        this.getSystemPrompts().map((fn) => fn.call(this)),
+      );
+
+      const inputString = this.serializeInput(input, inputSchema);
+
+      const messages = [
+        { role: 'system', content: systemPrompts.join('\n\n') },
+        { role: 'user', content: inputString },
+      ] as CoreMessage[];
+
+      const baseOutputConfig = {
+        model: model,
+        messages: messages,
+        tools: tools,
+        maxSteps: 3,
+        experimental_telemetry: {
+          isEnabled: this.telemetry.isRecording(),
+          functionId: this.constructor.name,
+        },
+      };
+
+      const isStringSchema = outputSchema instanceof z.ZodString;
+
+      const finalOutputConfig = isStringSchema
+        ? baseOutputConfig
+        : {
+            ...baseOutputConfig,
+            experimental_output: Output.object({
+              schema: outputSchema,
+            }),
+          };
+
+      try {
+        // First cast to unknown to avoid type checking, then to our specific type
+        const rawStream = (await streamText(
+          finalOutputConfig,
+        )) as unknown as StreamTextResult<Record<string, CoreTool>, TOutput>;
+
+        return {
+          processedStream: this.createProcessedStream(rawStream, outputSchema),
+          result: this.getFinalResult(rawStream, outputSchema),
+          raw: rawStream,
+        };
+      } catch (error) {
+        this.telemetry.addAttribute(
+          'error',
+          error instanceof Error ? error.message : 'Unknown error',
+        );
+        throw error;
+      }
     });
   }
 
