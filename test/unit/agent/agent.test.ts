@@ -1,7 +1,7 @@
 import { Agent, model, output, systemPrompt, tool } from '../../../src/agent';
 import { z } from 'zod';
 import { logger } from '../../../src/common';
-import { CoreTool, ToolExecutionOptions } from 'ai';
+import { CoreTool, ToolExecutionOptions, LanguageModelV1 } from 'ai';
 
 jest.mock('ai', () => {
   const generateText = jest.fn();
@@ -434,6 +434,34 @@ describe('Agent', () => {
       const mockSchema = z.string();
       jest.spyOn(Reflect, 'getMetadata').mockReturnValue(mockSchema);
       expect(agent['getInputSchema']()).toBe(mockSchema);
+    });
+  });
+
+  describe('addTelemetry', () => {
+    it('should handle undefined inputSchema', () => {
+      const telemetrySpy = jest.spyOn(agent['telemetry'], 'addAttribute');
+      const model = {
+        modelId: 'test-model',
+        provider: 'test-provider',
+      } as LanguageModelV1;
+      const tools = {};
+      const outputSchema = z.string();
+
+      agent['addTelemetry'](model, tools, outputSchema, undefined);
+
+      expect(telemetrySpy).toHaveBeenCalledWith(
+        'agent.model',
+        'test-model:test-provider',
+      );
+      expect(telemetrySpy).toHaveBeenCalledWith('agent.tools', []);
+      expect(telemetrySpy).toHaveBeenCalledWith(
+        'agent.output_schema',
+        outputSchema,
+      );
+      expect(telemetrySpy).toHaveBeenCalledWith(
+        'agent.input_schema',
+        undefined,
+      );
     });
   });
 });
