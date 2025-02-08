@@ -282,6 +282,9 @@ export abstract class Agent<TInput = any, TOutput = any> {
     schema: ZodSchema,
   ): AsyncIterable<StreamOutput<TOutput>> {
     if (schema instanceof z.ZodString) {
+      if (!stream.textStream) {
+        throw new Error('Expected text stream but received undefined');
+      }
       return stream.textStream as AsyncIterable<StreamOutput<TOutput>>;
     }
     return stream.experimental_partialOutputStream as AsyncIterable<

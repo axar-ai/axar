@@ -93,11 +93,11 @@ async function demoStructuredStreaming() {
 // Example usage with simple string streaming
 async function demoSimpleStreaming() {
   const agent = new SimpleGreetingAgent();
-  const stream = await agent.stream('My name is Bob');
+  const { stream } = await agent.stream('My name is Bob');
 
   console.log('\nStreaming simple response:');
   // Stream text chunks as they arrive
-  for await (const chunk of stream.stream) {
+  for await (const chunk of stream) {
     process.stdout.write(chunk);
   }
 }
