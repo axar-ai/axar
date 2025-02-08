@@ -8,9 +8,6 @@ const pinoMock = jest.fn((config) => ({
 
 jest.mock('pino', () => pinoMock);
 
-// Mock pino-pretty for successful case
-jest.mock('pino-pretty', () => ({}), { virtual: true });
-
 describe('Logger', () => {
   const originalEnv = process.env;
   const originalConsoleDebug = console.debug;
@@ -39,38 +36,43 @@ describe('Logger', () => {
     expect(logger.level).toBe('debug');
   });
 
-  it('should use pino-pretty transport in non-production', () => {
-    process.env.NODE_ENV = 'development';
-    const logger = require('../../../src/common/logger').default;
-    expect(logger.transport).toEqual({
-      target: 'pino-pretty',
-      options: { colorize: true },
+  describe('with pino-pretty available', () => {
+    beforeEach(() => {
+      // Mock successful require of pino-pretty
+      jest.mock('pino-pretty', () => ({}));
+    });
+
+    it('should use pino-pretty transport in non-production', () => {
+      process.env.NODE_ENV = 'development';
+      const logger = require('../../../src/common/logger').default;
+      expect(logger.transport).toEqual({
+        target: 'pino-pretty',
+        options: { colorize: true },
+      });
+    });
+
+    it('should not use pino-pretty transport in production', () => {
+      process.env.NODE_ENV = 'production';
+      const logger = require('../../../src/common/logger').default;
+      expect(logger.transport).toBeUndefined();
     });
   });
 
-  it('should not use pino-pretty transport in production', () => {
-    process.env.NODE_ENV = 'production';
-    const logger = require('../../../src/common/logger').default;
-    expect(logger.transport).toBeUndefined();
-  });
-
-  it('should fallback to default transport when pino-pretty is not available', () => {
-    // First unmock pino-pretty
-    jest.unmock('pino-pretty');
-    // Then mock it to throw
-    jest.mock(
-      'pino-pretty',
-      () => {
+  describe('without pino-pretty available', () => {
+    beforeEach(() => {
+      // Mock failed require of pino-pretty
+      jest.doMock('pino-pretty', () => {
         throw new Error('Cannot find module "pino-pretty"');
-      },
-      { virtual: true },
-    );
+      });
+    });
 
-    process.env.NODE_ENV = 'development';
-    const logger = require('../../../src/common/logger').default;
-    expect(logger.transport).toBeUndefined();
-    expect(console.debug).toHaveBeenCalledWith(
-      'pino-pretty not available, falling back to default transport',
-    );
+    it('should fallback to default transport when pino-pretty is not available', () => {
+      process.env.NODE_ENV = 'development';
+      const logger = require('../../../src/common/logger').default;
+      expect(logger.transport).toBeUndefined();
+      expect(console.debug).toHaveBeenCalledWith(
+        'pino-pretty not available, falling back to default transport',
+      );
+    });
   });
 });
