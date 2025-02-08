@@ -1,28 +1,27 @@
 import pino from 'pino';
 
-const isNotProduction = process.env.NODE_ENV !== 'production';
+const isProduction = process.env.NODE_ENV === 'production';
+let transport = undefined;
 
-// Check if pino-pretty is available
-const getPrettyTransport = () => {
-  if (!isNotProduction) return undefined;
-
+// Only attempt to use pino-pretty in non-production
+if (!isProduction) {
   try {
-    require.resolve('pino-pretty');
-    return {
+    // If pino-pretty is available, it will be loaded
+    require('pino-pretty');
+    transport = {
       target: 'pino-pretty',
-      options: {
-        colorize: true,
-      },
+      options: { colorize: true },
     };
   } catch (e) {
-    // Silently fallback to default transport if pino-pretty is not available
-    return undefined;
+    console.debug(
+      'pino-pretty not available, falling back to default transport',
+    );
   }
-};
+}
 
 const logger = pino({
-  level: process.env.AXAR_LOG_LEVEL || (isNotProduction ? 'debug' : 'info'),
-  transport: getPrettyTransport(),
+  level: process.env.AXAR_LOG_LEVEL || 'info',
+  transport,
 });
 
 export default logger;
