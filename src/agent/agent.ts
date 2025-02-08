@@ -343,10 +343,10 @@ export abstract class Agent<TInput = any, TOutput = any> {
     return this.telemetry.withSpan('streamRun', async () => {
       return this.withErrorHandling(async () => {
         const config = await this.createConfig(input);
-        const rawStream = await (streamText(config) as unknown as Promise<
-          StreamTextResult<Record<string, CoreTool>, TOutput>
-        >);
-
+        const rawStream = streamText(config) as StreamTextResult<
+          Record<string, CoreTool>,
+          TOutput
+        >;
         return {
           stream: this.processStream(rawStream, this.getOutputSchema()),
           raw: rawStream,

@@ -111,7 +111,7 @@ describe('Agent Streaming', () => {
           'chunk2',
         ]),
       };
-      streamTextMock.mockResolvedValue(mockStream);
+      streamTextMock.mockReturnValue(mockStream);
 
       const result = await agent.stream('input');
 
@@ -149,7 +149,7 @@ describe('Agent Streaming', () => {
           mockResponse,
         ]),
       };
-      streamTextMock.mockResolvedValue(mockStream);
+      streamTextMock.mockReturnValue(mockStream);
 
       const result = await agent.stream('input');
 
@@ -193,7 +193,7 @@ describe('Agent Streaming', () => {
         experimental_output: { value: 42 },
         experimental_partialOutputStream: createAsyncIterable([40, 42]),
       };
-      streamTextMock.mockResolvedValue(mockStream);
+      streamTextMock.mockReturnValue(mockStream);
 
       const result = await agent.stream('input');
 
@@ -225,7 +225,7 @@ describe('Agent Streaming', () => {
         experimental_output: { value: 'test' },
         experimental_partialOutputStream: createAsyncIterable(['test']),
       };
-      streamTextMock.mockResolvedValue(mockStream);
+      streamTextMock.mockReturnValue(mockStream);
 
       await agent.stream('input');
 
@@ -246,7 +246,7 @@ describe('Agent Streaming', () => {
         experimental_output: { value: 'test' },
         experimental_partialOutputStream: createAsyncIterable(['test']),
       };
-      streamTextMock.mockResolvedValue(mockStream);
+      streamTextMock.mockReturnValue(mockStream);
 
       await agent.stream('input');
 
@@ -281,7 +281,7 @@ describe('Agent Streaming', () => {
         experimental_output: { value: 'test' },
         experimental_partialOutputStream: createAsyncIterable(['test']),
       };
-      streamTextMock.mockResolvedValue(mockStream);
+      streamTextMock.mockReturnValue(mockStream);
 
       await agent.stream('input');
 
@@ -298,8 +298,15 @@ describe('Agent Streaming', () => {
     });
 
     it('should handle errors from streamText', async () => {
-      streamTextMock.mockRejectedValue(new Error('Streaming Error'));
+      const mockError = new Error('Streaming Error');
+      streamTextMock.mockImplementation(() => {
+        throw mockError;
+      });
+
+      const telemetrySpy = jest.spyOn(agent['telemetry'], 'addAttribute');
+
       await expect(agent.stream('input')).rejects.toThrow('Streaming Error');
+      expect(telemetrySpy).toHaveBeenCalledWith('error', 'Streaming Error');
     });
 
     it('should configure maxSteps correctly', async () => {
@@ -312,7 +319,7 @@ describe('Agent Streaming', () => {
           'test response',
         ]),
       };
-      streamTextMock.mockResolvedValue(mockStream);
+      streamTextMock.mockReturnValue(mockStream);
 
       await agent.stream('input');
 
@@ -332,7 +339,9 @@ describe('Agent Streaming', () => {
 
     it('should handle stream interruption', async () => {
       const error = new Error('Stream interrupted');
-      streamTextMock.mockRejectedValue(error);
+      streamTextMock.mockImplementation(() => {
+        throw error;
+      });
 
       const telemetrySpy = jest.spyOn(agent['telemetry'], 'addAttribute');
 
@@ -396,7 +405,7 @@ describe('Agent Streaming', () => {
           { support_advice: 'Help' },
         ]),
       };
-      streamTextMock.mockResolvedValue(mockStream);
+      streamTextMock.mockReturnValue(mockStream);
 
       await agent.stream('input');
 
