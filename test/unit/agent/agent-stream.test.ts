@@ -117,7 +117,6 @@ describe('Agent Streaming', () => {
 
       // Check stream result structure
       expect(result).toHaveProperty('processedStream');
-      expect(result).toHaveProperty('result');
       expect(result).toHaveProperty('raw');
 
       // Check processed stream
@@ -126,10 +125,6 @@ describe('Agent Streaming', () => {
         chunks.push(chunk);
       }
       expect(chunks).toEqual(['chunk1', 'chunk2']);
-
-      // Check final result
-      const finalResult = await result.result;
-      expect(finalResult).toBe('streaming response');
 
       // Check raw stream access
       expect(result.raw).toBe(mockStream);
@@ -160,7 +155,6 @@ describe('Agent Streaming', () => {
 
       // Check stream result structure
       expect(result).toHaveProperty('processedStream');
-      expect(result).toHaveProperty('result');
       expect(result).toHaveProperty('raw');
 
       // Check processed stream (partial objects)
@@ -174,9 +168,15 @@ describe('Agent Streaming', () => {
         mockResponse,
       ]);
 
-      // Check final result
-      const finalResult = await result.result;
-      expect(finalResult).toEqual(mockResponse);
+      // Verify the final chunk has the complete type structure
+      const finalChunk = chunks[chunks.length - 1] as SupportResponse;
+      expect(finalChunk).toEqual(mockResponse);
+      expect(typeof finalChunk.support_advice).toBe('string');
+      expect(typeof finalChunk.block_card).toBe('boolean');
+      expect(typeof finalChunk.risk).toBe('number');
+      expect(finalChunk.risk).toBeGreaterThanOrEqual(0);
+      expect(finalChunk.risk).toBeLessThanOrEqual(1);
+      expect(['Happy', 'Sad', 'Neutral']).toContain(finalChunk.status);
 
       // Check raw stream access
       expect(result.raw).toBe(mockStream);
@@ -197,16 +197,15 @@ describe('Agent Streaming', () => {
 
       const result = await agent.streamRun('input');
 
-      // Check final result for primitive type
-      const finalResult = await result.result;
-      expect(finalResult).toBe(42);
-
       // Check processed stream for primitive type
       const chunks = [];
       for await (const chunk of result.processedStream) {
         chunks.push(chunk);
       }
       expect(chunks).toEqual([40, 42]);
+
+      // Check raw stream access
+      expect(result.raw).toBe(mockStream);
     });
 
     it('should pass tools to streamText correctly', async () => {

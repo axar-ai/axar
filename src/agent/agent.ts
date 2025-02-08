@@ -5,12 +5,12 @@ import {
   CoreTool,
   Output,
   LanguageModelV1,
+  StreamTextResult,
 } from 'ai';
 import { META_KEYS } from './meta-keys';
 import {
   ToolMetadata,
   AgentStreamResult,
-  StreamTextResult,
   ProcessedStreamOutput,
 } from './types';
 import { getModel } from '../llm';
@@ -254,7 +254,13 @@ export abstract class Agent<TInput = any, TOutput = any> {
   }
 
   /**
-   * Creates a processed stream that automatically handles the output type
+   * Creates a processed stream that automatically handles the output type.
+   * For string schemas, returns the text stream directly.
+   * For other types, returns the experimental partial output stream.
+   *
+   * @param stream - The raw stream result from the model
+   * @param schema - The schema defining the output type
+   * @returns An async iterable of processed chunks matching the output type
    */
   private createProcessedStream(
     stream: StreamTextResult<Record<string, CoreTool>, TOutput>,
@@ -266,27 +272,6 @@ export abstract class Agent<TInput = any, TOutput = any> {
     return stream.experimental_partialOutputStream as AsyncIterable<
       ProcessedStreamOutput<TOutput>
     >;
-  }
-
-  /**
-   * Gets the final result from the stream, converting it to the correct type
-   */
-  private async getFinalResult(
-    stream: StreamTextResult<Record<string, CoreTool>, TOutput>,
-    schema: z.ZodType,
-  ): Promise<TOutput> {
-    if (schema instanceof z.ZodString) {
-      return stream.text as TOutput;
-    }
-
-    const isPrimitiveSchema =
-      schema instanceof z.ZodBoolean || schema instanceof z.ZodNumber;
-
-    if (isPrimitiveSchema) {
-      return stream.experimental_output.value as TOutput;
-    }
-
-    return stream.experimental_output as TOutput;
   }
 
   /**
@@ -346,7 +331,6 @@ export abstract class Agent<TInput = any, TOutput = any> {
 
         return {
           processedStream: this.createProcessedStream(rawStream, outputSchema),
-          result: this.getFinalResult(rawStream, outputSchema),
           raw: rawStream,
         };
       } catch (error) {
@@ -359,12 +343,21 @@ export abstract class Agent<TInput = any, TOutput = any> {
     });
   }
 
+  /**
+   * Adds telemetry attributes for monitoring and debugging purposes.
+   * Records information about the model, tools, and schemas being used.
+   *
+   * @param model - The language model being used
+   * @param tools - The tools available to the agent
+   * @param outputSchema - The schema for validating outputs
+   * @param inputSchema - The schema for validating inputs, if any
+   */
   private addTelemetry(
     model: LanguageModelV1,
     tools: Record<string, CoreTool>,
     outputSchema: z.ZodType<any, z.ZodTypeDef, any>,
     inputSchema: z.ZodType<any, z.ZodTypeDef, any> | undefined,
-  ) {
+  ): void {
     this.telemetry.addAttribute(
       'agent.model',
       `${model.modelId}:${model.provider}`,

@@ -1,27 +1,23 @@
 import { z, ZodSchema } from 'zod';
 import { SchemaConstructor } from '../schema';
-import { CoreTool } from 'ai';
+import { CoreTool, StreamTextResult } from 'ai';
 
-// Type helper for processed stream output
+/**
+ * Type helper for processed stream output that handles both string and object types.
+ * For string types, it returns string directly.
+ * For object types, it returns a deep partial version of the type, allowing for partial objects during streaming.
+ *
+ * @typeParam T - The type to process. Can be string or any object type.
+ */
 export type ProcessedStreamOutput<T> = T extends string
   ? string
   : DeepPartial<T>;
 
-// Extend StreamTextResult to include experimental properties
-export interface StreamTextResult<
-  TTools extends Record<string, CoreTool>,
-  TOutput,
-> {
-  text: string;
-  textStream: AsyncIterable<string>;
-  fullStream: AsyncIterable<any>;
-  experimental_output: {
-    value?: any;
-    [key: string]: any;
-  };
-  experimental_partialOutputStream: AsyncIterable<DeepPartial<TOutput>>;
-}
-
+/**
+ * Union type representing all possible input/output type specifications.
+ * Can be a Zod schema, a schema constructor, or a primitive constructor.
+ * Used to define the shape and validation rules for agent inputs and outputs.
+ */
 export type InputOutputType =
   | ZodSchema
   | SchemaConstructor
@@ -48,9 +44,6 @@ export interface AgentStreamResult<TOutput> {
    * For object outputs, provides partial objects as they stream.
    */
   processedStream: AsyncIterable<ProcessedStreamOutput<TOutput>>;
-
-  /** Final result promise that resolves to the complete TOutput */
-  result: Promise<TOutput>;
 
   /** Raw stream access for advanced usage */
   raw: StreamTextResult<Record<string, CoreTool>, TOutput>;
