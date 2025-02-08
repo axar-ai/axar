@@ -1,6 +1,13 @@
 import { z, ZodSchema } from 'zod';
 import { SchemaConstructor } from '../schema';
-import { CoreTool, StreamTextResult, DeepPartial } from 'ai';
+import {
+  CoreTool,
+  StreamTextResult,
+  DeepPartial,
+  Output,
+  CoreMessage,
+  LanguageModelV1,
+} from 'ai';
 
 /**
  * Union type representing all possible input/output type specifications.
@@ -46,4 +53,24 @@ export interface StreamResult<TOutput> {
 
   /** Raw stream access for advanced usage */
   raw: StreamTextResult<Record<string, CoreTool>, TOutput>;
+}
+
+/**
+ * Type alias for the experimental output configuration returned by Output.object
+ */
+export type ExperimentalOutput = ReturnType<typeof Output.object>;
+
+/**
+ * Configuration for agent output handling
+ */
+export interface OutputConfig {
+  model: LanguageModelV1;
+  messages: CoreMessage[];
+  tools: Record<string, CoreTool>;
+  maxSteps: number;
+  experimental_telemetry: {
+    isEnabled: boolean;
+    functionId: string;
+  };
+  experimental_output?: ExperimentalOutput;
 }
