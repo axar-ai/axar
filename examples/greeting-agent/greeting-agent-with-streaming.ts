@@ -76,7 +76,7 @@ export class SimpleGreetingAgent extends Agent<string, string> {
 // Example usage with structured streaming
 async function demoStructuredStreaming() {
   const agent = new StructuredGreetingAgent();
-  const stream = await agent.streamRun({
+  const { stream } = await agent.stream({
     userName: 'Alice',
     userMood: 'happy',
     language: 'English',
@@ -85,7 +85,7 @@ async function demoStructuredStreaming() {
   console.log('Streaming structured response:');
 
   // Stream partial objects as they arrive
-  for await (const partial of stream.processedStream) {
+  for await (const partial of stream) {
     console.log('Partial:', partial);
   }
 }
@@ -93,11 +93,11 @@ async function demoStructuredStreaming() {
 // Example usage with simple string streaming
 async function demoSimpleStreaming() {
   const agent = new SimpleGreetingAgent();
-  const stream = await agent.streamRun('My name is Bob');
+  const stream = await agent.stream('My name is Bob');
 
   console.log('\nStreaming simple response:');
   // Stream text chunks as they arrive
-  for await (const chunk of stream.processedStream) {
+  for await (const chunk of stream.stream) {
     process.stdout.write(chunk);
   }
 }

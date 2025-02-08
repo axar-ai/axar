@@ -8,11 +8,7 @@ import {
   StreamTextResult,
 } from 'ai';
 import { META_KEYS } from './meta-keys';
-import {
-  ToolMetadata,
-  AgentStreamResult,
-  ProcessedStreamOutput,
-} from './types';
+import { ToolMetadata, StreamResult, StreamOutput } from './types';
 import { getModel } from '../llm';
 import { logger, Telemetry } from '../common';
 import { streamText } from 'ai';
@@ -265,12 +261,12 @@ export abstract class Agent<TInput = any, TOutput = any> {
   private createProcessedStream(
     stream: StreamTextResult<Record<string, CoreTool>, TOutput>,
     schema: z.ZodType,
-  ): AsyncIterable<ProcessedStreamOutput<TOutput>> {
+  ): AsyncIterable<StreamOutput<TOutput>> {
     if (schema instanceof z.ZodString) {
-      return stream.textStream as AsyncIterable<ProcessedStreamOutput<TOutput>>;
+      return stream.textStream as AsyncIterable<StreamOutput<TOutput>>;
     }
     return stream.experimental_partialOutputStream as AsyncIterable<
-      ProcessedStreamOutput<TOutput>
+      StreamOutput<TOutput>
     >;
   }
 
@@ -281,7 +277,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
    * @returns Promise resolving to an enhanced stream result
    * @throws {Error} If input validation fails or processing errors occur
    */
-  async streamRun(input: TInput): Promise<AgentStreamResult<TOutput>> {
+  async stream(input: TInput): Promise<StreamResult<TOutput>> {
     return this.telemetry.withSpan('streamRun', async () => {
       const model = await this.getModel();
       const tools = this.getTools();
@@ -330,7 +326,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
         )) as unknown as StreamTextResult<Record<string, CoreTool>, TOutput>;
 
         return {
-          processedStream: this.createProcessedStream(rawStream, outputSchema),
+          stream: this.createProcessedStream(rawStream, outputSchema),
           raw: rawStream,
         };
       } catch (error) {

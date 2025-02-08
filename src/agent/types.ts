@@ -1,17 +1,6 @@
 import { z, ZodSchema } from 'zod';
 import { SchemaConstructor } from '../schema';
-import { CoreTool, StreamTextResult } from 'ai';
-
-/**
- * Type helper for processed stream output that handles both string and object types.
- * For string types, it returns string directly.
- * For object types, it returns a deep partial version of the type, allowing for partial objects during streaming.
- *
- * @typeParam T - The type to process. Can be string or any object type.
- */
-export type ProcessedStreamOutput<T> = T extends string
-  ? string
-  : DeepPartial<T>;
+import { CoreTool, StreamTextResult, DeepPartial } from 'ai';
 
 /**
  * Union type representing all possible input/output type specifications.
@@ -26,30 +15,6 @@ export type InputOutputType =
   | BooleanConstructor;
 
 /**
- * Makes all properties in T optional and recursively does the same for all nested objects
- */
-export type DeepPartial<T> = T extends object
-  ? {
-      [P in keyof T]?: DeepPartial<T[P]>;
-    }
-  : T;
-
-/**
- * Enhanced stream result that provides both processed and raw stream access
- */
-export interface AgentStreamResult<TOutput> {
-  /**
-   * Processed stream that automatically handles TOutput type.
-   * For string outputs, provides string chunks.
-   * For object outputs, provides partial objects as they stream.
-   */
-  processedStream: AsyncIterable<ProcessedStreamOutput<TOutput>>;
-
-  /** Raw stream access for advanced usage */
-  raw: StreamTextResult<Record<string, CoreTool>, TOutput>;
-}
-
-/**
  * Metadata for tool annotation
  */
 export type ToolMetadata = Readonly<{
@@ -58,3 +23,27 @@ export type ToolMetadata = Readonly<{
   method: string;
   parameters: z.ZodObject<any>;
 }>;
+
+/**
+ * Type helper for processed stream output that handles both string and object types.
+ * For string types, it returns string directly.
+ * For object types, it returns a deep partial version of the type, allowing for partial objects during streaming.
+ *
+ * @typeParam T - The type to process. Can be string or any object type.
+ */
+export type StreamOutput<T> = T extends string ? string : DeepPartial<T>;
+
+/**
+ * Stream result that provides both processed and raw stream access
+ */
+export interface StreamResult<TOutput> {
+  /**
+   * Processed stream that automatically handles TOutput type.
+   * For string outputs, provides string chunks.
+   * For object outputs, provides partial objects as they stream.
+   */
+  stream: AsyncIterable<StreamOutput<TOutput>>;
+
+  /** Raw stream access for advanced usage */
+  raw: StreamTextResult<Record<string, CoreTool>, TOutput>;
+}

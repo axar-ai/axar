@@ -113,15 +113,15 @@ describe('Agent Streaming', () => {
       };
       streamTextMock.mockResolvedValue(mockStream);
 
-      const result = await agent.streamRun('input');
+      const result = await agent.stream('input');
 
       // Check stream result structure
-      expect(result).toHaveProperty('processedStream');
+      expect(result).toHaveProperty('stream');
       expect(result).toHaveProperty('raw');
 
       // Check processed stream
       const chunks = [];
-      for await (const chunk of result.processedStream) {
+      for await (const chunk of result.stream) {
         chunks.push(chunk);
       }
       expect(chunks).toEqual(['chunk1', 'chunk2']);
@@ -151,15 +151,15 @@ describe('Agent Streaming', () => {
       };
       streamTextMock.mockResolvedValue(mockStream);
 
-      const result = await agent.streamRun('input');
+      const result = await agent.stream('input');
 
       // Check stream result structure
-      expect(result).toHaveProperty('processedStream');
+      expect(result).toHaveProperty('stream');
       expect(result).toHaveProperty('raw');
 
       // Check processed stream (partial objects)
       const chunks = [];
-      for await (const chunk of result.processedStream) {
+      for await (const chunk of result.stream) {
         chunks.push(chunk);
       }
       expect(chunks).toEqual([
@@ -195,11 +195,11 @@ describe('Agent Streaming', () => {
       };
       streamTextMock.mockResolvedValue(mockStream);
 
-      const result = await agent.streamRun('input');
+      const result = await agent.stream('input');
 
       // Check processed stream for primitive type
       const chunks = [];
-      for await (const chunk of result.processedStream) {
+      for await (const chunk of result.stream) {
         chunks.push(chunk);
       }
       expect(chunks).toEqual([40, 42]);
@@ -227,7 +227,7 @@ describe('Agent Streaming', () => {
       };
       streamTextMock.mockResolvedValue(mockStream);
 
-      await agent.streamRun('input');
+      await agent.stream('input');
 
       expect(streamTextMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -248,7 +248,7 @@ describe('Agent Streaming', () => {
       };
       streamTextMock.mockResolvedValue(mockStream);
 
-      await agent.streamRun('input');
+      await agent.stream('input');
 
       expect(telemetrySpy).toHaveBeenCalledWith(
         'agent.model',
@@ -283,7 +283,7 @@ describe('Agent Streaming', () => {
       };
       streamTextMock.mockResolvedValue(mockStream);
 
-      await agent.streamRun('input');
+      await agent.stream('input');
 
       expect(streamTextMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -299,7 +299,7 @@ describe('Agent Streaming', () => {
 
     it('should handle errors from streamText', async () => {
       streamTextMock.mockRejectedValue(new Error('Streaming Error'));
-      await expect(agent.streamRun('input')).rejects.toThrow('Streaming Error');
+      await expect(agent.stream('input')).rejects.toThrow('Streaming Error');
     });
 
     it('should configure maxSteps correctly', async () => {
@@ -314,7 +314,7 @@ describe('Agent Streaming', () => {
       };
       streamTextMock.mockResolvedValue(mockStream);
 
-      await agent.streamRun('input');
+      await agent.stream('input');
 
       expect(streamTextMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -337,7 +337,7 @@ describe('Agent Streaming', () => {
       const telemetrySpy = jest.spyOn(agent['telemetry'], 'addAttribute');
 
       try {
-        await agent.streamRun('input');
+        await agent.stream('input');
       } catch (e) {
         // Verify telemetry calls in order
         expect(telemetrySpy).toHaveBeenNthCalledWith(
@@ -375,7 +375,7 @@ describe('Agent Streaming', () => {
       });
       jest.spyOn(agent as any, 'getInputSchema').mockReturnValue(inputSchema);
 
-      await expect(agent.streamRun({ query: 123 })).rejects.toThrow();
+      await expect(agent.stream({ query: 123 })).rejects.toThrow();
     });
 
     it('should handle experimental output configuration', async () => {
@@ -398,7 +398,7 @@ describe('Agent Streaming', () => {
       };
       streamTextMock.mockResolvedValue(mockStream);
 
-      await agent.streamRun('input');
+      await agent.stream('input');
 
       expect(streamTextMock).toHaveBeenCalledWith(
         expect.objectContaining({
