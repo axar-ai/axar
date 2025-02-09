@@ -1,7 +1,7 @@
 import { Agent, model, output, systemPrompt, tool } from '../../../src/agent';
 import { z } from 'zod';
 import { logger } from '../../../src/common';
-import { CoreTool, ToolExecutionOptions } from 'ai';
+import { CoreTool, ToolExecutionOptions, LanguageModelV1 } from 'ai';
 
 jest.mock('ai', () => {
   const generateText = jest.fn();
@@ -139,20 +139,23 @@ describe('Agent', () => {
     it('should execute tool method correctly', async () => {
       const tools = agent['getTools']();
       expect(tools).toHaveProperty('customerBalance');
-      
+
       const customerBalanceTool = tools['customerBalance'] as CoreTool;
       expect(customerBalanceTool.execute).toBeDefined();
 
       const options: ToolExecutionOptions = {
         toolCallId: 'test-call',
-        messages: []
+        messages: [],
       };
 
       // Call execute with the correct arguments
-      const result = await customerBalanceTool.execute!({
-        includePending: true,
-        customerName: 'John'
-      }, options);
+      const result = await customerBalanceTool.execute!(
+        {
+          includePending: true,
+          customerName: 'John',
+        },
+        options,
+      );
       expect(result).toBe(123.45);
     });
 
@@ -245,9 +248,9 @@ describe('Agent', () => {
         });
 
         try {
-          expect(() => agent['serializeInput']({ test: 'value' }, undefined)).toThrow(
-            'Failed to serialize input: Unknown error'
-          );
+          expect(() =>
+            agent['serializeInput']({ test: 'value' }, undefined),
+          ).toThrow('Failed to serialize input: Unknown error');
         } finally {
           JSON.stringify = originalStringify;
         }
@@ -293,9 +296,7 @@ describe('Agent', () => {
 
     it('should handle number output type', async () => {
       const numberSchema = z.number();
-      jest
-        .spyOn(agent as any, 'getOutputSchema')
-        .mockReturnValue(numberSchema);
+      jest.spyOn(agent as any, 'getOutputSchema').mockReturnValue(numberSchema);
       generateTextMock.mockResolvedValue({
         experimental_output: { value: 42 },
       });
@@ -306,9 +307,7 @@ describe('Agent', () => {
 
     it('should handle array output type', async () => {
       const arraySchema = z.array(z.string());
-      jest
-        .spyOn(agent as any, 'getOutputSchema')
-        .mockReturnValue(arraySchema);
+      jest.spyOn(agent as any, 'getOutputSchema').mockReturnValue(arraySchema);
       const mockOutput = ['item1', 'item2'];
       generateTextMock.mockResolvedValue({
         experimental_output: mockOutput,
@@ -324,19 +323,19 @@ describe('Agent', () => {
 
       expect(telemetrySpy).toHaveBeenCalledWith(
         'agent.model',
-        'gpt-4o-mini:openai'
+        'gpt-4o-mini:openai',
       );
       expect(telemetrySpy).toHaveBeenCalledWith(
         'agent.tools',
-        expect.arrayContaining(['customerBalance'])
+        expect.arrayContaining(['customerBalance']),
       );
       expect(telemetrySpy).toHaveBeenCalledWith(
         'agent.output_schema',
-        expect.any(Object)
+        expect.any(Object),
       );
       expect(telemetrySpy).toHaveBeenCalledWith(
         'agent.input_schema',
-        undefined
+        undefined,
       );
     });
 
@@ -435,6 +434,34 @@ describe('Agent', () => {
       const mockSchema = z.string();
       jest.spyOn(Reflect, 'getMetadata').mockReturnValue(mockSchema);
       expect(agent['getInputSchema']()).toBe(mockSchema);
+    });
+  });
+
+  describe('addTelemetry', () => {
+    it('should handle undefined inputSchema', () => {
+      const telemetrySpy = jest.spyOn(agent['telemetry'], 'addAttribute');
+      const model = {
+        modelId: 'test-model',
+        provider: 'test-provider',
+      } as LanguageModelV1;
+      const tools = {};
+      const outputSchema = z.string();
+
+      agent['addTelemetry'](model, tools, outputSchema, undefined);
+
+      expect(telemetrySpy).toHaveBeenCalledWith(
+        'agent.model',
+        'test-model:test-provider',
+      );
+      expect(telemetrySpy).toHaveBeenCalledWith('agent.tools', []);
+      expect(telemetrySpy).toHaveBeenCalledWith(
+        'agent.output_schema',
+        outputSchema,
+      );
+      expect(telemetrySpy).toHaveBeenCalledWith(
+        'agent.input_schema',
+        undefined,
+      );
     });
   });
 });
