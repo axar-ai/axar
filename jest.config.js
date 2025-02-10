@@ -20,5 +20,6 @@ module.exports = {
     ],
   ],
   testMatch: ['**/test/**/*.test.ts'],
+  testPathIgnorePatterns: process.env.RUN_E2E ? [] : ['/test/e2e/'],
   moduleDirectories: ['node_modules', 'src'], // Ensure Jest can resolve modules in the 'src' folder
 };

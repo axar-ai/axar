@@ -1,6 +1,11 @@
 # macOS
 .DS_Store
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+
 # Logs and temporary files
 junit.xml
 *.log
