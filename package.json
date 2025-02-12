@@ -1,6 +1,6 @@
 {
   "name": "@axarai/axar",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": false,
   "description": "TypeScript-based agent framework for building agentic applications powered by LLMs",
   "main": "dist/index.js",
