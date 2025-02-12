@@ -318,6 +318,23 @@ export abstract class Agent<TInput = any, TOutput = any> {
   /**
    * Runs the agent with the given input and returns the output.
    *
+   * @example
+   * ```typescript
+   * // Simple text input/output
+   * const agent = new SimpleAgent();
+   * const response = await agent.run("What is TypeScript?");
+   * console.log(response); // "TypeScript is a typed superset of JavaScript..."
+   *
+   * // Structured input/output
+   * const greetingAgent = new GreetingAgent();
+   * const response = await greetingAgent.run({
+   *   userName: "Alice",
+   *   userMood: "happy",
+   *   dayOfWeek: "Saturday"
+   * });
+   * console.log(response); // { greeting: "Hello Alice!", moodResponse: "..." }
+   * ```
+   *
    * @param input - The input (user prompt) to process
    * @returns Promise resolving to the processed output
    * @throws {Error} If input validation fails or processing errors occur
@@ -333,10 +350,31 @@ export abstract class Agent<TInput = any, TOutput = any> {
   }
 
   /**
-   * Streams the agent's response for the given input.
+   * Streams the agent's response for the given input. Useful for real-time UI updates
+   * or processing long responses chunk by chunk.
+   *
+   * @example
+   * ```typescript
+   * // Simple text streaming
+   * const agent = new SimpleAgent();
+   * const { stream } = await agent.stream("What is TypeScript?");
+   * for await (const chunk of stream) {
+   *   process.stdout.write(chunk); // Chunks: "Type" ... "Script" ... "is a" ...
+   * }
+   *
+   * // Structured output streaming
+   * const greetingAgent = new GreetingAgent();
+   * const { stream } = await greetingAgent.stream({
+   *   userName: "Alice",
+   *   userMood: "happy"
+   * });
+   * for await (const chunk of stream) {
+   *   console.log(chunk); // Partial objects that build up the complete response
+   * }
+   * ```
    *
    * @param input - The input (user prompt) to process
-   * @returns Promise resolving to an enhanced stream result
+   * @returns Promise resolving to an enhanced stream result containing the output stream
    * @throws {Error} If input validation fails or processing errors occur
    */
   async stream(input: TInput): Promise<StreamResult<TOutput>> {
