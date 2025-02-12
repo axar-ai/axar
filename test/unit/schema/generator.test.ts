@@ -1599,3 +1599,56 @@ describe('Schema Generator', () => {
     });
   });
 });
+
+describe('Additional Generator Tests', () => {
+  // Test for empty enum values
+  it('should throw error for empty enum values', () => {
+    expect(() => {
+      @schema()
+      class EmptyEnum extends TestBase {
+        @property('')
+        @enumValues([])
+        dummy!: string;
+      }
+      toZodSchema(EmptyEnum);
+    }).toThrow(/non-empty array/);
+  });
+
+  // Test for mixed type enum values
+  it('should throw error for mixed type enum values', () => {
+    expect(() => {
+      @schema()
+      class MixedEnum extends TestBase {
+        @property('')
+        @enumValues(['A', 1] as const)
+        dummy!: string;
+      }
+      toZodSchema(MixedEnum);
+    }).toThrow(/must be all strings or all numbers/);
+  });
+
+  // Test for unsupported type - when nested type is not decorated with @schema
+  it('should throw error for unsupported type that is not decorated with @schema', () => {
+    class UnsupportedType {}
+    expect(() => {
+      @schema()
+      class UnsupportedSchema extends TestBase {
+        @property('')
+        dummy!: UnsupportedType;
+      }
+      toZodSchema(UnsupportedSchema);
+    }).toThrow(/must be decorated with @schema/);
+  });
+
+  // Test schema caching
+  it('should return the same schema instance due to caching', () => {
+    @schema()
+    class CachedTest extends TestBase {
+      @property('')
+      dummy!: string;
+    }
+    const schema1 = toZodSchema(CachedTest);
+    const schema2 = toZodSchema(CachedTest);
+    expect(schema1).toBe(schema2);
+  });
+});
