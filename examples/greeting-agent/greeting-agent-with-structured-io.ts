@@ -10,7 +10,7 @@ import {
 } from '@axarai/axar';
 
 @schema()
-class GreetingAgentRequest {
+export class GreetingAgentRequest {
   @property("User's full name")
   userName!: string;
 
@@ -25,7 +25,7 @@ class GreetingAgentRequest {
 }
 
 @schema()
-class GreetingAgentResponse {
+export class GreetingAgentResponse {
   @property("A greeting message to cater to the user's mood")
   greeting!: string;
 
@@ -39,7 +39,22 @@ class GreetingAgentResponse {
 
 @model('openai:gpt-4o-mini')
 @systemPrompt(
-  `Greet the user by their name in a friendly tone in their preferred language.`,
+  `Greet the user by their name in a friendly tone in their preferred language.
+   If it's a weekend day (Saturday or Sunday), include a special weekend message.
+   If it's not a weekend, do not include a weekend message at all.
+   
+   Example weekend response:
+   {
+     "greeting": "Hello Alice! Great to see you!",
+     "moodResponse": "I see you're feeling happy today!",
+     "weekendMessage": "Hope you're enjoying your Saturday!"
+   }
+   
+   Example weekday response:
+   {
+     "greeting": "Hello Bob! Great to see you!",
+     "moodResponse": "I see you're feeling happy today!"
+   }`,
 )
 @input(GreetingAgentRequest)
 @output(GreetingAgentResponse)
@@ -48,8 +63,8 @@ export class GreetingAgent extends Agent<
   GreetingAgentResponse
 > {}
 
-// Instantiate and run the agent
-(async () => {
+// Example usage
+export async function main() {
   const response = await new GreetingAgent().run({
     userName: 'Alice',
     userMood: 'happy',
@@ -57,4 +72,9 @@ export class GreetingAgent extends Agent<
     language: 'English',
   });
   console.log(response);
-})();
+}
+
+// Only run if this file is executed directly (not imported as a module)
+if (require.main === module) {
+  main();
+}

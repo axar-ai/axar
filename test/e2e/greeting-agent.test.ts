@@ -106,7 +106,7 @@ describe('GreetingAgent E2E Tests', () => {
     expect(
       greetings.some((greeting) => response.toLowerCase().includes(greeting)),
     ).toBeTruthy();
-  }, 15000);
+  }, 30000);
 
   test('should work with Google Gemini', async () => {
     const agent = createGreetingAgent('google:gemini-2.0-flash-exp');
