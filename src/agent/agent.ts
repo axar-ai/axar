@@ -13,6 +13,7 @@ import {
   StreamResult,
   StreamOutput,
   OutputConfig,
+  ModelConfig,
 } from './types';
 import { getModel } from '../llm';
 import { logger, Telemetry } from '../common';
@@ -66,6 +67,19 @@ export abstract class Agent<TInput = any, TOutput = any> {
     }
 
     return await getModel(providerModelName);
+  }
+
+  /**
+   * Gets the model config configured through the @model decorator.
+   *
+   * @returns The model config
+   */
+  protected getModelConfig(): ModelConfig {
+    return Agent.getMetadata<ModelConfig>(
+      META_KEYS.MODEL_CONFIG,
+      this.constructor,
+      {},
+    );
   }
 
   /**
@@ -191,6 +205,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
    */
   private async createConfig(input: TInput): Promise<OutputConfig> {
     const model = await this.getModel();
+    const modelConfig = this.getModelConfig();
     const tools = this.getTools();
     const outputSchema = this.getOutputSchema();
     const inputSchema = this.getInputSchema();
@@ -210,7 +225,11 @@ export abstract class Agent<TInput = any, TOutput = any> {
       model,
       messages,
       tools,
-      maxSteps: 3,
+      maxSteps: modelConfig?.maxSteps ?? 3,
+      maxTokens: modelConfig?.maxTokens,
+      temperature: modelConfig?.temperature,
+      maxRetries: modelConfig?.maxRetries,
+      toolChoice: modelConfig?.toolChoice,
       experimental_telemetry: {
         isEnabled: this.telemetry.isRecording(),
         functionId: this.constructor.name,
@@ -393,3 +412,33 @@ export abstract class Agent<TInput = any, TOutput = any> {
     });
   }
 }
+
+/**
+ * `model` decorator to associate a model identifier and configuration with an agent.
+ *
+ * @param modelIdentifier - The model identifier string (e.g., 'openai:gpt-4-mini')
+ * @param config - Optional configuration for the model
+ * @param config.maxTokens - Maximum number of tokens to generate
+ * @param config.temperature - Sampling temperature between 0 and 1 (use either temperature or topP, not both)
+ * @param config.maxRetries - Maximum number of retries for failed requests (defaults to 2 in SDK)
+ * @param config.maxSteps - Maximum number of steps for tool calling (defaults to 3)
+ * @param config.toolChoice - Tool choice mode - 'auto' or 'none'
+ * @returns A class decorator function
+ *
+ * @example
+ * ```typescript
+ * // Basic usage
+ * @model('openai:gpt-4-mini')
+ * class MyAgent extends Agent<string, string> {}
+ *
+ * // With configuration
+ * @model('openai:gpt-4-mini', {
+ *   maxTokens: 100,    // limit response length
+ *   temperature: 0.7,  // control randomness
+ *   maxRetries: 3,     // retry failed requests
+ *   maxSteps: 5,       // allow multi-step tool calling
+ *   toolChoice: 'auto' // enable automatic tool selection
+ * })
+ * class MyConfiguredAgent extends Agent<string, string> {}
+ * ```
+ */

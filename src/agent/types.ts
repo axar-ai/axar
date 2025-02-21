@@ -68,9 +68,33 @@ export interface OutputConfig {
   messages: CoreMessage[];
   tools: Record<string, CoreTool>;
   maxSteps: number;
+  /** Maximum number of tokens to generate */
+  maxTokens?: number;
+  /** Sampling temperature between 0 and 1 */
+  temperature?: number;
+  /** Maximum number of retries for failed requests */
+  maxRetries?: number;
+  /** Tool choice mode - 'auto' or 'none' */
+  toolChoice?: 'auto' | 'none';
   experimental_telemetry: {
     isEnabled: boolean;
     functionId: string;
   };
   experimental_output?: ExperimentalOutput;
+}
+
+/**
+ * Configuration options for the language model.
+ */
+export interface ModelConfig {
+  /** Maximum number of tokens to generate */
+  maxTokens?: number;
+  /** Sampling temperature between 0 and 1 */
+  temperature?: number;
+  /** Maximum number of retries for failed requests */
+  maxRetries?: number;
+  /** Maximum number of steps in a conversation */
+  maxSteps?: number;
+  /** Tool choice mode - 'auto' or 'none' */
+  toolChoice?: 'auto' | 'none';
 }

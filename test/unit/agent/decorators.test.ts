@@ -14,6 +14,60 @@ describe('Decorators', () => {
       const metadata = Reflect.getMetadata(META_KEYS.MODEL, TestClass);
       expect(metadata).toBe('openai:gpt-4');
     });
+
+    it('should store model configuration in metadata when provided', () => {
+      const config = {
+        maxTokens: 100,
+        temperature: 0.5,
+        maxRetries: 3,
+        maxSteps: 3,
+        toolChoice: 'auto' as const,
+      };
+
+      @model('openai:gpt-4', config)
+      class TestClass {}
+
+      // Verify model identifier
+      const modelMetadata = Reflect.getMetadata(META_KEYS.MODEL, TestClass);
+      expect(modelMetadata).toBe('openai:gpt-4');
+
+      // Verify configuration
+      const configMetadata = Reflect.getMetadata(
+        META_KEYS.MODEL_CONFIG,
+        TestClass,
+      );
+      expect(configMetadata).toEqual(config);
+    });
+
+    it('should store partial model configuration correctly', () => {
+      const partialConfig = {
+        maxTokens: 100,
+        maxRetries: 3,
+        toolChoice: 'auto' as const,
+      };
+
+      @model('openai:gpt-4', partialConfig)
+      class TestClass {}
+
+      const configMetadata = Reflect.getMetadata(
+        META_KEYS.MODEL_CONFIG,
+        TestClass,
+      );
+      expect(configMetadata).toEqual(partialConfig);
+      expect(configMetadata.temperature).toBeUndefined();
+      expect(configMetadata.maxSteps).toBeUndefined();
+    });
+
+    it('should not store model configuration when not provided', () => {
+      @model('openai:gpt-4')
+      class TestClass {}
+
+      const configMetadata = Reflect.getMetadata(
+        META_KEYS.MODEL_CONFIG,
+        TestClass,
+      );
+      expect(configMetadata).toBeUndefined();
+    });
   });
 
   describe('@input/@output', () => {
@@ -39,7 +93,7 @@ describe('Decorators', () => {
         @input(invalidType as any)
         class TestClass {}
       }).toThrow(
-        '@input error: Could not create a schema for "[object Object]". Type must be a Zod schema, a class decorated with @schema, or a primitive constructor (String, Number, Boolean).'
+        '@input error: Could not create a schema for "[object Object]". Type must be a Zod schema, a class decorated with @schema, or a primitive constructor (String, Number, Boolean).',
       );
     });
 
@@ -216,7 +270,9 @@ describe('Decorators', () => {
             return params.field;
           }
         }
-      }).toThrow('must be either a Zod schema or a class decorated with @schema');
+      }).toThrow(
+        'must be either a Zod schema or a class decorated with @schema',
+      );
     });
 
     it('should throw when parameter type is not a valid class or constructor', () => {
@@ -226,12 +282,14 @@ describe('Decorators', () => {
 
       // Mock Reflect.getMetadata to return our invalid type
       const originalGetMetadata = Reflect.getMetadata;
-      Reflect.getMetadata = jest.fn().mockImplementation((key, target, prop) => {
-        if (key === 'design:paramtypes') {
-          return [nonConstructableType];
-        }
-        return originalGetMetadata(key, target, prop);
-      });
+      Reflect.getMetadata = jest
+        .fn()
+        .mockImplementation((key, target, prop) => {
+          if (key === 'design:paramtypes') {
+            return [nonConstructableType];
+          }
+          return originalGetMetadata(key, target, prop);
+        });
 
       try {
         expect(() => {

@@ -421,6 +421,45 @@ describe('Agent', () => {
         }),
       );
     });
+
+    it('should use model configuration when provided', async () => {
+      const config = {
+        maxTokens: 100,
+        temperature: 0.5,
+        maxRetries: 3,
+        maxSteps: 5,
+        toolChoice: 'auto' as const,
+      };
+
+      @model('openai:gpt-4o-mini', config)
+      class ConfiguredAgent extends Agent<string, string> {}
+
+      const configuredAgent = new ConfiguredAgent();
+      const generateTextSpy = jest.spyOn(require('ai'), 'generateText');
+
+      await configuredAgent.run('test input');
+
+      expect(generateTextSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          maxTokens: config.maxTokens,
+          temperature: config.temperature,
+          maxRetries: config.maxRetries,
+          maxSteps: config.maxSteps,
+          toolChoice: config.toolChoice,
+        }),
+      );
+    });
+
+    it('should use default maxSteps when not provided in config', async () => {
+      const generateTextSpy = jest.spyOn(require('ai'), 'generateText');
+      await agent.run('test input');
+
+      expect(generateTextSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          maxSteps: 3, // default value
+        }),
+      );
+    });
   });
 
   describe('getInputSchema', () => {
@@ -462,6 +501,51 @@ describe('Agent', () => {
         'agent.input_schema',
         undefined,
       );
+    });
+  });
+
+  describe('getModelConfig', () => {
+    it('should return empty object when no config is provided', () => {
+      @model('openai:gpt-4o-mini')
+      class NoConfigAgent extends Agent<string, string> {}
+
+      const noConfigAgent = new NoConfigAgent();
+      const config = noConfigAgent['getModelConfig']();
+      expect(config).toEqual({});
+    });
+
+    it('should return full config when provided', () => {
+      const fullConfig = {
+        maxTokens: 100,
+        temperature: 0.5,
+        maxRetries: 3,
+        maxSteps: 3,
+        toolChoice: 'auto' as const,
+      };
+
+      @model('openai:gpt-4o-mini', fullConfig)
+      class FullConfigAgent extends Agent<string, string> {}
+
+      const fullConfigAgent = new FullConfigAgent();
+      const config = fullConfigAgent['getModelConfig']();
+      expect(config).toEqual(fullConfig);
+    });
+
+    it('should return partial config with undefined values', () => {
+      const partialConfig = {
+        maxTokens: 100,
+        maxRetries: 3,
+      };
+
+      @model('openai:gpt-4o-mini', partialConfig)
+      class PartialConfigAgent extends Agent<string, string> {}
+
+      const partialConfigAgent = new PartialConfigAgent();
+      const config = partialConfigAgent['getModelConfig']();
+      expect(config).toEqual(partialConfig);
+      expect(config.temperature).toBeUndefined();
+      expect(config.maxSteps).toBeUndefined();
+      expect(config.toolChoice).toBeUndefined();
     });
   });
 });

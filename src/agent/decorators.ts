@@ -1,25 +1,43 @@
 import 'reflect-metadata';
 import { z, ZodSchema, ZodObject } from 'zod';
 import { META_KEYS } from './meta-keys';
-import { ToolMetadata, InputOutputType } from './types';
+import { ToolMetadata, InputOutputType, ModelConfig } from './types';
 import { hasSchemaDef, getSchemaDef } from '../schema';
 import { SchemaConstructor } from '../schema';
 
 /**
- * `model` decorator to associate a model identifier with an agent.
+ * `model` decorator to associate a model identifier and configuration with an agent.
  *
  * @param modelIdentifier - The model identifier string. List of model identifiers available at https://axar-ai.gitbook.io/axar/basics/model
+ * @param config - Optional configuration for the model
  * @returns A class decorator function.
  *
  * @example
  * ```typescript
+ * // Basic usage
  * @model('openai:gpt-4-mini')
  * class MyAgent extends Agent<string, string> {}
+ *
+ * // With configuration
+ * @model('openai:gpt-4-mini', {
+ *   maxTokens: 100,
+ *   temperature: 0.5,
+ *   maxRetries: 3,
+ *   maxSteps: 3,
+ *   toolChoice: 'auto'
+ * })
+ * class MyConfiguredAgent extends Agent<string, string> {}
  * ```
  */
-export function model(modelIdentifier: string): ClassDecorator {
+export function model(
+  modelIdentifier: string,
+  config?: ModelConfig,
+): ClassDecorator {
   return function <T extends Function>(target: T): T {
     Reflect.defineMetadata(META_KEYS.MODEL, modelIdentifier, target);
+    if (config) {
+      Reflect.defineMetadata(META_KEYS.MODEL_CONFIG, config, target);
+    }
     return target;
   };
 }
