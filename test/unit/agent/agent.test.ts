@@ -421,6 +421,45 @@ describe('Agent', () => {
         }),
       );
     });
+
+    it('should use model configuration when provided', async () => {
+      const config = {
+        maxTokens: 100,
+        temperature: 0.5,
+        maxRetries: 3,
+        maxSteps: 5,
+        toolChoice: 'auto' as const,
+      };
+
+      @model('openai:gpt-4o-mini', config)
+      class ConfiguredAgent extends Agent<string, string> {}
+
+      const configuredAgent = new ConfiguredAgent();
+      const generateTextSpy = jest.spyOn(require('ai'), 'generateText');
+
+      await configuredAgent.run('test input');
+
+      expect(generateTextSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          maxTokens: config.maxTokens,
+          temperature: config.temperature,
+          maxRetries: config.maxRetries,
+          maxSteps: config.maxSteps,
+          toolChoice: config.toolChoice,
+        }),
+      );
+    });
+
+    it('should use default maxSteps when not provided in config', async () => {
+      const generateTextSpy = jest.spyOn(require('ai'), 'generateText');
+      await agent.run('test input');
+
+      expect(generateTextSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          maxSteps: 3, // default value
+        }),
+      );
+    });
   });
 
   describe('getInputSchema', () => {

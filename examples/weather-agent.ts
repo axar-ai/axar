@@ -48,7 +48,13 @@ export class WeatherResponse {
   summary!: string;
 }
 
-@model('openai:gpt-4o-mini')
+@model('openai:gpt-4-mini', {
+  maxTokens: 100,
+  temperature: 0.5,
+  maxRetries: 3,
+  maxSteps: 3,
+  toolChoice: 'auto',
+})
 @systemPrompt('Be concise, reply with one sentence.')
 @output(WeatherResponse) // Apply the output decorator here with the schema
 export class WeatherAgent extends Agent<string, WeatherResponse> {

@@ -418,6 +418,60 @@ describe('Agent Streaming', () => {
       );
     });
 
+    it('should use model configuration when provided', async () => {
+      const config = {
+        maxTokens: 100,
+        temperature: 0.5,
+        maxRetries: 3,
+        maxSteps: 5,
+        toolChoice: 'auto' as const,
+      };
+
+      @model('openai:gpt-4o-mini', config)
+      class ConfiguredAgent extends Agent<string, string> {}
+
+      const configuredAgent = new ConfiguredAgent();
+      const mockStream = {
+        text: 'test',
+        textStream: createAsyncIterable(['test']),
+        fullStream: createAsyncIterable(['event']),
+        experimental_output: { value: 'test' },
+        experimental_partialOutputStream: createAsyncIterable(['test']),
+      };
+      streamTextMock.mockReturnValue(mockStream);
+
+      await configuredAgent.stream('test input');
+
+      expect(streamTextMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          maxTokens: config.maxTokens,
+          temperature: config.temperature,
+          maxRetries: config.maxRetries,
+          maxSteps: config.maxSteps,
+          toolChoice: config.toolChoice,
+        }),
+      );
+    });
+
+    it('should use default maxSteps when not provided in config', async () => {
+      const mockStream = {
+        text: 'test',
+        textStream: createAsyncIterable(['test']),
+        fullStream: createAsyncIterable(['event']),
+        experimental_output: { value: 'test' },
+        experimental_partialOutputStream: createAsyncIterable(['test']),
+      };
+      streamTextMock.mockReturnValue(mockStream);
+
+      await agent.stream('test input');
+
+      expect(streamTextMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          maxSteps: 3, // default value
+        }),
+      );
+    });
+
     // Helper function to create AsyncIterable for testing
     function createAsyncIterable<T>(items: T[]): AsyncIterable<T> {
       return {

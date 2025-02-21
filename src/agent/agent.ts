@@ -13,6 +13,7 @@ import {
   StreamResult,
   StreamOutput,
   OutputConfig,
+  ModelConfig,
 } from './types';
 import { getModel } from '../llm';
 import { logger, Telemetry } from '../common';
@@ -27,6 +28,7 @@ import { streamText } from 'ai';
  */
 export abstract class Agent<TInput = any, TOutput = any> {
   private telemetry: Telemetry<Agent<TInput, TOutput>>;
+  private modelConfig?: ModelConfig;
 
   constructor() {
     this.telemetry = new Telemetry(this);
@@ -64,6 +66,13 @@ export abstract class Agent<TInput = any, TOutput = any> {
         'Model metadata not found. Please apply @model decorator.',
       );
     }
+
+    // Store the config for use in run/stream methods
+    this.modelConfig = Agent.getMetadata<ModelConfig | undefined>(
+      META_KEYS.MODEL_CONFIG,
+      this.constructor,
+      undefined,
+    );
 
     return await getModel(providerModelName);
   }
@@ -210,7 +219,11 @@ export abstract class Agent<TInput = any, TOutput = any> {
       model,
       messages,
       tools,
-      maxSteps: 3,
+      maxSteps: this.modelConfig?.maxSteps ?? 3,
+      maxTokens: this.modelConfig?.maxTokens,
+      temperature: this.modelConfig?.temperature,
+      maxRetries: this.modelConfig?.maxRetries,
+      toolChoice: this.modelConfig?.toolChoice,
       experimental_telemetry: {
         isEnabled: this.telemetry.isRecording(),
         functionId: this.constructor.name,
