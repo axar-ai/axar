@@ -503,4 +503,49 @@ describe('Agent', () => {
       );
     });
   });
+
+  describe('getModelConfig', () => {
+    it('should return empty object when no config is provided', () => {
+      @model('openai:gpt-4o-mini')
+      class NoConfigAgent extends Agent<string, string> {}
+
+      const noConfigAgent = new NoConfigAgent();
+      const config = noConfigAgent['getModelConfig']();
+      expect(config).toEqual({});
+    });
+
+    it('should return full config when provided', () => {
+      const fullConfig = {
+        maxTokens: 100,
+        temperature: 0.5,
+        maxRetries: 3,
+        maxSteps: 3,
+        toolChoice: 'auto' as const,
+      };
+
+      @model('openai:gpt-4o-mini', fullConfig)
+      class FullConfigAgent extends Agent<string, string> {}
+
+      const fullConfigAgent = new FullConfigAgent();
+      const config = fullConfigAgent['getModelConfig']();
+      expect(config).toEqual(fullConfig);
+    });
+
+    it('should return partial config with undefined values', () => {
+      const partialConfig = {
+        maxTokens: 100,
+        maxRetries: 3,
+      };
+
+      @model('openai:gpt-4o-mini', partialConfig)
+      class PartialConfigAgent extends Agent<string, string> {}
+
+      const partialConfigAgent = new PartialConfigAgent();
+      const config = partialConfigAgent['getModelConfig']();
+      expect(config).toEqual(partialConfig);
+      expect(config.temperature).toBeUndefined();
+      expect(config.maxSteps).toBeUndefined();
+      expect(config.toolChoice).toBeUndefined();
+    });
+  });
 });

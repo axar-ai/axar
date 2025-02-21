@@ -39,6 +39,25 @@ describe('Decorators', () => {
       expect(configMetadata).toEqual(config);
     });
 
+    it('should store partial model configuration correctly', () => {
+      const partialConfig = {
+        maxTokens: 100,
+        maxRetries: 3,
+        toolChoice: 'auto' as const,
+      };
+
+      @model('openai:gpt-4', partialConfig)
+      class TestClass {}
+
+      const configMetadata = Reflect.getMetadata(
+        META_KEYS.MODEL_CONFIG,
+        TestClass,
+      );
+      expect(configMetadata).toEqual(partialConfig);
+      expect(configMetadata.temperature).toBeUndefined();
+      expect(configMetadata.maxSteps).toBeUndefined();
+    });
+
     it('should not store model configuration when not provided', () => {
       @model('openai:gpt-4')
       class TestClass {}

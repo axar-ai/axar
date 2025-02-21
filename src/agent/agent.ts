@@ -28,7 +28,6 @@ import { streamText } from 'ai';
  */
 export abstract class Agent<TInput = any, TOutput = any> {
   private telemetry: Telemetry<Agent<TInput, TOutput>>;
-  private modelConfig?: ModelConfig;
 
   constructor() {
     this.telemetry = new Telemetry(this);
@@ -67,14 +66,20 @@ export abstract class Agent<TInput = any, TOutput = any> {
       );
     }
 
-    // Store the config for use in run/stream methods
-    this.modelConfig = Agent.getMetadata<ModelConfig | undefined>(
+    return await getModel(providerModelName);
+  }
+
+  /**
+   * Gets the model config configured through the @model decorator.
+   *
+   * @returns The model config
+   */
+  protected getModelConfig(): ModelConfig {
+    return Agent.getMetadata<ModelConfig>(
       META_KEYS.MODEL_CONFIG,
       this.constructor,
-      undefined,
+      {},
     );
-
-    return await getModel(providerModelName);
   }
 
   /**
@@ -200,6 +205,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
    */
   private async createConfig(input: TInput): Promise<OutputConfig> {
     const model = await this.getModel();
+    const modelConfig = this.getModelConfig();
     const tools = this.getTools();
     const outputSchema = this.getOutputSchema();
     const inputSchema = this.getInputSchema();
@@ -219,11 +225,11 @@ export abstract class Agent<TInput = any, TOutput = any> {
       model,
       messages,
       tools,
-      maxSteps: this.modelConfig?.maxSteps ?? 3,
-      maxTokens: this.modelConfig?.maxTokens,
-      temperature: this.modelConfig?.temperature,
-      maxRetries: this.modelConfig?.maxRetries,
-      toolChoice: this.modelConfig?.toolChoice,
+      maxSteps: modelConfig?.maxSteps ?? 3,
+      maxTokens: modelConfig?.maxTokens,
+      temperature: modelConfig?.temperature,
+      maxRetries: modelConfig?.maxRetries,
+      toolChoice: modelConfig?.toolChoice,
       experimental_telemetry: {
         isEnabled: this.telemetry.isRecording(),
         functionId: this.constructor.name,
