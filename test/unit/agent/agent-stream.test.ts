@@ -216,7 +216,7 @@ describe('Agent Streaming', () => {
           execute: jest.fn(),
         },
       };
-      jest.spyOn(agent as any, 'getTools').mockReturnValue(mockTools);
+      jest.spyOn(agent as any, 'getAllTools').mockResolvedValue(mockTools);
 
       const mockStream = {
         text: 'test',

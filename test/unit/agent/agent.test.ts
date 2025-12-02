@@ -378,7 +378,7 @@ describe('Agent', () => {
           execute: jest.fn(),
         },
       };
-      jest.spyOn(agent as any, 'getTools').mockReturnValue(mockTools);
+      jest.spyOn(agent as any, 'getAllTools').mockResolvedValue(mockTools);
 
       await agent.run('input');
 

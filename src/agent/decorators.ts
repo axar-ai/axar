@@ -4,6 +4,7 @@ import { META_KEYS } from './meta-keys';
 import { ToolMetadata, InputOutputType, ModelConfig } from './types';
 import { hasSchemaDef, getSchemaDef } from '../schema';
 import { SchemaConstructor } from '../schema';
+import { MCPServerConfig, AgentToolConfig } from '../mcp/types';
 
 /**
  * `model` decorator to associate a model identifier and configuration with an agent.
@@ -379,5 +380,82 @@ export function tool(
     };
 
     return descriptor;
+  };
+}
+
+/**
+ * `@mcpServers` decorator to connect an agent to MCP servers for external tools.
+ *
+ * MCP (Model Context Protocol) servers provide tools that can be discovered at runtime
+ * and used by the agent alongside local @tool methods.
+ *
+ * @param servers - Array of MCP server configurations
+ * @returns A class decorator function
+ *
+ * @example
+ * ```typescript
+ * // Using stdio transport (subprocess)
+ * @mcpServers([
+ *   { command: 'npx', args: ['-y', '@anthropic/mcp-server-filesystem'] }
+ * ])
+ * class FileAgent extends Agent<string, string> {}
+ *
+ * // Using HTTP transport
+ * @mcpServers([
+ *   { url: 'http://localhost:3000/mcp' }
+ * ])
+ * class WebAgent extends Agent<string, string> {}
+ *
+ * // Multiple servers
+ * @mcpServers([
+ *   { command: 'npx', args: ['-y', '@company/analytics-mcp'] },
+ *   { url: 'http://localhost:8080/database-mcp' }
+ * ])
+ * class MultiToolAgent extends Agent<string, string> {}
+ * ```
+ */
+export function mcpServers(servers: MCPServerConfig[]): ClassDecorator {
+  return function <T extends Function>(target: T): T {
+    Reflect.defineMetadata(META_KEYS.MCP_SERVERS, servers, target);
+    return target;
+  };
+}
+
+/**
+ * `@agentTool` decorator to use another agent as a tool.
+ *
+ * This enables agent composition - one agent can delegate tasks to other
+ * specialized agents. The child agent's output is passed back to the parent.
+ *
+ * @param agentClass - The agent class to use as a tool
+ * @param description - Description of what this agent does (shown to LLM)
+ * @param name - Optional custom name for the tool (defaults to class name)
+ * @returns A class decorator function
+ *
+ * @example
+ * ```typescript
+ * // Basic usage
+ * @agentTool(ResearchAgent, "Research topics in depth")
+ * @agentTool(WriterAgent, "Write content based on research")
+ * class OrchestratorAgent extends Agent<string, string> {}
+ *
+ * // With custom tool name
+ * @agentTool(DataAnalysisAgent, "Analyze data with SQL", "analyze_data")
+ * class ReportAgent extends Agent<string, Report> {}
+ * ```
+ */
+export function agentTool(
+  agentClass: new (...args: any[]) => any,
+  description: string,
+  name?: string,
+): ClassDecorator {
+  return function <T extends Function>(target: T): T {
+    const existing: AgentToolConfig[] =
+      Reflect.getMetadata(META_KEYS.AGENT_TOOLS, target) || [];
+
+    existing.push({ agentClass, description, name });
+
+    Reflect.defineMetadata(META_KEYS.AGENT_TOOLS, existing, target);
+    return target;
   };
 }

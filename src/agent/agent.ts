@@ -18,6 +18,13 @@ import {
 import { getModel } from '../llm';
 import { logger, Telemetry } from '../common';
 import { streamText } from 'ai';
+import {
+  MCPServerConfig,
+  AgentToolConfig,
+  MCPClientManager,
+  mcpToolsToCore,
+  agentToolsToCore,
+} from '../mcp';
 
 /**
  * Base class for creating AI agents with standardized input/output handling,
@@ -28,6 +35,8 @@ import { streamText } from 'ai';
  */
 export abstract class Agent<TInput = any, TOutput = any> {
   private telemetry: Telemetry<Agent<TInput, TOutput>>;
+  private mcpManager: MCPClientManager | null = null;
+  private mcpInitialized = false;
 
   constructor() {
     this.telemetry = new Telemetry(this);
@@ -83,11 +92,11 @@ export abstract class Agent<TInput = any, TOutput = any> {
   }
 
   /**
-   * Gets the tools configured for this agent through the @tool decorator.
+   * Gets the local tools configured for this agent through the @tool decorator.
    *
    * @returns A record of tool names to their implementations
    */
-  protected getTools(): Record<string, CoreTool> {
+  protected getLocalTools(): Record<string, CoreTool> {
     const tools = Agent.getMetadata<ToolMetadata[]>(
       META_KEYS.TOOLS,
       this.constructor,
@@ -105,6 +114,111 @@ export abstract class Agent<TInput = any, TOutput = any> {
     );
 
     return toolsFormatted as Record<string, CoreTool>;
+  }
+
+  /**
+   * Gets the MCP server configurations from the @mcpServers decorator.
+   *
+   * @returns Array of MCP server configurations
+   */
+  protected getMCPServerConfigs(): MCPServerConfig[] {
+    return Agent.getMetadata<MCPServerConfig[]>(
+      META_KEYS.MCP_SERVERS,
+      this.constructor,
+    );
+  }
+
+  /**
+   * Gets the agent tool configurations from the @agentTool decorator.
+   *
+   * @returns Array of agent tool configurations
+   */
+  protected getAgentToolConfigs(): AgentToolConfig[] {
+    return Agent.getMetadata<AgentToolConfig[]>(
+      META_KEYS.AGENT_TOOLS,
+      this.constructor,
+    );
+  }
+
+  /**
+   * Initializes MCP connections if configured.
+   * Called automatically on first run/stream.
+   */
+  private async initializeMCP(): Promise<void> {
+    if (this.mcpInitialized) {
+      return;
+    }
+
+    const mcpConfigs = this.getMCPServerConfigs();
+    if (mcpConfigs.length > 0) {
+      logger.debug(
+        `Initializing ${mcpConfigs.length} MCP connections for ${this.constructor.name}`,
+      );
+      this.mcpManager = new MCPClientManager();
+      await this.mcpManager.connect(mcpConfigs);
+      logger.info(
+        `Connected to ${this.mcpManager.clientCount} MCP servers, discovered ${this.mcpManager.getAllTools().length} tools`,
+      );
+    }
+
+    this.mcpInitialized = true;
+  }
+
+  /**
+   * Gets all tools available to this agent: local @tool methods,
+   * MCP server tools, and agent tools.
+   *
+   * @returns A record of all tool names to their implementations
+   */
+  protected async getAllTools(): Promise<Record<string, CoreTool>> {
+    // Ensure MCP is initialized
+    await this.initializeMCP();
+
+    // Get local tools from @tool decorator
+    const localTools = this.getLocalTools();
+
+    // Get MCP tools from connected servers
+    const mcpTools = this.mcpManager ? mcpToolsToCore(this.mcpManager) : {};
+
+    // Get agent tools from @agentTool decorator
+    const agentToolConfigs = this.getAgentToolConfigs();
+    const agentTools = agentToolsToCore(agentToolConfigs);
+
+    // Merge all tools (local takes precedence over MCP, MCP over agent)
+    return { ...agentTools, ...mcpTools, ...localTools };
+  }
+
+  /**
+   * @deprecated Use getAllTools() instead. This method is kept for backwards compatibility.
+   * Gets the tools configured for this agent through the @tool decorator.
+   *
+   * @returns A record of tool names to their implementations
+   */
+  protected getTools(): Record<string, CoreTool> {
+    return this.getLocalTools();
+  }
+
+  /**
+   * Cleans up resources, including MCP connections.
+   * Should be called when the agent is no longer needed.
+   *
+   * @example
+   * ```typescript
+   * const agent = new MyAgent();
+   * try {
+   *   const result = await agent.run("Hello");
+   * } finally {
+   *   await agent.cleanup();
+   * }
+   * ```
+   */
+  async cleanup(): Promise<void> {
+    if (this.mcpManager) {
+      logger.debug(`Cleaning up MCP connections for ${this.constructor.name}`);
+      await this.mcpManager.disconnectAll();
+      this.mcpManager = null;
+    }
+    this.mcpInitialized = false;
   }
 
   /**
@@ -206,7 +320,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
   private async createConfig(input: TInput): Promise<OutputConfig> {
     const model = await this.getModel();
     const modelConfig = this.getModelConfig();
-    const tools = this.getTools();
+    const tools = await this.getAllTools();
     const outputSchema = this.getOutputSchema();
     const inputSchema = this.getInputSchema();
 

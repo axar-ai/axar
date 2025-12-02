@@ -61,6 +61,10 @@ main().catch(console.error);
 
 - **🚀 Streamed outputs**: Streams LLM responses with built-in validation for fast and accurate results.
 
+- **🔌 MCP Support**: Native Model Context Protocol integration for connecting to external tools and data sources.
+
+- **🤖 Agent Composition**: Build complex agents by combining simpler specialized agents as tools.
+
 ## Resources
 
 - [📕 AXAR AI Documentation ↗](https://axar-ai.gitbook.io/axar)
@@ -241,6 +245,88 @@ async function main() {
 
 // Entry point for the application. Log any errors that occur during execution.
 main().catch(console.error);
+```
+
+### 🤖 Agent Composition (using agents as tools)
+
+AXAR supports agent composition - using other agents as tools. This enables building complex workflows by combining specialized agents.
+
+[Full code here](./examples/agent-composition.ts)
+
+```ts
+import { Agent, model, systemPrompt, agentTool } from '@axarai/axar';
+
+// Specialized agent for math
+@model('openai:gpt-4o-mini')
+@systemPrompt('You are a math expert. Show your work step by step.')
+class MathAgent extends Agent<string, string> {}
+
+// Specialized agent for translation
+@model('openai:gpt-4o-mini')
+@systemPrompt('You are a professional translator.')
+class TranslatorAgent extends Agent<string, string> {}
+
+// Orchestrator that delegates to specialized agents
+@model('openai:gpt-4o-mini')
+@systemPrompt('You are a helpful assistant with access to specialized agents.')
+@agentTool(MathAgent, 'Solve math problems and calculations')
+@agentTool(TranslatorAgent, 'Translate text to other languages')
+class AssistantAgent extends Agent<string, string> {}
+
+async function main() {
+  const assistant = new AssistantAgent();
+
+  // The assistant delegates math to MathAgent
+  const result = await assistant.run('What is 15% of 240?');
+  console.log(result); // "15% of 240 is 36"
+
+  // Chain: calculate then translate
+  const chained = await assistant.run(
+    'Calculate 25 * 4 and translate the result to Spanish',
+  );
+  console.log(chained); // "The result is 100, which is 'cien' in Spanish"
+
+  await assistant.cleanup();
+}
+```
+
+### 🔌 MCP Integration (external tool servers)
+
+AXAR integrates with the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) for connecting to external tool servers.
+
+[Full code here](./examples/hybrid-tools-agent.ts)
+
+```ts
+import { Agent, model, systemPrompt, mcpServers, tool } from '@axarai/axar';
+import { z } from 'zod';
+
+// Agent with both MCP tools and local tools
+@model('openai:gpt-4o-mini')
+@systemPrompt('You are a helpful assistant.')
+@mcpServers([
+  // stdio transport - runs a local MCP server
+  { command: 'npx', args: ['-y', '@anthropic/mcp-server-filesystem', '/tmp'] },
+  // HTTP transport - connects to remote MCP server
+  { url: 'http://localhost:3000/mcp' },
+])
+class HybridAgent extends Agent<string, string> {
+  // Local tools work alongside MCP tools
+  @tool('Get current timestamp')
+  getCurrentTime(): string {
+    return new Date().toISOString();
+  }
+}
+
+async function main() {
+  const agent = new HybridAgent();
+
+  // Agent can use both local tools and MCP server tools
+  const result = await agent.run('What files are in /tmp?');
+  console.log(result);
+
+  // Always cleanup to disconnect MCP servers
+  await agent.cleanup();
+}
 ```
 
 ## More examples
