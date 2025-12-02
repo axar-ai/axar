@@ -38,6 +38,7 @@ jobs:
         env:
           CI: true
           DISABLE_MOCKED_WARNING: true
+          NODE_OPTIONS: --experimental-vm-modules
 
       - name: Coveralls
         uses: coverallsapp/github-action@master
