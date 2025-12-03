@@ -4,7 +4,6 @@ import {
   MCPHttpConfig,
   isStdioConfig,
   isHttpConfig,
-  MCPTool,
   AgentToolConfig,
 } from '../../../src/mcp/types';
 
@@ -74,18 +73,6 @@ describe('MCP Types', () => {
 
       expect(isStdioConfig(stdioConfig)).toBe(true);
       expect(isHttpConfig(httpConfig)).toBe(true);
-    });
-
-    it('should define MCPTool with serverName', () => {
-      const tool: MCPTool = {
-        name: 'test-tool',
-        description: 'A test tool',
-        inputSchema: { type: 'object', properties: {} },
-        serverName: 'test-server',
-      };
-
-      expect(tool.name).toBe('test-tool');
-      expect(tool.serverName).toBe('test-server');
     });
 
     it('should define AgentToolConfig', () => {

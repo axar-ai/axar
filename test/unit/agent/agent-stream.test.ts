@@ -1,6 +1,6 @@
 import { Agent, model, output, systemPrompt, tool } from '../../../src/agent';
 import { z } from 'zod';
-import { CoreTool, ToolExecutionOptions } from 'ai';
+import { Tool, ToolCallOptions } from 'ai';
 
 jest.mock('ai', () => {
   const streamText = jest.fn();

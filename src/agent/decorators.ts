@@ -51,8 +51,9 @@ export function model(
  * @returns The created schema
  */
 function createSchema(type: InputOutputType, decoratorName: string): ZodSchema {
-  if (type instanceof ZodSchema) {
-    return type;
+  // Use duck-typing check instead of instanceof (works across Zod versions)
+  if (type && typeof type === 'object' && '_def' in type) {
+    return type as ZodSchema;
   }
 
   const primitiveSchemas = {
@@ -289,9 +290,10 @@ export function tool(
     let schema: ZodSchema<any>;
 
     if (schemaOrClass) {
-      if (schemaOrClass instanceof z.ZodSchema) {
+      // Use duck-typing check instead of instanceof (works across Zod versions)
+      if (schemaOrClass && typeof schemaOrClass === 'object' && '_def' in schemaOrClass) {
         // Explicit Zod schema provided
-        schema = schemaOrClass;
+        schema = schemaOrClass as ZodSchema<any>;
       } else if (hasSchemaDef(schemaOrClass)) {
         schema = getSchemaDef(schemaOrClass);
       } else {
@@ -373,7 +375,7 @@ export function tool(
     // Wrap the original method to validate input
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: any[]) {
-      if (args[0]) {
+      if (args.length > 0) {
         schema.parse(args[0]); // This will throw if validation fails
       }
       return originalMethod.apply(this, args);
@@ -452,6 +454,17 @@ export function agentTool(
   return function <T extends Function>(target: T): T {
     const existing: AgentToolConfig[] =
       Reflect.getMetadata(META_KEYS.AGENT_TOOLS, target) || [];
+
+    // Check for duplicate tool names
+    const toolName = name || agentClass.name;
+    const isDuplicate = existing.some(
+      (t) => (t.name || t.agentClass.name) === toolName,
+    );
+    if (isDuplicate) {
+      throw new Error(
+        `Duplicate agent tool name: "${toolName}". Each @agentTool must have a unique name.`,
+      );
+    }
 
     existing.push({ agentClass, description, name });
 

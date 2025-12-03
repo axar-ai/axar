@@ -2,9 +2,9 @@ import { z, ZodSchema } from 'zod';
 import {
   generateText,
   CoreMessage,
-  CoreTool,
+  Tool,
   Output,
-  LanguageModelV1,
+  LanguageModel,
   StreamTextResult,
 } from 'ai';
 import { META_KEYS } from './meta-keys';
@@ -22,7 +22,6 @@ import {
   MCPServerConfig,
   AgentToolConfig,
   MCPClientManager,
-  mcpToolsToCore,
   agentToolsToCore,
 } from '../mcp';
 
@@ -36,7 +35,6 @@ import {
 export abstract class Agent<TInput = any, TOutput = any> {
   private telemetry: Telemetry<Agent<TInput, TOutput>>;
   private mcpManager: MCPClientManager | null = null;
-  private mcpInitialized = false;
 
   constructor() {
     this.telemetry = new Telemetry(this);
@@ -50,11 +48,9 @@ export abstract class Agent<TInput = any, TOutput = any> {
    * @param defaultValue - The default value to return if metadata is not found
    * @returns The metadata value or default empty array
    */
-  private static getMetadata<T>(key: symbol, target: any, defaultValue?: T): T {
+  private static getMetadata<T>(key: symbol, target: any, defaultValue: T): T {
     const metadata = Reflect.getMetadata(key, target);
-    return metadata !== undefined
-      ? metadata
-      : (defaultValue ?? ([] as unknown as T));
+    return metadata !== undefined ? metadata : defaultValue;
   }
 
   /**
@@ -63,7 +59,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
    * @returns Promise resolving to the language model instance
    * @throws {Error} If model metadata is not found
    */
-  protected async getModel(): Promise<LanguageModelV1> {
+  protected async getModel(): Promise<LanguageModel> {
     const providerModelName = Agent.getMetadata<string>(
       META_KEYS.MODEL,
       this.constructor,
@@ -96,10 +92,11 @@ export abstract class Agent<TInput = any, TOutput = any> {
    *
    * @returns A record of tool names to their implementations
    */
-  protected getLocalTools(): Record<string, CoreTool> {
+  protected getLocalTools(): Record<string, Tool> {
     const tools = Agent.getMetadata<ToolMetadata[]>(
       META_KEYS.TOOLS,
       this.constructor,
+      [],
     );
 
     const toolsFormatted = Object.fromEntries(
@@ -107,13 +104,13 @@ export abstract class Agent<TInput = any, TOutput = any> {
         tool.name,
         {
           description: tool.description,
-          parameters: tool.parameters,
+          inputSchema: tool.parameters,
           execute: (...args: any[]) => (this as any)[tool.method](...args),
         },
       ]),
     );
 
-    return toolsFormatted as Record<string, CoreTool>;
+    return toolsFormatted as Record<string, Tool>;
   }
 
   /**
@@ -125,6 +122,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
     return Agent.getMetadata<MCPServerConfig[]>(
       META_KEYS.MCP_SERVERS,
       this.constructor,
+      [],
     );
   }
 
@@ -137,6 +135,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
     return Agent.getMetadata<AgentToolConfig[]>(
       META_KEYS.AGENT_TOOLS,
       this.constructor,
+      [],
     );
   }
 
@@ -145,8 +144,8 @@ export abstract class Agent<TInput = any, TOutput = any> {
    * Called automatically on first run/stream.
    */
   private async initializeMCP(): Promise<void> {
-    if (this.mcpInitialized) {
-      return;
+    if (this.mcpManager) {
+      return; // Already initialized
     }
 
     const mcpConfigs = this.getMCPServerConfigs();
@@ -156,12 +155,13 @@ export abstract class Agent<TInput = any, TOutput = any> {
       );
       this.mcpManager = new MCPClientManager();
       await this.mcpManager.connect(mcpConfigs);
+
+      // Get tool count asynchronously (AI SDK's MCP client requires async tool discovery)
+      const tools = await this.mcpManager.getAllTools();
       logger.info(
-        `Connected to ${this.mcpManager.clientCount} MCP servers, discovered ${this.mcpManager.getAllTools().length} tools`,
+        `Connected to ${this.mcpManager.clientCount} MCP servers, discovered ${Object.keys(tools).length} tools`,
       );
     }
-
-    this.mcpInitialized = true;
   }
 
   /**
@@ -170,32 +170,44 @@ export abstract class Agent<TInput = any, TOutput = any> {
    *
    * @returns A record of all tool names to their implementations
    */
-  protected async getAllTools(): Promise<Record<string, CoreTool>> {
+  protected async getAllTools(): Promise<Record<string, Tool>> {
     // Ensure MCP is initialized
     await this.initializeMCP();
 
     // Get local tools from @tool decorator
     const localTools = this.getLocalTools();
 
-    // Get MCP tools from connected servers
-    const mcpTools = this.mcpManager ? mcpToolsToCore(this.mcpManager) : {};
+    // Get MCP tools from connected servers (now async via AI SDK)
+    const mcpTools = this.mcpManager
+      ? await this.mcpManager.getAllTools()
+      : {};
 
     // Get agent tools from @agentTool decorator
     const agentToolConfigs = this.getAgentToolConfigs();
     const agentTools = agentToolsToCore(agentToolConfigs);
 
-    // Merge all tools (local takes precedence over MCP, MCP over agent)
-    return { ...agentTools, ...mcpTools, ...localTools };
-  }
+    // Merge all tools with collision detection (local > MCP > agent precedence)
+    const allTools: Record<string, Tool> = { ...agentTools };
 
-  /**
-   * @deprecated Use getAllTools() instead. This method is kept for backwards compatibility.
-   * Gets the tools configured for this agent through the @tool decorator.
-   *
-   * @returns A record of tool names to their implementations
-   */
-  protected getTools(): Record<string, CoreTool> {
-    return this.getLocalTools();
+    for (const [name, tool] of Object.entries(mcpTools)) {
+      if (allTools[name]) {
+        logger.warn(
+          `Tool name collision: "${name}" - MCP tool overwriting agent tool`,
+        );
+      }
+      allTools[name] = tool;
+    }
+
+    for (const [name, tool] of Object.entries(localTools)) {
+      if (allTools[name]) {
+        logger.warn(
+          `Tool name collision: "${name}" - local tool overwriting`,
+        );
+      }
+      allTools[name] = tool;
+    }
+
+    return allTools;
   }
 
   /**
@@ -218,7 +230,6 @@ export abstract class Agent<TInput = any, TOutput = any> {
       await this.mcpManager.disconnectAll();
       this.mcpManager = null;
     }
-    this.mcpInitialized = false;
   }
 
   /**
@@ -230,6 +241,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
     return Agent.getMetadata<Array<() => Promise<string>>>(
       META_KEYS.SYSTEM_PROMPTS,
       this.constructor,
+      [],
     );
   }
 
@@ -387,15 +399,17 @@ export abstract class Agent<TInput = any, TOutput = any> {
    * @param inputSchema - The schema for validating inputs, if any
    */
   private addTelemetry(
-    model: LanguageModelV1,
-    tools: Record<string, CoreTool>,
+    model: LanguageModel,
+    tools: Record<string, Tool>,
     outputSchema: z.ZodType<any, z.ZodTypeDef, any>,
     inputSchema: z.ZodType<any, z.ZodTypeDef, any> | undefined,
   ): void {
-    this.telemetry.addAttribute(
-      'agent.model',
-      `${model.modelId}:${model.provider}`,
-    );
+    // LanguageModel can be a string ID or a model object (LanguageModelV2)
+    const modelInfo =
+      typeof model === 'string'
+        ? model
+        : `${model.modelId}:${model.provider}`;
+    this.telemetry.addAttribute('agent.model', modelInfo);
     this.telemetry.addAttribute('agent.tools', Object.keys(tools));
     this.telemetry.addAttribute('agent.output_schema', outputSchema);
     this.telemetry.addAttribute('agent.input_schema', inputSchema);
@@ -411,7 +425,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
    * @returns An async iterable of processed chunks matching the output type
    */
   private processStream(
-    stream: StreamTextResult<Record<string, CoreTool>, TOutput>,
+    stream: StreamTextResult<Record<string, Tool>, TOutput>,
     schema: ZodSchema,
   ): AsyncIterable<StreamOutput<TOutput>> {
     if (schema instanceof z.ZodString) {
@@ -515,7 +529,7 @@ export abstract class Agent<TInput = any, TOutput = any> {
       return this.withErrorHandling(async () => {
         const config = await this.createConfig(input);
         const rawStream = streamText(config) as StreamTextResult<
-          Record<string, CoreTool>,
+          Record<string, Tool>,
           TOutput
         >;
         return {

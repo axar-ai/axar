@@ -1,6 +1,6 @@
 import { getModel } from '../../../src/llm/model-factory';
 import { coreProviders, loadDynamicProvider } from '../../../src/llm/providers';
-import { LanguageModelV1 } from '@ai-sdk/provider';
+import { LanguageModelV2 } from '@ai-sdk/provider';
 
 // Mock the coreProviders and dynamic provider loader
 jest.mock('../../../src/llm/providers', () => ({
@@ -13,13 +13,13 @@ jest.mock('../../../src/llm/providers', () => ({
 }));
 
 describe('getModel', () => {
-  const mockLanguageModel: LanguageModelV1 = {
-    specificationVersion: 'v1',
+  const mockLanguageModel: LanguageModelV2 = {
+    specificationVersion: 'v2',
     provider: 'test-provider',
     modelId: 'test-model',
-    defaultObjectGenerationMode: 'json',
     doGenerate: jest.fn(),
     doStream: jest.fn(),
+    supportedUrls: {},
   };
 
   beforeEach(() => {

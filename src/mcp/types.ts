@@ -1,5 +1,3 @@
-import { Tool as MCPToolDef } from '@modelcontextprotocol/sdk/types.js';
-
 /**
  * Configuration for connecting to an MCP server via stdio transport.
  * Used when the MCP server is a subprocess that communicates via stdin/stdout.
@@ -47,15 +45,6 @@ export function isHttpConfig(config: MCPServerConfig): config is MCPHttpConfig {
 }
 
 /**
- * Represents a tool discovered from an MCP server.
- * Extends the MCP SDK's tool definition with source tracking.
- */
-export interface MCPTool extends MCPToolDef {
-  /** The server this tool came from */
-  serverName: string;
-}
-
-/**
  * Configuration for an agent used as a tool via @agentTool decorator.
  */
 export interface AgentToolConfig {
@@ -65,18 +54,4 @@ export interface AgentToolConfig {
   description: string;
   /** Optional name override (defaults to class name) */
   name?: string;
-}
-
-/**
- * State of an MCP client connection.
- */
-export type MCPClientState = 'disconnected' | 'connecting' | 'connected' | 'error';
-
-/**
- * Events emitted by MCP client.
- */
-export interface MCPClientEvents {
-  stateChange: (state: MCPClientState) => void;
-  error: (error: Error) => void;
-  toolsUpdated: (tools: MCPTool[]) => void;
 }

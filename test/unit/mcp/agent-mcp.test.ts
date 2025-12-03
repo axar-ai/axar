@@ -5,32 +5,20 @@ import { MCPClientManager } from '../../../src/mcp';
 
 // Mock the MCP module
 jest.mock('../../../src/mcp/client', () => {
-  const mockTools = [
-    {
-      name: 'mcp_tool_1',
+  const { z } = require('zod');
+  const mockTools = {
+    mcp_test_server_mcp_tool_1: {
       description: 'MCP Tool 1',
-      inputSchema: {
-        type: 'object',
-        properties: { query: { type: 'string' } },
-      },
-      serverName: 'test-server',
+      inputSchema: z.object({ query: z.string() }),
+      execute: jest.fn().mockResolvedValue('mcp result'),
     },
-  ];
+  };
 
   return {
-    MCPClient: jest.fn().mockImplementation(() => ({
-      connect: jest.fn().mockResolvedValue(undefined),
-      disconnect: jest.fn().mockResolvedValue(undefined),
-      listTools: jest.fn().mockReturnValue(mockTools),
-      callTool: jest.fn().mockResolvedValue('mcp result'),
-      state: 'connected',
-      name: 'test-server',
-    })),
     MCPClientManager: jest.fn().mockImplementation(() => ({
       connect: jest.fn().mockResolvedValue(undefined),
       disconnectAll: jest.fn().mockResolvedValue(undefined),
-      getAllTools: jest.fn().mockReturnValue(mockTools),
-      callTool: jest.fn().mockResolvedValue('mcp result'),
+      getAllTools: jest.fn().mockResolvedValue(mockTools),
       clientCount: 1,
     })),
   };
@@ -173,7 +161,6 @@ describe('Agent with MCP', () => {
 
       expect(manager.disconnectAll).toHaveBeenCalled();
       expect((agent as any).mcpManager).toBeNull();
-      expect((agent as any).mcpInitialized).toBe(false);
     });
 
     it('should handle cleanup when not initialized', async () => {

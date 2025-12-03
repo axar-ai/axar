@@ -5,6 +5,31 @@ import {
   Deps,
 } from './../../../examples/weather-agent';
 
+// Mock the AI SDK - the actual dependency
+jest.mock('ai', () => ({
+  generateText: jest.fn().mockResolvedValue({
+    text: '',
+    experimental_output: {
+      summary: 'The weather in London is -3°C with heavy snow.',
+    },
+  }),
+  Output: {
+    object: jest.fn((config) => config),
+  },
+}));
+
+// Mock the model factory
+jest.mock('../../../src/llm/model-factory', () => ({
+  getModel: jest.fn().mockResolvedValue({
+    specificationVersion: 'v2',
+    provider: 'openai',
+    modelId: 'gpt-4-mini',
+    doGenerate: jest.fn(),
+    doStream: jest.fn(),
+    supportedUrls: {},
+  }),
+}));
+
 describe('WeatherAgent', () => {
   // Mock HTTP client
   const mockHttpClient = {
@@ -21,12 +46,8 @@ describe('WeatherAgent', () => {
   let agent: WeatherAgent;
 
   beforeEach(() => {
-    agent = new WeatherAgent(deps);
-  });
-
-  // Cleanup after each test
-  afterEach(() => {
     jest.clearAllMocks();
+    agent = new WeatherAgent(deps);
   });
 
   describe('getLatLng', () => {
@@ -91,23 +112,63 @@ describe('WeatherAgent', () => {
   });
 
   describe('run', () => {
-    it('should return a WeatherResponse for a valid location', async () => {
-      // Mock `getLatLng` and `getWeather` responses
-      mockHttpClient.get
-        .mockResolvedValueOnce([{ lat: 51.5074, lon: -0.1278 }]) // geocode.maps.co
-        .mockResolvedValueOnce({
-          values: { temperatureApparent: -2.5, weatherCode: 5101 },
-        }); // api.tomorrow.io
-
-      // Mock run method
-      jest.spyOn(agent, 'run').mockResolvedValueOnce({
-        summary: 'The weather in London is -2.5°C with snow.',
-      } as WeatherResponse);
-
+    it('should call generateText with correct configuration', async () => {
+      // Call the real run method
       const result = await agent.run('What is the weather like in London?');
-      expect(result).toHaveProperty(
-        'summary',
-        'The weather in London is -2.5°C with snow.',
+
+      // Verify result comes from mocked generateText
+      expect(result).toEqual({
+        summary: 'The weather in London is -3°C with heavy snow.',
+      });
+
+      // Verify generateText was called with proper configuration
+      const { generateText } = require('ai');
+      expect(generateText).toHaveBeenCalledTimes(1);
+      expect(generateText).toHaveBeenCalledWith(
+        expect.objectContaining({
+          messages: expect.arrayContaining([
+            expect.objectContaining({
+              role: 'user',
+              content: 'What is the weather like in London?',
+            }),
+          ]),
+          // Verify tools are passed
+          tools: expect.objectContaining({
+            getLatLng: expect.any(Object),
+            getWeather: expect.any(Object),
+          }),
+        }),
+      );
+    });
+
+    it('should include system prompt in the request', async () => {
+      await agent.run('What is the weather?');
+
+      const { generateText } = require('ai');
+      expect(generateText).toHaveBeenCalledWith(
+        expect.objectContaining({
+          messages: expect.arrayContaining([
+            expect.objectContaining({
+              role: 'system',
+              content: 'Be concise, reply with one sentence.',
+            }),
+          ]),
+        }),
+      );
+    });
+
+    it('should pass model configuration options', async () => {
+      await agent.run('Weather check');
+
+      const { generateText } = require('ai');
+      expect(generateText).toHaveBeenCalledWith(
+        expect.objectContaining({
+          maxTokens: 100,
+          temperature: 0.5,
+          maxRetries: 3,
+          maxSteps: 3,
+          toolChoice: 'auto',
+        }),
       );
     });
   });

@@ -3,6 +3,9 @@ import {
   JokeAgent,
 } from './../../../examples/conversation-agent';
 
+// SKIPPED: These are E2E tests that make real LLM API calls.
+// Requires OPENAI_API_KEY environment variable to run.
+// To run: remove .skip and set OPENAI_API_KEY=your-key
 describe.skip('ConversationAgent', () => {
   let conversationAgent: ConversationAgent;
 
