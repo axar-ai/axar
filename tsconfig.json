@@ -2,11 +2,12 @@
   "compilerOptions": {
     "outDir": "dist",
     "strict": true,
-    "module": "CommonJS",
+    "module": "NodeNext",
     "target": "es2020",
     "declaration": true,
     "declarationDir": "dist",
     "esModuleInterop": true,
+    "moduleResolution": "NodeNext",
     "baseUrl": "./src",
     "paths": {
       "@axarai/axar": ["./"]

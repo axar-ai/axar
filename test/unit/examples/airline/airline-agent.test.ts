@@ -9,6 +9,9 @@ import { LostBaggageAgent } from '../../../../examples/airline/config/lost-bagga
 jest.mock('../../../../examples/airline/config/flight-modification-agent');
 jest.mock('../../../../examples/airline/config/lost-baggage-agent');
 
+// SKIPPED: This is an E2E test that makes real LLM API calls.
+// Requires OPENAI_API_KEY environment variable to run.
+// To run: remove .skip and set OPENAI_API_KEY=your-key
 describe.skip('TriggerAgent', () => {
   let cancelAgent: jest.Mocked<FlightCancelAgent>;
   let changeAgent: jest.Mocked<FlightChangeAgent>;

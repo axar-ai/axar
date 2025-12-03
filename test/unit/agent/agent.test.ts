@@ -1,7 +1,8 @@
 import { Agent, model, output, systemPrompt, tool } from '../../../src/agent';
 import { z } from 'zod';
 import { logger } from '../../../src/common';
-import { CoreTool, ToolExecutionOptions, LanguageModelV1 } from 'ai';
+import { Tool, ToolCallOptions, LanguageModel } from 'ai';
+import { LanguageModelV2 } from '@ai-sdk/provider';
 
 jest.mock('ai', () => {
   const generateText = jest.fn();
@@ -120,14 +121,14 @@ describe('Agent', () => {
     });
   });
 
-  describe('getTools', () => {
+  describe('getLocalTools', () => {
     it('should format tool metadata with description and parameters', () => {
-      const tools = agent['getTools']();
+      const tools = agent['getLocalTools']();
       expect(tools).toHaveProperty('customerBalance');
 
       const customerBalanceTool = tools['customerBalance'] as {
         description: string;
-        parameters: unknown;
+        inputSchema: unknown;
         execute: (...args: any[]) => Promise<number>;
       };
 
@@ -137,13 +138,13 @@ describe('Agent', () => {
     });
 
     it('should execute tool method correctly', async () => {
-      const tools = agent['getTools']();
+      const tools = agent['getLocalTools']();
       expect(tools).toHaveProperty('customerBalance');
 
-      const customerBalanceTool = tools['customerBalance'] as CoreTool;
+      const customerBalanceTool = tools['customerBalance'] as Tool;
       expect(customerBalanceTool.execute).toBeDefined();
 
-      const options: ToolExecutionOptions = {
+      const options: ToolCallOptions = {
         toolCallId: 'test-call',
         messages: [],
       };
@@ -162,7 +163,7 @@ describe('Agent', () => {
     it('should return empty object when no tools are configured', () => {
       class NoToolsAgent extends Agent<any, any> {}
       const noToolsAgent = new NoToolsAgent();
-      const tools = noToolsAgent['getTools']();
+      const tools = noToolsAgent['getLocalTools']();
       expect(tools).toEqual({});
     });
   });
@@ -378,7 +379,7 @@ describe('Agent', () => {
           execute: jest.fn(),
         },
       };
-      jest.spyOn(agent as any, 'getTools').mockReturnValue(mockTools);
+      jest.spyOn(agent as any, 'getAllTools').mockResolvedValue(mockTools);
 
       await agent.run('input');
 
@@ -482,7 +483,7 @@ describe('Agent', () => {
       const model = {
         modelId: 'test-model',
         provider: 'test-provider',
-      } as LanguageModelV1;
+      } as LanguageModelV2;
       const tools = {};
       const outputSchema = z.string();
 

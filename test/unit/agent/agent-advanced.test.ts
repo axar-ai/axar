@@ -14,6 +14,7 @@ import {
   zodify,
   arrayItems,
   optional,
+  property,
 } from '../../../src/schema';
 import { toZodSchema } from '../../../src/schema/generator';
 
@@ -46,39 +47,54 @@ describe('toZodSchema - Advanced Scenarios', () => {
   //     });
   //   });
   //Deep Nested Structures
-  describe.skip('deeply nested structures', () => {
+  describe('deeply nested structures', () => {
     @zodify()
     class GeoLocation {
+      @property('Latitude')
       @minimum(-90)
       @maximum(90)
       latitude!: number;
+
+      @property('Longitude')
       @minimum(-180)
       @maximum(180)
       longitude!: number;
     }
     @zodify()
     class Address {
+      @property('Zip code')
       @pattern(/^[0-9]{5}$/)
       zipCode!: string;
+
+      @property('Street lines')
       @minItems(1)
       @arrayItems(() => String)
       streetLines!: string[];
+
+      @property('Location')
       location!: GeoLocation;
     }
     @zodify()
     class Company {
+      @property('Registration number')
       @pattern(/^[A-Z0-9]{10}$/)
       registrationNumber!: string;
+
+      @property('Addresses')
       @minItems(1)
       @arrayItems(() => Address)
       addresses!: Address[];
     }
     @zodify()
     class DeepNestedUser {
+      @property('Email')
       @email()
       email!: string;
+
+      @property('Company')
       company!: Company;
 
+      @property('Previous companies')
       @optional()
       @minItems(1)
       @arrayItems(() => Company)

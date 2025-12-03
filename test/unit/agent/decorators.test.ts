@@ -1,7 +1,16 @@
 import { z } from 'zod';
-import { model, input, output, systemPrompt, tool } from '../../../src/agent';
+import {
+  model,
+  input,
+  output,
+  systemPrompt,
+  tool,
+  mcpServers,
+  agentTool,
+} from '../../../src/agent';
 import { META_KEYS } from '../../../src/agent/meta-keys';
 import { schema } from '../../../src/schema';
+import { Agent } from '../../../src/agent/agent';
 
 describe('Decorators', () => {
   describe('@model', () => {
@@ -391,6 +400,153 @@ describe('Decorators', () => {
       }).toThrow(
         '@tool decorator on myCustomTool requires an explicit Zod schema or a parameter class decorated with @schema',
       );
+    });
+  });
+
+  describe('@mcpServers', () => {
+    it('should store MCP server configs in metadata', () => {
+      const servers = [
+        { command: 'npx', args: ['-y', '@anthropic/mcp-server-filesystem'] },
+        { url: 'http://localhost:3000/mcp' },
+      ];
+
+      @mcpServers(servers)
+      class TestClass {}
+
+      const metadata = Reflect.getMetadata(META_KEYS.MCP_SERVERS, TestClass);
+      expect(metadata).toEqual(servers);
+    });
+
+    it('should store empty array when no servers provided', () => {
+      @mcpServers([])
+      class TestClass {}
+
+      const metadata = Reflect.getMetadata(META_KEYS.MCP_SERVERS, TestClass);
+      expect(metadata).toEqual([]);
+    });
+
+    it('should store stdio config with all options', () => {
+      const servers = [
+        {
+          command: 'python',
+          args: ['server.py'],
+          env: { API_KEY: 'secret' },
+          cwd: '/tmp',
+        },
+      ];
+
+      @mcpServers(servers)
+      class TestClass {}
+
+      const metadata = Reflect.getMetadata(META_KEYS.MCP_SERVERS, TestClass);
+      expect(metadata[0]).toEqual({
+        command: 'python',
+        args: ['server.py'],
+        env: { API_KEY: 'secret' },
+        cwd: '/tmp',
+      });
+    });
+
+    it('should store http config with headers', () => {
+      const servers = [
+        {
+          url: 'https://api.example.com/mcp',
+          headers: { Authorization: 'Bearer token' },
+        },
+      ];
+
+      @mcpServers(servers)
+      class TestClass {}
+
+      const metadata = Reflect.getMetadata(META_KEYS.MCP_SERVERS, TestClass);
+      expect(metadata[0]).toEqual({
+        url: 'https://api.example.com/mcp',
+        headers: { Authorization: 'Bearer token' },
+      });
+    });
+
+    it('should work with @model decorator', () => {
+      @model('openai:gpt-4')
+      @mcpServers([{ command: 'node', args: ['server.js'] }])
+      class TestClass {}
+
+      const modelMetadata = Reflect.getMetadata(META_KEYS.MODEL, TestClass);
+      const mcpMetadata = Reflect.getMetadata(META_KEYS.MCP_SERVERS, TestClass);
+
+      expect(modelMetadata).toBe('openai:gpt-4');
+      expect(mcpMetadata).toHaveLength(1);
+    });
+  });
+
+  describe('@agentTool', () => {
+    it('should store agent tool config in metadata', () => {
+      @model('openai:gpt-4')
+      class HelperAgent extends Agent<string, string> {}
+
+      @agentTool(HelperAgent, 'A helper agent')
+      class TestClass {}
+
+      const metadata = Reflect.getMetadata(META_KEYS.AGENT_TOOLS, TestClass);
+      expect(metadata).toHaveLength(1);
+      expect(metadata[0].agentClass).toBe(HelperAgent);
+      expect(metadata[0].description).toBe('A helper agent');
+    });
+
+    it('should store custom name when provided', () => {
+      @model('openai:gpt-4')
+      class HelperAgent extends Agent<string, string> {}
+
+      @agentTool(HelperAgent, 'A helper agent', 'custom_tool_name')
+      class TestClass {}
+
+      const metadata = Reflect.getMetadata(META_KEYS.AGENT_TOOLS, TestClass);
+      expect(metadata[0].name).toBe('custom_tool_name');
+    });
+
+    it('should allow multiple @agentTool decorators', () => {
+      @model('openai:gpt-4')
+      class Agent1 extends Agent<string, string> {}
+
+      @model('openai:gpt-4')
+      class Agent2 extends Agent<string, string> {}
+
+      @agentTool(Agent1, 'First agent')
+      @agentTool(Agent2, 'Second agent')
+      class TestClass {}
+
+      const metadata = Reflect.getMetadata(META_KEYS.AGENT_TOOLS, TestClass);
+      expect(metadata).toHaveLength(2);
+      expect(metadata[0].agentClass).toBe(Agent2); // Note: decorators apply bottom-up
+      expect(metadata[1].agentClass).toBe(Agent1);
+    });
+
+    it('should work alongside @mcpServers', () => {
+      @model('openai:gpt-4')
+      class HelperAgent extends Agent<string, string> {}
+
+      @mcpServers([{ command: 'node' }])
+      @agentTool(HelperAgent, 'Helper')
+      class TestClass {}
+
+      const mcpMetadata = Reflect.getMetadata(META_KEYS.MCP_SERVERS, TestClass);
+      const agentMetadata = Reflect.getMetadata(
+        META_KEYS.AGENT_TOOLS,
+        TestClass,
+      );
+
+      expect(mcpMetadata).toHaveLength(1);
+      expect(agentMetadata).toHaveLength(1);
+    });
+
+    it('should not have name when not provided', () => {
+      @model('openai:gpt-4')
+      class HelperAgent extends Agent<string, string> {}
+
+      @agentTool(HelperAgent, 'A helper')
+      class TestClass {}
+
+      const metadata = Reflect.getMetadata(META_KEYS.AGENT_TOOLS, TestClass);
+      expect(metadata[0].name).toBeUndefined();
     });
   });
 });

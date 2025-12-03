@@ -1,5 +1,8 @@
 import { RouletteAgent } from './../../../examples/roulette-agent'; // Adjust the import path as needed
 
+// SKIPPED: This is an E2E test that makes real LLM API calls.
+// Requires OPENAI_API_KEY environment variable to run.
+// To run: remove .skip and set OPENAI_API_KEY=your-key
 describe.skip('RouletteAgent', () => {
   let rouletteAgent: RouletteAgent;
 

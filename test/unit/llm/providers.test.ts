@@ -4,7 +4,7 @@ import {
   loadDynamicProvider,
   isValidProvider,
 } from '../../../src/llm/providers';
-import { ProviderV1 } from '@ai-sdk/provider';
+import { ProviderV2 } from '@ai-sdk/provider';
 
 // Mock dynamic imports
 jest.mock(
@@ -49,9 +49,10 @@ describe('providers.ts', () => {
 
   describe('loadDynamicProvider', () => {
     it('should return a provider from the cache if it exists', async () => {
-      const mockProvider: ProviderV1 = {
+      const mockProvider: ProviderV2 = {
         languageModel: jest.fn(),
         textEmbeddingModel: jest.fn(),
+        imageModel: jest.fn(),
       };
       dynamicProviderCache['cohere'] = mockProvider;
 
@@ -88,7 +89,7 @@ describe('providers.ts', () => {
         openai: {},
       }));
       await expect(loadDynamicProvider('openai')).rejects.toThrow(
-        /does not implement the ProviderV1 interface in the module/,
+        /does not implement the ProviderV2 interface in the module/,
       );
     });
 

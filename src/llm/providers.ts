@@ -1,4 +1,4 @@
-import { ProviderV1 } from '@ai-sdk/provider';
+import { ProviderV2 } from '@ai-sdk/provider';
 import * as OpenAI from '@ai-sdk/openai';
 import * as Anthropic from '@ai-sdk/anthropic';
 
@@ -6,7 +6,7 @@ import * as Anthropic from '@ai-sdk/anthropic';
  * Map of core provider implementations that are available by default.
  * Includes built-in providers like OpenAI and Anthropic.
  */
-export const coreProviders: Record<string, ProviderV1> = {
+export const coreProviders: Record<string, ProviderV2> = {
   openai: OpenAI.openai,
   anthropic: Anthropic.anthropic,
 };
@@ -99,14 +99,14 @@ export const supportedProviders: { name: string, packagePath: string; exportName
 /**
  * Cache for dynamically loaded providers to avoid repeated imports.
  */
-export const dynamicProviderCache: Record<string, ProviderV1> = {};
+export const dynamicProviderCache: Record<string, ProviderV2> = {};
 
 /**
  * Dynamically loads a provider implementation by name.
  *
  * @param providerName - The name of the provider to load (e.g., "cohere", "azure")
  * @returns Promise resolving to the provider implementation
- * @throws {Error} If the provider module is not found or doesn't implement ProviderV1
+ * @throws {Error} If the provider module is not found or doesn't implement ProviderV2
  *
  * @example
  * ```typescript
@@ -115,7 +115,7 @@ export const dynamicProviderCache: Record<string, ProviderV1> = {};
  */
 export async function loadDynamicProvider(
   providerName: string,
-): Promise<ProviderV1> {
+): Promise<ProviderV2> {
   if (!providerName) {
     throw new Error('Provider name is required to load a provider.');
   }
@@ -138,7 +138,7 @@ export async function loadDynamicProvider(
 
     if (!isValidProvider(provider)) {
       throw new Error(
-        `The export "${exportName}" does not implement the ProviderV1 interface in the module "${selectedProvider.packagePath}".`,
+        `The export "${exportName}" does not implement the ProviderV2 interface in the module "${selectedProvider.packagePath}".`,
       );
     }
 
@@ -158,17 +158,17 @@ export async function loadDynamicProvider(
 }
 
 /**
- * Type guard to validate that an object implements the ProviderV1 interface.
+ * Type guard to validate that an object implements the ProviderV2 interface.
  * The provider must expose a `languageModel` method for creating models.
  * @param provider The object to validate.
- * @returns True if the object implements ProviderV1.
+ * @returns True if the object implements ProviderV2.
  */
-export function isValidProvider(provider: unknown): provider is ProviderV1 {
+export function isValidProvider(provider: unknown): provider is ProviderV2 {
   return (
     (typeof provider === 'object' || typeof provider === 'function') &&
     provider !== null &&
     'languageModel' in provider &&
-    typeof (provider as ProviderV1).languageModel === 'function'
+    typeof (provider as ProviderV2).languageModel === 'function'
   );
 }
 
