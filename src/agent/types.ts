@@ -29,6 +29,8 @@ export type ToolMetadata = Readonly<{
   description: string;
   method: string;
   parameters: z.ZodObject<any>;
+  /** Whether the parameter is a primitive type wrapped in { value: T } */
+  isPrimitiveParam?: boolean;
 }>;
 
 /**
