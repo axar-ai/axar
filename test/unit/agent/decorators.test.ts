@@ -306,15 +306,19 @@ describe('Decorators', () => {
       }
     });
 
-    it('should throw for invalid parameter types', () => {
-      expect(() => {
-        class TestClass {
-          @tool('Test tool')
-          async testTool(param: string) {
-            return param;
-          }
+    it('should support primitive string parameters', async () => {
+      class TestClass {
+        @tool('Test tool')
+        async testTool(param: string) {
+          return param.toUpperCase();
         }
-      }).toThrow();
+      }
+
+      const instance = new TestClass();
+      // Primitive params are wrapped in { input: value }
+      await expect(instance.testTool({ input: 'test' } as any)).resolves.toBe(
+        'TEST',
+      );
     });
 
     it('should validate inputs at runtime', async () => {
@@ -365,15 +369,28 @@ describe('Decorators', () => {
       }).toThrow('Expected a single parameter');
     });
 
-    it('should throw when parameter type is primitive', () => {
+    it('should support primitive number parameters', async () => {
+      class TestClass {
+        @tool('Test tool')
+        async testTool(param: number) {
+          return param * 2;
+        }
+      }
+
+      const instance = new TestClass();
+      // Primitive params are wrapped in { input: value }
+      await expect(instance.testTool({ input: 5 } as any)).resolves.toBe(10);
+    });
+
+    it('should throw when parameter type is unsupported (Symbol)', () => {
       expect(() => {
         class TestClass {
           @tool('Test tool')
-          async testTool(param: string) {
+          async testTool(param: symbol) {
             return param;
           }
         }
-      }).toThrow('The parameter type (String) is a primitive');
+      }).toThrow('is not supported');
     });
 
     it('should throw with properly formatted error for undecorated parameter class', () => {
