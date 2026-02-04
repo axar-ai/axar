@@ -10,6 +10,15 @@ import { SchemaConstructor } from '../schema';
  *
  * @param modelIdentifier - The model identifier string. List of model identifiers available at https://axar-ai.gitbook.io/axar/basics/model
  * @param config - Optional configuration for the model
+ * @param config.maxTokens - Maximum number of tokens to generate
+ * @param config.temperature - Sampling temperature between 0 and 1. Use either temperature or topP, not both.
+ * @param config.topP - Nucleus sampling threshold. Sample from tokens whose cumulative probability exceeds topP. Use either temperature or topP, not both.
+ * @param config.topK - Only sample from the top K options for each subsequent token. Recommended for advanced use cases only.
+ * @param config.presencePenalty - Penalize tokens based on their presence in the prompt and generated text. Value between -2.0 and 2.0.
+ * @param config.frequencyPenalty - Penalize tokens based on their frequency in the generated text. Value between -2.0 and 2.0.
+ * @param config.maxRetries - Maximum number of retries for failed requests (defaults to 2 in SDK)
+ * @param config.maxSteps - Maximum number of steps for tool calling (defaults to 3)
+ * @param config.toolChoice - Tool choice mode - 'auto' or 'none'
  * @returns A class decorator function.
  *
  * @example
@@ -21,12 +30,21 @@ import { SchemaConstructor } from '../schema';
  * // With configuration
  * @model('openai:gpt-4-mini', {
  *   maxTokens: 100,
- *   temperature: 0.5,
+ *   temperature: 0.7,
  *   maxRetries: 3,
- *   maxSteps: 3,
+ *   maxSteps: 5,
  *   toolChoice: 'auto'
  * })
  * class MyConfiguredAgent extends Agent<string, string> {}
+ *
+ * // With advanced sampling parameters
+ * @model('openai:gpt-4-mini', {
+ *   topP: 0.9,              // nucleus sampling
+ *   topK: 50,               // top-k sampling
+ *   presencePenalty: 0.6,   // reduce repetition
+ *   frequencyPenalty: 0.5   // reduce common tokens
+ * })
+ * class CreativeAgent extends Agent<string, string> {}
  * ```
  */
 export function model(
