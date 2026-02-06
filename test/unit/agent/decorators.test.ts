@@ -58,6 +58,51 @@ describe('Decorators', () => {
       expect(configMetadata.maxSteps).toBeUndefined();
     });
 
+    it('should store advanced sampling parameters in configuration', () => {
+      const advancedConfig = {
+        topP: 0.9,
+        topK: 50,
+        presencePenalty: 0.6,
+        frequencyPenalty: 0.5,
+      };
+
+      @model('openai:gpt-4', advancedConfig)
+      class TestClass {}
+
+      const configMetadata = Reflect.getMetadata(
+        META_KEYS.MODEL_CONFIG,
+        TestClass,
+      );
+      expect(configMetadata).toEqual(advancedConfig);
+      expect(configMetadata.topP).toBe(0.9);
+      expect(configMetadata.topK).toBe(50);
+      expect(configMetadata.presencePenalty).toBe(0.6);
+      expect(configMetadata.frequencyPenalty).toBe(0.5);
+    });
+
+    it('should store full model configuration with all parameters', () => {
+      const fullConfig = {
+        maxTokens: 200,
+        temperature: 0.7,
+        topP: 0.95,
+        topK: 40,
+        presencePenalty: 0.3,
+        frequencyPenalty: 0.4,
+        maxRetries: 2,
+        maxSteps: 5,
+        toolChoice: 'auto' as const,
+      };
+
+      @model('anthropic:claude-3', fullConfig)
+      class TestClass {}
+
+      const configMetadata = Reflect.getMetadata(
+        META_KEYS.MODEL_CONFIG,
+        TestClass,
+      );
+      expect(configMetadata).toEqual(fullConfig);
+    });
+
     it('should not store model configuration when not provided', () => {
       @model('openai:gpt-4')
       class TestClass {}

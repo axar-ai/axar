@@ -228,6 +228,10 @@ export abstract class Agent<TInput = any, TOutput = any> {
       maxSteps: modelConfig?.maxSteps ?? 3,
       maxTokens: modelConfig?.maxTokens,
       temperature: modelConfig?.temperature,
+      topP: modelConfig?.topP,
+      topK: modelConfig?.topK,
+      presencePenalty: modelConfig?.presencePenalty,
+      frequencyPenalty: modelConfig?.frequencyPenalty,
       maxRetries: modelConfig?.maxRetries,
       toolChoice: modelConfig?.toolChoice,
       experimental_telemetry: {
@@ -419,7 +423,11 @@ export abstract class Agent<TInput = any, TOutput = any> {
  * @param modelIdentifier - The model identifier string (e.g., 'openai:gpt-4-mini')
  * @param config - Optional configuration for the model
  * @param config.maxTokens - Maximum number of tokens to generate
- * @param config.temperature - Sampling temperature between 0 and 1 (use either temperature or topP, not both)
+ * @param config.temperature - Sampling temperature between 0 and 1. Use either temperature or topP, not both.
+ * @param config.topP - Nucleus sampling threshold. Sample from tokens whose cumulative probability exceeds topP. Use either temperature or topP, not both.
+ * @param config.topK - Only sample from the top K options for each subsequent token. Recommended for advanced use cases only.
+ * @param config.presencePenalty - Penalize tokens based on their presence in the prompt and generated text. Value between -2.0 and 2.0.
+ * @param config.frequencyPenalty - Penalize tokens based on their frequency in the generated text. Value between -2.0 and 2.0.
  * @param config.maxRetries - Maximum number of retries for failed requests (defaults to 2 in SDK)
  * @param config.maxSteps - Maximum number of steps for tool calling (defaults to 3)
  * @param config.toolChoice - Tool choice mode - 'auto' or 'none'
@@ -440,5 +448,14 @@ export abstract class Agent<TInput = any, TOutput = any> {
  *   toolChoice: 'auto' // enable automatic tool selection
  * })
  * class MyConfiguredAgent extends Agent<string, string> {}
+ *
+ * // With advanced sampling parameters
+ * @model('openai:gpt-4-mini', {
+ *   topP: 0.9,              // nucleus sampling
+ *   topK: 50,               // top-k sampling
+ *   presencePenalty: 0.6,   // reduce repetition
+ *   frequencyPenalty: 0.5   // reduce common tokens
+ * })
+ * class CreativeAgent extends Agent<string, string> {}
  * ```
  */

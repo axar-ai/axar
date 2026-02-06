@@ -450,6 +450,68 @@ describe('Agent', () => {
       );
     });
 
+    it('should use advanced sampling parameters when provided', async () => {
+      const advancedConfig = {
+        topP: 0.9,
+        topK: 50,
+        presencePenalty: 0.6,
+        frequencyPenalty: 0.5,
+      };
+
+      @model('openai:gpt-4o-mini', advancedConfig)
+      class AdvancedConfigAgent extends Agent<string, string> {}
+
+      const advancedConfigAgent = new AdvancedConfigAgent();
+      const generateTextSpy = jest.spyOn(require('ai'), 'generateText');
+
+      await advancedConfigAgent.run('test input');
+
+      expect(generateTextSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          topP: advancedConfig.topP,
+          topK: advancedConfig.topK,
+          presencePenalty: advancedConfig.presencePenalty,
+          frequencyPenalty: advancedConfig.frequencyPenalty,
+        }),
+      );
+    });
+
+    it('should use full model configuration with all parameters', async () => {
+      const fullConfig = {
+        maxTokens: 200,
+        temperature: 0.7,
+        topP: 0.95,
+        topK: 40,
+        presencePenalty: 0.3,
+        frequencyPenalty: 0.4,
+        maxRetries: 2,
+        maxSteps: 5,
+        toolChoice: 'auto' as const,
+      };
+
+      @model('openai:gpt-4o-mini', fullConfig)
+      class FullConfigAgent extends Agent<string, string> {}
+
+      const fullConfigAgent = new FullConfigAgent();
+      const generateTextSpy = jest.spyOn(require('ai'), 'generateText');
+
+      await fullConfigAgent.run('test input');
+
+      expect(generateTextSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          maxTokens: fullConfig.maxTokens,
+          temperature: fullConfig.temperature,
+          topP: fullConfig.topP,
+          topK: fullConfig.topK,
+          presencePenalty: fullConfig.presencePenalty,
+          frequencyPenalty: fullConfig.frequencyPenalty,
+          maxRetries: fullConfig.maxRetries,
+          maxSteps: fullConfig.maxSteps,
+          toolChoice: fullConfig.toolChoice,
+        }),
+      );
+    });
+
     it('should use default maxSteps when not provided in config', async () => {
       const generateTextSpy = jest.spyOn(require('ai'), 'generateText');
       await agent.run('test input');

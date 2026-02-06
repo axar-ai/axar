@@ -74,6 +74,14 @@ export interface OutputConfig {
   maxTokens?: number;
   /** Sampling temperature between 0 and 1 */
   temperature?: number;
+  /** Nucleus sampling - sample from the smallest set of tokens whose cumulative probability exceeds topP */
+  topP?: number;
+  /** Only sample from the top K options for each subsequent token */
+  topK?: number;
+  /** Penalize tokens based on their presence in the prompt and generated text so far */
+  presencePenalty?: number;
+  /** Penalize tokens based on their frequency in the generated text so far */
+  frequencyPenalty?: number;
   /** Maximum number of retries for failed requests */
   maxRetries?: number;
   /** Tool choice mode - 'auto' or 'none' */
@@ -91,8 +99,16 @@ export interface OutputConfig {
 export interface ModelConfig {
   /** Maximum number of tokens to generate */
   maxTokens?: number;
-  /** Sampling temperature between 0 and 1 */
+  /** Sampling temperature between 0 and 1. Use either temperature or topP, not both. */
   temperature?: number;
+  /** Nucleus sampling - sample from the smallest set of tokens whose cumulative probability exceeds topP. Use either temperature or topP, not both. */
+  topP?: number;
+  /** Only sample from the top K options for each subsequent token. Recommended for advanced use cases only. */
+  topK?: number;
+  /** Penalize tokens based on their presence in the prompt and generated text so far. Value between -2.0 and 2.0. */
+  presencePenalty?: number;
+  /** Penalize tokens based on their frequency in the generated text so far. Value between -2.0 and 2.0. */
+  frequencyPenalty?: number;
   /** Maximum number of retries for failed requests */
   maxRetries?: number;
   /** Maximum number of steps in a conversation */
