@@ -306,15 +306,85 @@ describe('Decorators', () => {
       }
     });
 
-    it('should throw for invalid parameter types', () => {
-      expect(() => {
-        class TestClass {
-          @tool('Test tool')
-          async testTool(param: string) {
-            return param;
-          }
+    it('should support primitive String parameter type', () => {
+      class TestClass {
+        @tool('Test tool')
+        async testTool(param: string) {
+          return param;
         }
-      }).toThrow();
+      }
+
+      const tools = Reflect.getMetadata(META_KEYS.TOOLS, TestClass);
+      expect(tools).toHaveLength(1);
+      expect(tools[0]).toMatchObject({
+        name: 'testTool',
+        description: 'Test tool',
+        method: 'testTool',
+        isPrimitiveParam: true,
+      });
+      // Should be wrapped in { value: string }
+      expect(tools[0].parameters).toBeInstanceOf(z.ZodObject);
+      expect(tools[0].parameters.shape.value).toBeInstanceOf(z.ZodString);
+    });
+
+    it('should support primitive Number parameter type', () => {
+      class TestClass {
+        @tool('Test tool')
+        async testTool(param: number) {
+          return param * 2;
+        }
+      }
+
+      const tools = Reflect.getMetadata(META_KEYS.TOOLS, TestClass);
+      expect(tools[0].isPrimitiveParam).toBe(true);
+      expect(tools[0].parameters.shape.value).toBeInstanceOf(z.ZodNumber);
+    });
+
+    it('should support primitive Boolean parameter type', () => {
+      class TestClass {
+        @tool('Test tool')
+        async testTool(param: boolean) {
+          return !param;
+        }
+      }
+
+      const tools = Reflect.getMetadata(META_KEYS.TOOLS, TestClass);
+      expect(tools[0].isPrimitiveParam).toBe(true);
+      expect(tools[0].parameters.shape.value).toBeInstanceOf(z.ZodBoolean);
+    });
+
+    it('should unwrap primitive parameter at runtime', async () => {
+      class TestClass {
+        @tool('Test tool')
+        async testTool(param: string) {
+          // param should be the unwrapped string, not { value: string }
+          return `Hello, ${param}!`;
+        }
+      }
+
+      const instance = new TestClass();
+      // The wrapped input { value: "World" } should be unwrapped to "World"
+      await expect(instance.testTool({ value: 'World' } as any)).resolves.toBe(
+        'Hello, World!',
+      );
+    });
+
+    it('should validate primitive parameter at runtime', async () => {
+      class TestClass {
+        @tool('Test tool')
+        async testTool(param: string) {
+          return param;
+        }
+      }
+
+      const instance = new TestClass();
+      // Invalid input - value should be string, not number
+      try {
+        await instance.testTool({ value: 123 } as any);
+        fail('Should have thrown a validation error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+      }
     });
 
     it('should validate inputs at runtime', async () => {
@@ -365,15 +435,32 @@ describe('Decorators', () => {
       }).toThrow('Expected a single parameter');
     });
 
-    it('should throw when parameter type is primitive', () => {
+    it('should throw when parameter type is unsupported primitive like Symbol', () => {
+      // Symbol, BigInt, and Function are not supported as tool parameters
+      // String, Number, and Boolean are supported
       expect(() => {
-        class TestClass {
-          @tool('Test tool')
-          async testTool(param: string) {
-            return param;
+        // We need to mock Reflect.getMetadata to return Symbol as the param type
+        const originalGetMetadata = Reflect.getMetadata;
+        Reflect.getMetadata = jest
+          .fn()
+          .mockImplementation((key, target, prop) => {
+            if (key === 'design:paramtypes') {
+              return [Symbol];
+            }
+            return originalGetMetadata(key, target, prop);
+          });
+
+        try {
+          class TestClass {
+            @tool('Test tool')
+            async testTool(param: any) {
+              return param;
+            }
           }
+        } finally {
+          Reflect.getMetadata = originalGetMetadata;
         }
-      }).toThrow('The parameter type (String) is a primitive');
+      }).toThrow('is not supported');
     });
 
     it('should throw with properly formatted error for undecorated parameter class', () => {

@@ -254,8 +254,17 @@ function systemPromptMethod(): MethodDecorator {
 }
 
 /**
+ * Maps primitive constructors to their corresponding Zod schemas.
+ */
+const primitiveToZodSchema: Record<string, ZodSchema> = {
+  [String.name]: z.string(),
+  [Number.name]: z.number(),
+  [Boolean.name]: z.boolean(),
+};
+
+/**
  * `@tool` decorator to mark a method as a tool with a description and schema.
- * Supports both explicit ZodSchema and class-based schema derivation.
+ * Supports explicit ZodSchema, class-based schema derivation, and primitive types.
  *
  * Usage with ZodSchema:
  * @tool("Description", z.object({ ... }))
@@ -263,6 +272,13 @@ function systemPromptMethod(): MethodDecorator {
  * Usage with class-based schema:
  * @tool("Description")
  * async method(params: ClassBasedParams): Promise<ReturnType> { ... }
+ *
+ * Usage with primitive types (String, Number, Boolean):
+ * @tool("Description")
+ * async method(query: string): Promise<string> { ... }
+ *
+ * When using primitive types, the parameter is automatically wrapped in an object
+ * with a 'value' property for the LLM, and unwrapped when calling your method.
  *
  * @param description - Description of the tool's functionality.
  * @param schemaOrClass - Optional Zod schema or class constructor.
@@ -286,6 +302,7 @@ export function tool(
     }
 
     let schema: ZodSchema<any>;
+    let isPrimitiveParam = false;
 
     if (schemaOrClass) {
       if (schemaOrClass instanceof z.ZodSchema) {
@@ -319,38 +336,40 @@ export function tool(
           );
         }
 
-        // Exclude primitive types
-        const primitiveTypes = [
-          String,
-          Number,
-          Boolean,
-          Symbol,
-          BigInt,
-          Function,
-        ];
-        if (primitiveTypes.includes(paramType)) {
-          throw new Error(
-            `@tool ${String(propertyKey)}: The parameter type (${paramType.name}) is a primitive, not an object.`,
-          );
-        }
+        // Check for supported primitive types (String, Number, Boolean)
+        const primitiveSchema = primitiveToZodSchema[paramType.name];
+        if (primitiveSchema) {
+          // Wrap primitive in an object schema with a 'value' property
+          // This is required because LLM tool parameters must be objects
+          schema = z.object({ value: primitiveSchema });
+          isPrimitiveParam = true;
+        } else {
+          // Exclude unsupported primitive types
+          const unsupportedPrimitives = [Symbol, BigInt, Function];
+          if (unsupportedPrimitives.includes(paramType)) {
+            throw new Error(
+              `@tool ${String(propertyKey)}: The parameter type (${paramType.name}) is not supported. Use String, Number, Boolean, or an object type.`,
+            );
+          }
 
-        // Ensure paramType is constructable and produces an object
-        if (typeof paramType !== 'function' || !paramType.prototype) {
-          throw new Error(
-            `@tool ${String(propertyKey)}: The parameter type (${paramType.name}) is not a valid class or constructor.`,
-          );
-        }
+          // Ensure paramType is constructable and produces an object
+          if (typeof paramType !== 'function' || !paramType.prototype) {
+            throw new Error(
+              `@tool ${String(propertyKey)}: The parameter type (${paramType.name}) is not a valid class or constructor.`,
+            );
+          }
 
-        // Check if paramType is a class decorated with @schema
-        if (!hasSchemaDef(paramType)) {
-          throw new Error(
-            `@tool decorator on ${String(
-              propertyKey,
-            )} requires an explicit Zod schema or a parameter class decorated with @schema.`,
-          );
+          // Check if paramType is a class decorated with @schema
+          if (!hasSchemaDef(paramType)) {
+            throw new Error(
+              `@tool decorator on ${String(
+                propertyKey,
+              )} requires an explicit Zod schema or a parameter class decorated with @schema.`,
+            );
+          }
+          // Convert the parameter class to Zod schema
+          schema = getSchemaDef(paramType);
         }
-        // Convert the parameter class to Zod schema
-        schema = getSchemaDef(paramType);
       }
     }
 
@@ -364,18 +383,24 @@ export function tool(
       description,
       method: String(propertyKey),
       parameters: schema as ZodObject<any>,
+      isPrimitiveParam,
     });
 
     // Define the updated tools metadata on the constructor
     Reflect.defineMetadata(META_KEYS.TOOLS, tools, target.constructor);
 
-    // Wrap the original method to validate input
+    // Wrap the original method to validate input and unwrap primitives
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: any[]) {
-      if (args[0]) {
-        schema.parse(args[0]); // This will throw if validation fails
+      let input = args[0];
+      if (input !== undefined) {
+        schema.parse(input); // This will throw if validation fails
+        // Unwrap primitive parameter from { value: ... } wrapper
+        if (isPrimitiveParam && typeof input === 'object' && 'value' in input) {
+          input = input.value;
+        }
       }
-      return originalMethod.apply(this, args);
+      return originalMethod.apply(this, [input, ...args.slice(1)]);
     };
 
     return descriptor;
